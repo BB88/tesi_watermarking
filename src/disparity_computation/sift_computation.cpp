@@ -8,6 +8,7 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/nonfree/features2d.hpp>
 #include <opencv2/features2d/features2d.hpp>
+#include <opencv2/nonfree/nonfree.hpp>
 
 #include <vector>
 
@@ -15,52 +16,40 @@ using namespace std;
 using namespace cv;
 
 namespace sift_computation {
+
     int sift_compute() {
-       /* string path("/home/bene/Scrivania/frame_1.jpg");
-        const cv::Mat input = cv::imread(path); //Load as grayscale
+        cv::initModule_nonfree();
+        Mat image = imread("/home/bene/Scrivania/left01.png");
+        if (image.cols == 0){
+          cout << "Empty image";
+         }
 
-        cv::SiftFeatureDetector detector;
-        std::vector<cv::KeyPoint> keypoints;
-        detector.detect(input, keypoints);
+         // Create smart pointer for SIFT feature detector.
+         Ptr<FeatureDetector> featureDetector = FeatureDetector::create("SIFT");
+         vector<KeyPoint> keypoints;
 
-        // Add results to image and save.
-        cv::Mat output;
-        cv::drawKeypoints(input, keypoints, output);
-        imshow("immagine con i  sift", output);
-        waitKey();
-        return 0;
-*/
+         // Detect the keypoints
+         featureDetector->detect(image, keypoints); // NOTE: featureDetector is a pointer hence the '->'.
 
+         //Similarly, we create a smart pointer to the SIFT extractor.
+         Ptr<DescriptorExtractor> featureExtractor = DescriptorExtractor::create("SIFT");
 
-        Mat image = imread("/home/bene/Scrivania/frame_1.jpg");
+         // Compute the 128 dimension SIFT descriptor at each keypoint.
+         // Each row in "descriptors" correspond to the SIFT descriptor for each keypoint
+         Mat descriptors;
+         featureExtractor->compute(image, keypoints, descriptors);
 
-        // Create smart pointer for SIFT feature detector.
-        Ptr<FeatureDetector> featureDetector = FeatureDetector::create("SIFT");
-        vector<KeyPoint> keypoints;
+         // If you would like to draw the detected keypoint just to check
+         Mat outputImage;
+         Scalar keypointColor = Scalar(255, 0, 0);     // Blue keypoints.
+         drawKeypoints(image, keypoints, outputImage, keypointColor, DrawMatchesFlags::DEFAULT);
 
-        // Detect the keypoints
-        featureDetector->detect(image, keypoints); // NOTE: featureDetector is a pointer hence the '->'.
+//        namedWindow("Output");
+         imshow("Output", outputImage);
 
-        //Similarly, we create a smart pointer to the SIFT extractor.
-        Ptr<DescriptorExtractor> featureExtractor = DescriptorExtractor::create("SIFT");
+         waitKey(); // Keep window there until user presses 'q' to quit.
 
-        // Compute the 128 dimension SIFT descriptor at each keypoint.
-        // Each row in "descriptors" correspond to the SIFT descriptor for each keypoint
-        Mat descriptors;
-        featureExtractor->compute(image, keypoints, descriptors);
-
-        // If you would like to draw the detected keypoint just to check
-        Mat outputImage;
-        Scalar keypointColor = Scalar(255, 0, 0);     // Blue keypoints.
-        drawKeypoints(image, keypoints, outputImage, keypointColor, DrawMatchesFlags::DEFAULT);
-
-        namedWindow("Output");
-        imshow("Output", outputImage);
-
-        waitKey(); // Keep window there until user presses 'q' to quit.
-
-        return 0;
-
+         return 0;
 
     }
 

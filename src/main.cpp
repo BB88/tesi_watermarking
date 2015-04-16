@@ -36,5 +36,8 @@ int main() {
 
     sift_computation::sift_compute();
 
-    return 0;
+     return 0;
 }
+
+
+//   shortcuts:   https://www.jetbrains.com/clion/documentation/docs/CLion_ReferenceCard.pdf
