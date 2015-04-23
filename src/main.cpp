@@ -16,7 +16,7 @@ using namespace cv::datasets;
 
 int main() {
 
-   /* string path("/home/bene/ClionProjects/tesi_watermarking/dataset/NTSD-200/");
+ /*   string path("/home/bene/ClionProjects/tesi_watermarking/dataset/NTSD-200/");
 
     Ptr<tsukuba_dataset> dataset = tsukuba_dataset::create();
     dataset->load(path);
@@ -34,10 +34,26 @@ int main() {
     stereomatching::stereo_matching(img_left, img_right, disp);
     stereomatching::display(img_left, img_right, disp);*/
 
-    sift_computation::sift_compute();
+//    sift_computation::sift_compute();
+
+
+// cv::initModule_nonfree();
+ Mat image = imread("/home/bene/ClionProjects/tesi_watermarking/img/disp2.png");
+ if (image.cols == 0){
+  cout << "Empty image";
+ }
+ Mat output;
+ cv::medianBlur(image, output,7);
+    imwrite( "/home/bene/ClionProjects/tesi_watermarking/img/filtered_disp2.png", output );
+ imshow("Output", output);
+ waitKey();
 
      return 0;
 }
+
+
+
+
 
 
 //   shortcuts:   https://www.jetbrains.com/clion/documentation/docs/CLion_ReferenceCard.pdf
