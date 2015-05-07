@@ -14,6 +14,9 @@ using namespace std;
 using namespace cv;
 using namespace cv::datasets;
 
+
+
+
 int main() {
 
  /*   string path("/home/bene/ClionProjects/tesi_watermarking/dataset/NTSD-200/");
@@ -38,17 +41,36 @@ int main() {
 
 
 // cv::initModule_nonfree();
- Mat image = imread("/home/bene/ClionProjects/tesi_watermarking/img/disp2.png");
- if (image.cols == 0){
-  cout << "Empty image";
- }
- Mat output;
- cv::medianBlur(image, output,7);
-    imwrite( "/home/bene/ClionProjects/tesi_watermarking/img/filtered_disp2.png", output );
- imshow("Output", output);
- waitKey();
+// Mat image = imread("/home/miky/ClionProjects/tesi_watermarking/img/disp2.png");
+// if (image.cols == 0){
+//  cout << "Empty image";
+// }
+// Mat output;
+// cv::medianBlur(image, output,7);
+//    imwrite( "/home/miky/ClionProjects/tesi_watermarking/img/filtered_disp2.png", output );
+// imshow("Output", output);
+// waitKey();
 
-     return 0;
+    //SIMILARITÀ TRA DUE OCCLUSION
+
+    cv::Mat disp_occluded1 = imread("/home/miky/Scrivania/tsukuba_occlusion_L_00001.png");
+    cv::Mat disp_occluded2 = imread("/home/miky/Scrivania/tsukuba_occlusion_L_00002.png");
+//    cv::Mat diff;
+//    cv::compare(disp_occluded1, disp_occluded2, diff, cv::CMP_NE);
+//    imshow("Output", diff);
+//    waitKey();
+
+    if (disp_occluded1.rows > 0 && disp_occluded1.rows == disp_occluded2.rows && disp_occluded1.cols > 0 && disp_occluded1.cols == disp_occluded2.cols) {
+        // Calculate the L2 relative error between the 2 images.
+        double errorL2 = norm(disp_occluded1, disp_occluded2, CV_L2);
+        // Convert to a reasonable scale, since L2 error is summed across all pixels of the image.
+        double similarity = errorL2 / (double) (disp_occluded1.rows * disp_occluded1.cols);
+        cout << similarity;
+    }
+
+
+
+    return 0;
 }
 
 
