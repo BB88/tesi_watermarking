@@ -9,13 +9,12 @@
 #include <stdint.h>
 #include "./disparity_computation/stereo_matching.h"
 #include "./disparity_computation/sift_computation.h"
+#include "./disparity_optimization/occlusions_handler.h"
+
 
 using namespace std;
 using namespace cv;
 using namespace cv::datasets;
-
-
-
 
 int main() {
 
@@ -39,38 +38,28 @@ int main() {
 
 //    sift_computation::sift_compute();
 
+    occlusions_handler::occlusions_filler();
+
+    cv::Mat occluded = imread("/home/miky/ClionProjects/tesi_watermarking/img/filtered_bw.png");
+    cv::Mat occluded_gt = imread("/home/miky/Scrivania/tsukuba_occlusion_L_00001.png");
+
+    cout << occlusions_handler::getSimilarity(occluded,occluded_gt);
+
 
 // cv::initModule_nonfree();
-// Mat image = imread("/home/miky/ClionProjects/tesi_watermarking/img/disp2.png");
-// if (image.cols == 0){
-//  cout << "Empty image";
-// }
-// Mat output;
-// cv::medianBlur(image, output,7);
-//    imwrite( "/home/miky/ClionProjects/tesi_watermarking/img/filtered_disp2.png", output );
-// imshow("Output", output);
-// waitKey();
-
-    //SIMILARITÀ TRA DUE OCCLUSION
-
-    cv::Mat disp_occluded1 = imread("/home/miky/Scrivania/tsukuba_occlusion_L_00001.png");
-    cv::Mat disp_occluded2 = imread("/home/miky/Scrivania/tsukuba_occlusion_L_00002.png");
-//    cv::Mat diff;
-//    cv::compare(disp_occluded1, disp_occluded2, diff, cv::CMP_NE);
-//    imshow("Output", diff);
-//    waitKey();
-
-    if (disp_occluded1.rows > 0 && disp_occluded1.rows == disp_occluded2.rows && disp_occluded1.cols > 0 && disp_occluded1.cols == disp_occluded2.cols) {
-        // Calculate the L2 relative error between the 2 images.
-        double errorL2 = norm(disp_occluded1, disp_occluded2, CV_L2);
-        // Convert to a reasonable scale, since L2 error is summed across all pixels of the image.
-        double similarity = errorL2 / (double) (disp_occluded1.rows * disp_occluded1.cols);
-        cout << similarity;
-    }
+/* Mat image = imread("/home/bene/ClionProjects/tesi_watermarking/img/disp2.png");
+ if (image.cols == 0){
+  cout << "Empty image";
+ } else {
+     Mat output;
+     cv::medianBlur(image, output, 7);
+     imwrite("/home/bene/ClionProjects/tesi_watermarking/img/filtered_disp2.png", output);
+     imshow("Output", output);
+     waitKey();
+ }*/
+     return 0;
 
 
-
-    return 0;
 }
 
 
