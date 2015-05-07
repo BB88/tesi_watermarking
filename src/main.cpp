@@ -9,6 +9,8 @@
 #include <stdint.h>
 #include "./disparity_computation/stereo_matching.h"
 #include "./disparity_computation/sift_computation.h"
+#include "./disparity_optimization/occlusions_handler.h"
+
 
 using namespace std;
 using namespace cv;
@@ -36,19 +38,22 @@ int main() {
 
 //    sift_computation::sift_compute();
 
+    occlusions_handler::occlusions_filler();
 
 // cv::initModule_nonfree();
- Mat image = imread("/home/bene/ClionProjects/tesi_watermarking/img/disp2.png");
+/* Mat image = imread("/home/bene/ClionProjects/tesi_watermarking/img/disp2.png");
  if (image.cols == 0){
   cout << "Empty image";
- }
- Mat output;
- cv::medianBlur(image, output,7);
-    imwrite( "/home/bene/ClionProjects/tesi_watermarking/img/filtered_disp2.png", output );
- imshow("Output", output);
- waitKey();
-
+ } else {
+     Mat output;
+     cv::medianBlur(image, output, 7);
+     imwrite("/home/bene/ClionProjects/tesi_watermarking/img/filtered_disp2.png", output);
+     imshow("Output", output);
+     waitKey();
+ }*/
      return 0;
+
+
 }
 
 

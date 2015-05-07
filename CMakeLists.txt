@@ -29,5 +29,5 @@ include_directories( ${OpenCV_INCLUDE_DIRS} )
 message(${OpenCV_INCLUDE_DIRS})
 set(LIBS ${LIBS} ${OpenCV_LIBS})
 
-add_executable(tesi_watermarking ${SOURCE_FILES} src/disparity_computation/stereo_matching.h src/disparity_computation/stereo_matching.h src/disparity_computation/stereo_matching.cpp src/dataset/tsukuba_dataset.cpp src/dataset/tsukuba_dataset.h src/disparity_computation/sift_computation.h src/disparity_computation/sift_computation.cpp)
+add_executable(tesi_watermarking ${SOURCE_FILES} src/disparity_computation/stereo_matching.h src/disparity_computation/stereo_matching.h src/disparity_computation/stereo_matching.cpp src/dataset/tsukuba_dataset.cpp src/dataset/tsukuba_dataset.h src/disparity_computation/sift_computation.h src/disparity_computation/sift_computation.cpp src/disparity_optimization/occlusions_handler.h src/disparity_optimization/occlusions_handler.cpp)
 target_link_libraries(tesi_watermarking ${LIBS})
