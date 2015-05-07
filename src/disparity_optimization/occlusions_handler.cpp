@@ -16,10 +16,6 @@ using namespace cv;
 
 namespace occlusions_handler {
 
-
-
-
-
     void occlusions_enhancing(){
 
         Mat src1;
