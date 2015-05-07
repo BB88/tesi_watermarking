@@ -16,7 +16,11 @@ using namespace cv;
 
 namespace occlusions_handler {
 
-    void occlusions_filler(){
+
+
+
+
+    void occlusions_enhancing(){
 
         Mat src1;
         src1 = imread("/home/bene/ClionProjects/tesi_watermarking/img/filtered_disp2.png", CV_LOAD_IMAGE_COLOR);
@@ -44,7 +48,7 @@ namespace occlusions_handler {
         {
             for (int j=0; j<src1.cols; j++)
             {
-                if ( src1.at<Vec3b>(i,j)[0] == 255 &&  src1.at<Vec3b>(i,j)[1] == 255 &&  src1.at<Vec3b>(i,j)[2] == 0){
+                if ((src1.at<Vec3b>(i,j)[0] == 255  &&  src1.at<Vec3b>(i,j)[1] == 255 &&  src1.at<Vec3b>(i,j)[2] == 0) || (src1.at<Vec3b>(i,j)[0] < 100  &&  src1.at<Vec3b>(i,j)[1] < 100 &&  src1.at<Vec3b>(i,j)[2] < 100) ){
                     src1.at<Vec3b>(i,j)[0] = 0;
                     src1.at<Vec3b>(i,j)[1] = 0;
                     src1.at<Vec3b>(i,j)[2] = 0;

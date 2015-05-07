@@ -38,7 +38,7 @@ int main() {
 
 //    sift_computation::sift_compute();
 
-    occlusions_handler::occlusions_filler();
+    occlusions_handler::occlusions_enhancing();
 
 // cv::initModule_nonfree();
 /* Mat image = imread("/home/bene/ClionProjects/tesi_watermarking/img/disp2.png");

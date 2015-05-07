@@ -18,7 +18,7 @@ using namespace cv;
 
 namespace occlusions_handler {
 
-    void occlusions_filler();
+    void occlusions_enhancing();
 
 
 }
