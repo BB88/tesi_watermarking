@@ -40,6 +40,12 @@ int main() {
 
     occlusions_handler::occlusions_enhancing();
 
+    cv::Mat occluded = imread("/home/miky/ClionProjects/tesi_watermarking/img/filtered_bw.png");
+    cv::Mat occluded_gt = imread("/home/miky/Scrivania/tsukuba_occlusion_L_00001.png");
+
+    cout << occlusions_handler::getSimilarity(occluded,occluded_gt);
+
+
 // cv::initModule_nonfree();
 /* Mat image = imread("/home/bene/ClionProjects/tesi_watermarking/img/disp2.png");
  if (image.cols == 0){

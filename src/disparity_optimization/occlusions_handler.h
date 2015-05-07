@@ -19,6 +19,9 @@ using namespace cv;
 namespace occlusions_handler {
 
     void occlusions_enhancing();
+    double getSimilarity(const Mat A, const Mat B);
+
+    void occlusions_filler();
 
 
 }
