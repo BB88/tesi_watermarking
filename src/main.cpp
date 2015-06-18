@@ -54,13 +54,19 @@ int main() {
 
     /*STEP 4: RECONSTRUCT RIGHT VIEW*/
 
-/*
 
+    cv::Mat left = imread("/home/bene/ClionProjects/tesi_watermarking//img/l.png",
+                          CV_LOAD_IMAGE_COLOR);
+    // our disp
+    cv::Mat disp = imread("/home/bene/ClionProjects/tesi_watermarking/img/n_disp.png", CV_LOAD_IMAGE_GRAYSCALE);
+    // ground truth
+/*    cv::Mat disp = imread("/home/bene/ClionProjects/tesi_watermarking/dataset/NTSD-200/disparity_maps/left/frame_1.png",
+                          CV_LOAD_IMAGE_GRAYSCALE);*/
     Right_view rv;
-    rv.right_reconstruction();
+    rv.right_reconstruction(left, disp);
 
 
-*/
+
 
 
     /*ENHANCING OCCLUSIONS*/

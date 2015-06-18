@@ -14,32 +14,27 @@ using namespace std;
 using namespace cv;
 
 
-    void Right_view::right_reconstruction() {
+    void Right_view::right_reconstruction(cv::Mat left, cv::Mat disp) {
         // read left image
-        Mat left;
-        left = imread("/home/bene/ClionProjects/tesi_watermarking/dataset/NTSD-200/daylight/left/frame_1.png", CV_LOAD_IMAGE_COLOR);
-        // read disparity
+
         cv::imshow("Left",left);
-        Mat disp;
-       // disp = imread("/home/bene/ClionProjects/tesi_watermarking/img/grey_disp.png", 0);
-        // ground truth
-        disp = imread("/home/bene/ClionProjects/tesi_watermarking/dataset/NTSD-200/disparity_maps/left/frame_1.png", 0);
         cv::imshow("Disp",disp);
        /* string ty =  type2str( disp.type() );
         printf("Matrix: %s %dx%d \n", ty.c_str(), disp.cols, disp.rows );*/
         //create general right image
-        /*Mat right ;
-        left.copyTo(right);
-        Scalar d;*/
-        int d;
-        int xr;
-        cv::Mat o_right = cv::imread("/home/bene/ClionProjects/tesi_watermarking/dataset/NTSD-200/daylight/right/frame_1.png",  CV_LOAD_IMAGE_COLOR);
+        int d, xr;
+        // original right view
+        cv::Mat o_right = cv::imread("/home/bene/ClionProjects/tesi_watermarking/dataset/NTSD-200/daylight/right/frame_1.png",
+                                     CV_LOAD_IMAGE_COLOR);
         //Before changing
         cv::imshow("Original",o_right);
-        /*string ty =  type2str( o_right.type() );
-        printf("Matrix: %s %dx%d \n", ty.c_str(), o_right.cols, o_right.rows);*/
+        /*
+        string ty =  type2str( o_right.type() );
+        printf("Matrix: %s %dx%d \n", ty.c_str(), o_right.cols, o_right.rows);
+        */
+        // reconstructed right view
         cv::Mat n_right = cv::Mat::zeros(o_right.rows, o_right.cols, CV_8UC3);
-        //change some pixel value
+        // change pixel value
         for(int j=0;j< left.rows;j++)
         {
             for (int i=0;i< left.cols;i++)
@@ -48,7 +43,7 @@ using namespace cv;
                 //cout<<d<<endl;
                 xr = abs(i - d);
                // xr = i - d;
-                // assign new value to right view
+                // assign new values to reconstructed right view
                 n_right.at<Vec3b>(j,xr) [0] = left.at<Vec3b>(j,i) [0];
                 n_right.at<Vec3b>(j,xr) [1] = left.at<Vec3b>(j,i) [1];
                 n_right.at<Vec3b>(j,xr) [2] = left.at<Vec3b>(j,i) [2];
@@ -59,7 +54,7 @@ using namespace cv;
         waitKey();
     }
 
-    string  Right_view::type2str(int type) {
+    string type2str(int type) {
         string r;
 
         uchar depth = type & CV_MAT_DEPTH_MASK;

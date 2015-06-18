@@ -17,7 +17,7 @@ using namespace cv;
 class Right_view{
 
 public:
-    void right_reconstruction();
+    void right_reconstruction(cv::Mat left, cv::Mat disp);
     string type2str(int type);
 
 };
