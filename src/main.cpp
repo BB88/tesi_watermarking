@@ -8,8 +8,13 @@
 #include <string>
 #include <stdint.h>
 #include "./disparity_computation/stereo_matching.h"
-#include "./disparity_computation/sift_computation.h"
+#include "./disparity_optimization/disp_opt.h"
 #include "./disparity_optimization/occlusions_handler.h"
+#include "./right_view_computation/right_view.h"
+#include "disparity_optimization/disp_opt.h"
+#include <limits>
+#include <cstddef>
+#include <iostream>
 
 
 using namespace std;
@@ -18,49 +23,83 @@ using namespace cv::datasets;
 
 int main() {
 
- /*   string path("/home/bene/ClionProjects/tesi_watermarking/dataset/NTSD-200/");
 
-    Ptr<tsukuba_dataset> dataset = tsukuba_dataset::create();
-    dataset->load(path);
+    /*STEP 2: FILTER DISPARITY (OUTPUT OF KZ)*/
 
-    unsigned int dataset_size = (unsigned int)dataset->getTrain().size();
+/*
+    cv::Mat kz_disp = imread("/home/bene/ClionProjects/tesi_watermarking/img/kz_disp.png");
+    if (kz_disp.rows == 0){
+        cout << "Empty image";
+    } else {
+        Disp_opt dp;
+        dp.disparity_filtering(kz_disp);
+    }
+*/
 
-    cout << dataset_size;
-    Ptr<cv::datasets::tsukuba_datasetObj> data_stereo_img =
-            static_cast< Ptr<cv::datasets::tsukuba_datasetObj> > (dataset->getTrain()[0]);
-    cv::Mat img_left, img_right, disp;
-    cv::datasets::FramePair tuple_img = dataset->load_stereo_images(1);
-    img_left = tuple_img.frame_left;
-    img_right = tuple_img.frame_right;
 
-    stereomatching::stereo_matching(img_left, img_right, disp);
-    stereomatching::display(img_left, img_right, disp);*/
+    /*STEP 3: NORMALIZE DISPARITY (OUTPUT OF KZ)*/
 
-//    sift_computation::sift_compute();
+/*
 
-    occlusions_handler::occlusions_enhancing();
+    cv::Mat fg_disp = imread("/home/bene/ClionProjects/tesi_watermarking/img/fg_disp.png", CV_LOAD_IMAGE_GRAYSCALE);
+    if (fg_disp.rows == 0){
+        cout << "Empty image";
+    } else {
+        Disp_opt dp;
+        dp.disparity_normalization(fg_disp);
+    }
+
+*/
+
+
+    /*STEP 4: RECONSTRUCT RIGHT VIEW*/
+
+/*
+
+    Right_view rv;
+    rv.right_reconstruction();
+
+
+*/
+
+
+    /*ENHANCING OCCLUSIONS*/
+
+/*
+    cv::Mat f_disp = imread("/home/bene/ClionProjects/tesi_watermarking/img/f_disp.png", CV_LOAD_IMAGE_COLOR);
+    Disp_opt dp;
+    dp.occlusions_enhancing(f_disp);
+
+*/
+
+
+
+
+
+
+
+/*
+
 
     cv::Mat occluded = imread("/home/miky/ClionProjects/tesi_watermarking/img/filtered_bw.png");
     cv::Mat occluded_gt = imread("/home/miky/Scrivania/tsukuba_occlusion_L_00001.png");
 
     cout << occlusions_handler::getSimilarity(occluded,occluded_gt);
+*/
 
 
-// cv::initModule_nonfree();
-/* Mat image = imread("/home/bene/ClionProjects/tesi_watermarking/img/disp2.png");
- if (image.cols == 0){
-  cout << "Empty image";
- } else {
-     Mat output;
-     cv::medianBlur(image, output, 7);
-     imwrite("/home/bene/ClionProjects/tesi_watermarking/img/filtered_disp2.png", output);
-     imshow("Output", output);
-     waitKey();
- }*/
+
+
+
+
+
      return 0;
 
 
 }
+
+
+
 
 
 
