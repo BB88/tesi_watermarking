@@ -49,9 +49,9 @@ using namespace cv;
                 n_right.at<Vec3b>(j,xr) [2] = left.at<Vec3b>(j,i) [2];
             }
         }
+        imwrite("/home/bene/ClionProjects/tesi_watermarking/img/nkz_right.png", n_right);
         //After changing
         cv::imshow("Reconstructed", n_right);
-        waitKey();
     }
 
     string type2str(int type) {

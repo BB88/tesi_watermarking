@@ -6,6 +6,7 @@
 #include <opencv2/core/core.hpp>
 #include <highgui.h>
 #include <cv.h>
+#include <fstream>
 
 #include "disp_opt.h"
 
@@ -26,35 +27,48 @@ void Disp_opt::disparity_filtering(cv::Mat kz_disp) {
     //save filtered greyscale image
     imwrite("/home/bene/ClionProjects/tesi_watermarking/img/fg_disp.png", greyMat);
     imshow("Filtered greyscale disparity", greyMat);
-    waitKey(25);
 
 }
 
-void Disp_opt::disparity_normalization(cv::Mat fg_disp) {
+void Disp_opt::disparity_normalization(cv::Mat kz_disp) {
 
-    int d, D , dMin, dMax, dispSize;
-    dMin = -70;
-    dMax = 0;
+    std::ofstream dispFile;
+    dispFile.open("/home/bene/Scrivania/dispMat2.txt");
+
+
+    int d, c , dMin, dMax, dispSize;
+    dMin = -77;
+    dMax = -19;
     dispSize = dMax - dMin + 1;
 //    Mat disp = imread("/home/bene/Scrivania/disp/filt_grey_disp.png", CV_LOAD_IMAGE_GRAYSCALE);
-    imshow("Filtered greyscale disparity", fg_disp);
-    cv::Mat n_disp = cv::Mat::zeros(fg_disp.rows, fg_disp.cols, CV_8UC1);
+    imshow("Greyscale disparity", kz_disp);
+    cv::Mat nkz_disp = cv::Mat::zeros(kz_disp.rows, kz_disp.cols, CV_8UC1);
     // load ground_truth for comparison
-    Mat gt = imread("/home/bene/ClionProjects/tesi_watermarking/dataset/NTSD-200/disparity_maps/left/frame_1.png",
+    Mat gt_disp = imread("/home/bene/ClionProjects/tesi_watermarking/img/gt_disp.png",
                     CV_LOAD_IMAGE_GRAYSCALE);
-    cv::imshow("Ground Truth",gt);
+    cv::imshow("Ground Truth",gt_disp);
 //    cout << "channels" << fg_disp.channels() << endl;
-    for(int j=0;j< fg_disp.rows;j++) {
-        for (int i = 0; i < fg_disp.cols; i++) {
-            D = fg_disp.at<uchar>(j,i);
-            d = - ((255 - D) * dispSize / (255 - 64) + dMin);
+    for(int j=0;j< kz_disp.rows;j++) {
+        for (int i = 0; i < kz_disp.cols; i++) {
+
+            c = kz_disp.at<uchar>(j,i);
+            if ( c != 178 ) {
+                d = (c - 255) * dispSize / -(255 - 64) + dMin + 1;
+                dispFile << d << "m" << "  " << c << "  " << -d << std::endl;
+                nkz_disp.at<uchar>(j,i) = - d;
+            } else {
+                nkz_disp.at<uchar>(j,i) = 0;
+                dispFile << "X" << std::endl;
+            }
+
+         //   d = - ((255 - D) * dispSize / (255 - 64) + dMin);
            // cout << d << endl;
-            n_disp.at<uchar>(j,i) = d;
+
         }
     }
-    imwrite("/home/bene/Scrivania/disp/orig_disp.png", n_disp);
-    imshow("Normalized disparity", n_disp);
-    waitKey(0);
+    dispFile.close();
+    imwrite("/home/bene/ClionProjects/tesi_watermarking/img/nkz_disp.png", nkz_disp);
+    imshow("Normalized disparity", nkz_disp);
 }
 
 
@@ -63,24 +77,26 @@ void Disp_opt::occlusions_enhancing(cv::Mat f_disp) {
     namedWindow("Filtered disparity", CV_WINDOW_AUTOSIZE);
     imshow("Filtered disparity", f_disp);
     // Modify the pixels of disparity: occlusions are black, the rest is white
-    for (int i = 0; i < f_disp.rows; i++) {
-        for (int j = 0; j < f_disp.cols; j++) {
-            if ((f_disp.at<Vec3b>(i, j)[0] == 255 && f_disp.at<Vec3b>(i, j)[1] == 255 &&
-                    f_disp.at<Vec3b>(i, j)[2] == 0) ||
-                (f_disp.at<Vec3b>(i, j)[0] < 100 && f_disp.at<Vec3b>(i, j)[1] < 100 &&
-                        f_disp.at<Vec3b>(i, j)[2] < 100)) {
-                f_disp.at<Vec3b>(i, j)[0] = 0;
-                f_disp.at<Vec3b>(i, j)[1] = 0;
-                f_disp.at<Vec3b>(i, j)[2] = 0;
+
+    //ho cambiato i con j ricontrollare che funzioni
+
+    for (int j = 0; j < f_disp.rows; j++) {
+        for (int i = 0; i < f_disp.cols; i++) {
+            if ((f_disp.at<Vec3b>(j, i)[0] == 255 && f_disp.at<Vec3b>(j, i)[1] == 255 &&
+                 f_disp.at<Vec3b>(j, i)[2] == 0) ||
+                (f_disp.at<Vec3b>(j, i)[0] < 100 && f_disp.at<Vec3b>(j, i)[1] < 100 &&
+                 f_disp.at<Vec3b>(j, i)[2] < 100)) {
+                f_disp.at<Vec3b>(j, i)[0] = 0;
+                f_disp.at<Vec3b>(j, i)[1] = 0;
+                f_disp.at<Vec3b>(j, i)[2] = 0;
             } else {
-                f_disp.at<Vec3b>(i, j)[0] = 255;
-                f_disp.at<Vec3b>(i, j)[1] = 255;
-                f_disp.at<Vec3b>(i, j)[2] = 255;
+                f_disp.at<Vec3b>(j, i)[0] = 255;
+                f_disp.at<Vec3b>(j, i)[1] = 255;
+                f_disp.at<Vec3b>(j, i)[2] = 255;
             }
         }
     }
     namedWindow("Modified pixel", CV_WINDOW_AUTOSIZE);
     imshow("Modified pixel", f_disp);
     imwrite("/home/bene/ClionProjects/tesi_watermarking/img/fbw_disp.png", f_disp);
-    waitKey(0);
 }
