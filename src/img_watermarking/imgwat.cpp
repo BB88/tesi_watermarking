@@ -22,6 +22,8 @@
  */
 #include <stdio.h>
 #include <string.h>
+#include <iostream>
+
 
 // Local headers
 #include "imgwat.h"
@@ -32,8 +34,8 @@
 // Standard headers
 #include <assert.h>
 
-// Qt headers
-#include <QMessageBox>
+//// Qt headers
+//#include <QMessageBox>
 
 // definitions
 const double ImgWat::M0 = 0.7071067811865;
@@ -54,6 +56,7 @@ const int ImgWat::WINDOW = 9;
 const char * ImgWat::MSG_TITLE = "Image Watermarking Plugin";
 
 using namespace AllocIm;
+using namespace std;
 
 void ImgWat::setParameters(int *w, int bits, int size, float pwr, bool useClipping,
                                  bool resynchronization, int *tilelist, int tilenumber)
@@ -71,7 +74,7 @@ void ImgWat::setParameters(int *w, int bits, int size, float pwr, bool useClippi
     memcpy(tiles, tilelist, sizeof(int) * tilenumber);
 }
 
-void ImgWat::setPassword(QString passwStr, QString passwNum)
+void ImgWat::setPassword(std::string passwStr, std::string passwNum)
 {
     passwstr = passwStr;
     passwnum = passwNum;
@@ -89,32 +92,41 @@ unsigned char * ImgWat::insertWatermark(unsigned char *image, int w, int h)
     unsigned char *output_img = new unsigned char[w * h * 3];
     memcpy(output_img, image, w * h * 3);
 
-    QByteArray barray = passwstr.toAscii();
-    const char *passw_str = barray.data();
-    QByteArray barray2 = passwnum.toAscii();
-    const char *passw_num = barray2.data();
+//    QByteArray barray = passwstr.toAscii();
+    const char *passw_str = passwstr.c_str();
+//    QByteArray barray2 = passwnum.toAscii();
+    const char *passw_num = passwnum.c_str();
 
     int result = WatCod(output_img, h, w, passw_str, passw_num, watermark,
                         tilesize, nbits, power, clipping, tiles, &ntiles);
 
     if (result == -3)
     {
-        // invalid 'nbit'
-        QMessageBox::warning(NULL, tr(MSG_TITLE),
-                             tr("Invalid number of bits!\nValid watermarks have 32 or 64 bits."));
+        // LOG
+        FILE *flog = fopen("watcod.log","wt");;
+        fprintf(flog, " - Invalid number of bits!\nValid watermarks have 32 or 64 bits.");
+//        // invalid 'nbit'
+//        QMessageBox::warning(NULL, tr(MSG_TITLE),
+//                             tr("Invalid number of bits!\nValid watermarks have 32 or 64 bits."));
         flagOk = false;
     }
     else if (result == -2)
     {
-        // invalid 'size'
-        QMessageBox::warning(NULL, tr(MSG_TITLE),
-                             tr("Invalid size of the tile. Valid size are 256, 512 or 1024."));
+        // LOG
+        FILE *flog = fopen("watcod.log","wt");;
+        fprintf(flog, " - Invalid size of the tile. Valid size are 256, 512 or 1024.");
+//        // invalid 'size'
+//        QMessageBox::warning(NULL, tr(MSG_TITLE),
+//                             tr("Invalid size of the tile. Valid size are 256, 512 or 1024."));
         flagOk = false;
     }
     else if (result == -1)
     {
-        // the watermark power is out-of-range
-        QMessageBox::warning(NULL, tr(MSG_TITLE), tr("The watermark power is out-of-range."));
+        // LOG
+        FILE *flog = fopen("watcod.log","wt");;
+        fprintf(flog, " - The watermark power is out-of-range.");
+//        // the watermark power is out-of-range
+//        QMessageBox::warning(NULL, tr(MSG_TITLE), tr("The watermark power is out-of-range."));
         flagOk = false;
     }
     else if (result == 0)
@@ -124,15 +136,21 @@ unsigned char * ImgWat::insertWatermark(unsigned char *image, int w, int h)
     }
     else if (result == 1)
     {
-        // image too big!
-        QMessageBox::warning(NULL, tr(MSG_TITLE), tr("Image too big to be processed!"));
+        // LOG
+        FILE *flog = fopen("watcod.log","wt");;
+        fprintf(flog, " - Image too big to be processed!.");
+//        // image too big!
+//        QMessageBox::warning(NULL, tr(MSG_TITLE), tr("Image too big to be processed!"));
         flagOk = false;
     }
     else if (result == 2)
     {
-        // Invalid tile
-        QMessageBox::warning(NULL, tr(MSG_TITLE),
-                             tr("Invalid tile!!"));
+        // LOG
+        FILE *flog = fopen("watcod.log","wt");;
+        fprintf(flog, " - Invalid tile!!.");
+//        // Invalid tile
+//        QMessageBox::warning(NULL, tr(MSG_TITLE),
+//                             tr("Invalid tile!!"));
         flagOk = false;
     }
 
@@ -149,10 +167,10 @@ bool ImgWat::extractWatermark(unsigned char *image, int w, int h)
 {
     bool flagOk;
 
-    QByteArray barray = passwstr.toAscii();
-    const char *passw_str = barray.data();
-    QByteArray barray2 = passwnum.toAscii();
-    const char *passw_num = barray2.data();
+//    QByteArray barray = passwstr.toAscii();
+    const char *passw_str = passwstr.c_str();
+//    QByteArray barray2 = passwnum.toAscii();
+    const char *passw_num = passwnum.c_str();
 
     // image after resynchronization
     unsigned char *imrsinc = new unsigned char[w * h * 3];
@@ -167,23 +185,35 @@ bool ImgWat::extractWatermark(unsigned char *image, int w, int h)
 
     if (result == -3)
     {
-        // invalid 'nbit'
-        QMessageBox::warning(NULL, tr(MSG_TITLE),
-                             tr("Invalid number of bits!\nValid watermarks have 32 or 64 bits."));
+        // LOG
+        FILE *flog = fopen("watcod.log","wt");;
+        fprintf(flog, " - Invalid number of bits!\nValid watermarks have 32 or 64 bits.");
+
+//        // invalid 'nbit'
+//        QMessageBox::warning(NULL, tr(MSG_TITLE),
+//                             tr("Invalid number of bits!\nValid watermarks have 32 or 64 bits."));
         flagOk = false;
     }
     else if (result == -2)
     {
-        // invalid 'size'
-        QMessageBox::warning(NULL, tr(MSG_TITLE),
-                             tr("Invalid size of the tile. Valid size are 256, 512 or 1024."));
+        // LOG
+        FILE *flog = fopen("watcod.log","wt");;
+        fprintf(flog, " - Invalid size of the tile. Valid size are 256, 512 or 1024.");
+
+//        // invalid 'size'
+//        QMessageBox::warning(NULL, tr(MSG_TITLE),
+//                             tr("Invalid size of the tile. Valid size are 256, 512 or 1024."));
         flagOk = false;
     }
     else if (result == -1)
     {
-        // the watermark power is out-of-range
-        QMessageBox::warning(NULL, tr(MSG_TITLE), tr("The watermark power is out-of-range."));
-        flagOk = false;
+        // LOG
+        FILE *flog = fopen("watcod.log","wt");;
+        fprintf(flog, " - The watermark power is out-of-range.");
+
+//        // the watermark power is out-of-range
+//        QMessageBox::warning(NULL, tr(MSG_TITLE), tr("The watermark power is out-of-range."));
+//        flagOk = false;
     }
     else if (result == 0)
     {
@@ -192,29 +222,41 @@ bool ImgWat::extractWatermark(unsigned char *image, int w, int h)
     }
     else if (result == 1)
     {
-        // image too big!
-        QMessageBox::warning(NULL, tr(MSG_TITLE), tr("Image too big to be processed!"));
+        // LOG
+        FILE *flog = fopen("watcod.log","wt");;
+        fprintf(flog, " - Image too big to be processed!.");
+//        // image too big!
+//        QMessageBox::warning(NULL, tr(MSG_TITLE), tr("Image too big to be processed!"));
         flagOk = false;
     }
     else if (result == 2)
     {
-        // invalid BCH code (!!)
-        QMessageBox::warning(NULL, tr(MSG_TITLE),
-                             tr("Invalid BCH code!!"));
+        // LOG
+        FILE *flog = fopen("watcod.log","wt");;
+        fprintf(flog, " - Invalid BCH code!!.");
+//        // invalid BCH code (!!)
+//        QMessageBox::warning(NULL, tr(MSG_TITLE),
+//                             tr("Invalid BCH code!!"));
         flagOk = false;
     }
     else if (result == 3)
     {
-        // watermark not found (!!)
-        QMessageBox::warning(NULL, tr(MSG_TITLE),
-                             tr("Watermark not found!!"));
+        // LOG
+        FILE *flog = fopen("watcod.log","wt");;
+        fprintf(flog, " - Watermark not found!!.");
+//        // watermark not found (!!)
+//        QMessageBox::warning(NULL, tr(MSG_TITLE),
+//                             tr("Watermark not found!!"));
         flagOk = false;
     }
     else if (result == 4)
     {
-        // invalid watermark tile (!!)
-        QMessageBox::warning(NULL, tr(MSG_TITLE),
-                             tr("Invalid tile!!"));
+        // LOG
+        FILE *flog = fopen("watcod.log","wt");;
+        fprintf(flog, " - Invalid tile!!.");
+//        // invalid watermark tile (!!)
+//        QMessageBox::warning(NULL, tr(MSG_TITLE),
+//                             tr("Invalid tile!!"));
         flagOk = false;
     }
 
@@ -472,7 +514,7 @@ int ImgWat::WatCod(unsigned char *ImageIn , int nrImageIn, int ncImageIn,
 
     // LOG
     fprintf(flog, " - Seed: %f %f %f %f\n\n",
-            (double)seed[0], (double)seed[1], (double)seed[2], (double)seed[3]);
+            (LONG8BYTE)seed[0], (LONG8BYTE)seed[1], (LONG8BYTE)seed[2], (LONG8BYTE)seed[3]);
 
     dtr = size;    // Per adesso si suppone il tile quadrato
     dtc = size;
@@ -1341,7 +1383,7 @@ int ImgWat::WatDec(unsigned char *ImageIn, int nrImageIn, int ncImageIn,
 
     // LOG
     fprintf(flog, " - Seed: %f %f %f %f\n\n",
-            (double)seed[0], (double)seed[1], (double)seed[2], (double)seed[3]);
+            (LONG8BYTE)seed[0], (LONG8BYTE)seed[1], (LONG8BYTE)seed[2], (LONG8BYTE)seed[3]);
 
     // Inizio ciclo decodifica
     //////////////////////////
@@ -4096,5 +4138,5 @@ void ImgWat::Marchia(float **Im,float **Im_f, int nr ,int nc,int na,int nT)
 
 /********************************************************************/
 
-Q_EXPORT_PLUGIN(ImgWat);
+//Q_EXPORT_PLUGIN(ImgWat);
 

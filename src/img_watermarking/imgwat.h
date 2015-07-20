@@ -27,13 +27,12 @@
  */
 
 
-// Qt headers
-#include <qobject.h>
-#include <qplugin.h>
-
-// Interface
-#include "imgwatinterface.h"
-
+//// Qt headers
+//#include <qobject.h>
+//#include <qplugin.h>
+//
+//// Interface
+//#include "imgwatinterface.h"
 // Standard headers
 #include <math.h>
 
@@ -46,11 +45,12 @@
  * of the Laboratorio Comunicazioni ed Immagini, Florence University.
  * For details about the algorithm refer to ... .
  */
-class ImgWat : public QObject,
-                     public ImgWatInterface
+class ImgWat
+//       : public QObject,
+//                     public ImgWatInterface
 {
-    Q_OBJECT
-            Q_INTERFACES(ImgWatInterface)
+//    Q_OBJECT
+//            Q_INTERFACES(ImgWatInterface)
 
     static const double M0;
     static const double EPS;
@@ -72,7 +72,7 @@ class ImgWat : public QObject,
 
     static const char * MSG_TITLE;
 
-    typedef __int64 LONG8BYTE;	// NOTE: __int64 HAS NO ANSI EQUIVALENT (!)
+    typedef __int64_t LONG8BYTE;	// NOTE: __int64 HAS NO ANSI EQUIVALENT (!)
 
     // Struttura punto di interesse
     struct Point
@@ -133,10 +133,10 @@ private:
     LONG8BYTE semeiniziale[4];		// seme iniziale del generatore clcg
 
     //! Password (alphabetic field).
-    QString passwstr;
+    std::string passwstr;
 
     //! Password (numeric field).
-    QString passwnum;
+    std::string passwnum;
 
     //! Watermark power.
     float power;
@@ -189,7 +189,7 @@ public:
     /**
      * Set password.
      */
-    void setPassword(QString passwStr, QString passwNum);
+    void setPassword(std::string passwStr, std::string passwNum);
 
     /**
      * Insert the watermark into the given image.
