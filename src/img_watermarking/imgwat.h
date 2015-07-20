@@ -321,4 +321,4 @@ public:
     int * watermarkBits();
 };
 
-#endif  /* IMGWATPLUGIN_H */
+

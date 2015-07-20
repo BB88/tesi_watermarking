@@ -514,7 +514,7 @@ int ImgWat::WatCod(unsigned char *ImageIn , int nrImageIn, int ncImageIn,
 
     // LOG
     fprintf(flog, " - Seed: %f %f %f %f\n\n",
-            (LONG8BYTE)seed[0], (LONG8BYTE)seed[1], (LONG8BYTE)seed[2], (LONG8BYTE)seed[3]);
+            (double)seed[0], (double)seed[1], (double)seed[2], (double)seed[3]);
 
     dtr = size;    // Per adesso si suppone il tile quadrato
     dtc = size;
@@ -1383,7 +1383,7 @@ int ImgWat::WatDec(unsigned char *ImageIn, int nrImageIn, int ncImageIn,
 
     // LOG
     fprintf(flog, " - Seed: %f %f %f %f\n\n",
-            (LONG8BYTE)seed[0], (LONG8BYTE)seed[1], (LONG8BYTE)seed[2], (LONG8BYTE)seed[3]);
+            (double)seed[0], (double)seed[1], (double)seed[2], (double)seed[3]);
 
     // Inizio ciclo decodifica
     //////////////////////////

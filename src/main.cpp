@@ -17,6 +17,9 @@
 #include <iostream>
 #include <fstream>
 
+//includes watermarking
+#include "./img_watermarking/imgwat.h"
+
 using namespace std;
 using namespace cv;
 using namespace cv::datasets;
@@ -159,9 +162,9 @@ int main() {
    */
 
 
-    waitKey(300000); // 300000 = 5 minutes
 
 
+//    waitKey(5); // 300000 = 5 minutes
 
 
 
@@ -177,8 +180,16 @@ int main() {
 
 
 
+    cv::Mat img = cv::imread("/home/miky/ClionProjects/tesi_watermarking/img/nkz_disp.png", CV_LOAD_IMAGE_GRAYSCALE );
+    unsigned char * image = img.data;
 
-     return 0;
+    ImgWat iw;
+    iw.setPassword("abcd","2545");
+
+    bool flagOK = iw.insertWatermark(image,img.cols, img.rows);
+    cout<<flagOK;
+
+    return 0;
 
 
 }
