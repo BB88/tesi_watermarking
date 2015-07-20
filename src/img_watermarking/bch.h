@@ -44,5 +44,5 @@ namespace BCH
 
 } // namespace BCH
 
-#endif  /* BCH_H */
+
 

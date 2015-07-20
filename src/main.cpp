@@ -136,6 +136,8 @@ int main() {
     cv::imshow("Diff disp", diff_disp);
 */
 
+            /* Found min and max value of difference disparity map */
+
 
 /*
     cv::Mat gt = cv::imread("/home/bene/ClionProjects/tesi_watermarking/img/diff_disp.png",
@@ -156,20 +158,6 @@ int main() {
 
    */
 
-/*
-
-    int d, c, dispMax, dispMin, d_new ;
-    dispMin = -77;
-    dispMax = -19;
-    const int dispSize = dispMax-dispMin+1;
-    d = -23;
-    c = 255 - (255-64)*(d - dispMin)/dispSize;
-    d_new = (c-255) * 59 /(-191) - 77;
-    cout << c << "  " << d_new ;
-
-    d_new = (c - 255) * dispSize / -(255 - 64) + dispMin;
-
-*/
 
     waitKey(300000); // 300000 = 5 minutes
 
@@ -178,9 +166,9 @@ int main() {
 
 
 
+
+
 /*
-
-
     cv::Mat occluded = imread("/home/miky/ClionProjects/tesi_watermarking/img/filtered_bw.png");
     cv::Mat occluded_gt = imread("/home/miky/Scrivania/tsukuba_occlusion_L_00001.png");
 
