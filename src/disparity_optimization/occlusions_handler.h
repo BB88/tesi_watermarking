@@ -21,7 +21,7 @@ namespace occlusions_handler {
 
     double getSimilarity(const Mat A, const Mat B);
 
-    void occlusions_filler();
+
 
 
 }

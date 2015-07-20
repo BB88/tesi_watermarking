@@ -24,7 +24,7 @@ using namespace cv;
         //create general right image
         int d, xr;
         // original right view
-        cv::Mat o_right = cv::imread("/home/bene/ClionProjects/tesi_watermarking/dataset/NTSD-200/daylight/right/frame_1.png",
+        cv::Mat o_right = cv::imread("/home/miky/ClionProjects/tesi_watermarking/dataset/NTSD-200/daylight/right/frame_1.png",
                                      CV_LOAD_IMAGE_COLOR);
         //Before changing
         cv::imshow("Original",o_right);
@@ -49,7 +49,7 @@ using namespace cv;
                 n_right.at<Vec3b>(j,xr) [2] = left.at<Vec3b>(j,i) [2];
             }
         }
-        imwrite("/home/bene/ClionProjects/tesi_watermarking/img/nkz_right.png", n_right);
+        imwrite("/home/miky/ClionProjects/tesi_watermarking/img/nkz_right.png", n_right);
         //After changing
         cv::imshow("Reconstructed", n_right);
     }
