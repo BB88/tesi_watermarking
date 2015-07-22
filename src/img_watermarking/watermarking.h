@@ -92,8 +92,8 @@ private:
     int cont[16];
     double z[5];
 
-    LONG8BYTE semecorrente[4];        // seme corrente del generatore clcg
-    LONG8BYTE semeiniziale[4];        // seme iniziale del generatore clcg
+    LONG8BYTE current_seed[4];        // seme corrente del generatore clcg
+    LONG8BYTE init_seed[4];        // seme iniziale del generatore clcg
 
     //! Password (alphabetic field).
     std::string passwstr;
@@ -175,7 +175,11 @@ private:
     int WatCod(unsigned char *ImageOut , int width, int height,
                const char *passw_str, const char *passw_num, int *watermark, int wsize, float power, bool flagClipping, int tilesize, int *tiles, int *ntiles);
 
-    void generate_mark(int *watermark,int wsize) ;
+
+    void seed_generator(LONG8BYTE *s,const char *passw_str, const char *passw_num );
+    void generate_mark(int *watermark,int wsize, const char *passw_str, const char *passw_num, int coefficient_number) ;
+    void seed_initialization(LONG8BYTE *s);
+    double pseudo_random_generator();
 
 
 };
