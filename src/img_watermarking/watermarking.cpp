@@ -142,18 +142,19 @@ int Watermarking::WatCod(unsigned char *ImageOut, int width, int height, const c
     float   **imyout;			// immagine
     double  **imdft;		// immagine della DFT
     double  **imdftfase;	// immagine della fase della DFT
+    float   **imidft;		// immagine della IDFT
 
     imyout = AllocImFloat(512, 512);
     imdft = AllocImDouble(512, 512);
     imdftfase = AllocImDouble(512, 512);
+    imidft = AllocImFloat(512, 512);
 
-
-    int cont=0;
+    int count=0;
     for (int i=0; i<512; i++)
         for (int j=0; j<512; j++){
             imyout[i][j] =
-                    static_cast<float>(ImageOut[cont]);
-            cont++;
+                    static_cast<float>(ImageOut[count]);
+            count++;
         }
 
 
@@ -182,7 +183,8 @@ int Watermarking::WatCod(unsigned char *ImageOut, int width, int height, const c
 
     antizone(imdft, 512, 512, diag0, ndiag, coefficient_vector);
 
-//    FFT2D::idft2d(imdft, imdftfase, imidft, nre, nce);
+
+    FFT2D::idft2d(imdft, imdftfase, imidft, 512, 512);
 
     /*
      * FFT2D
