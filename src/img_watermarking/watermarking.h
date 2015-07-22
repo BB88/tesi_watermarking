@@ -176,8 +176,8 @@ private:
                const char *passw_str, const char *passw_num, int *watermark, int wsize, float power, bool flagClipping, int tilesize, int *tiles, int *ntiles);
 
 
-    void seed_generator(LONG8BYTE *s,const char *passw_str, const char *passw_num );
-    void generate_mark(int *watermark,int wsize, const char *passw_str, const char *passw_num, int coefficient_number) ;
+    void seed_generator(const char *passw_str, const char *passw_num, LONG8BYTE *s );
+    void generate_mark(int *watermark,int wsize, const char *passw_str, const char *passw_num, int coefficient_number,double* mark) ;
     void seed_initialization(LONG8BYTE *s);
     double pseudo_random_generator();
 

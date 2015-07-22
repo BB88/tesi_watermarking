@@ -139,11 +139,30 @@ int Watermarking::WatCod(unsigned char *ImageOut, int width, int height, const c
                          int *watermark, int wsize, float power, bool flagClipping, int tilesize, int *tiles,
                          int *ntiles)
 {
+    float   **imyout;			// immagine
+    double  **imdft;		// immagine della DFT
+    double  **imdftfase;	// immagine della fase della DFT
+
+    imyout = AllocImFloat(512, 512);
+    for (int i=0; i<512; i++)
+        for (int j=0; j<512; j++)
+            imyout[i][j] =
+                    static_cast<float>(ImageOut[i+j]);
+
+    FFT2D::dft2d(imyout, imdft, imdftfase, 512, 512);
+
 
     /*
      * FFT2D
+     *
+     * int coefficient_number;
+     *
      * zone alias coefficient selection
-     * generate_mark();
+     *
+        double * mark;
+        mark = new double[coefficient_number];
+
+       generate_mark();
      * watermark embedding : addmark + antizone
      * IFFT2D
      *
@@ -157,7 +176,7 @@ int Watermarking::WatCod(unsigned char *ImageOut, int width, int height, const c
 
 
 
-void Watermarking::generate_mark(int *watermark,int wsize, const char *passw_str, const char *passw_num, int coefficient_number)
+void Watermarking::generate_mark(int *watermark,int wsize, const char *passw_str, const char *passw_num, int marklen, double* mark)
 {
 /*
  * BCH coding
@@ -207,14 +226,38 @@ void Watermarking::generate_mark(int *watermark,int wsize, const char *passw_str
      */
 
     LONG8BYTE *seed;		// variabile per generare il marchio
-    double* mark;
+
 
     seed = new LONG8BYTE [4];
-    seed_generator(seed,passw_str,passw_num);
+    seed_generator(passw_str,passw_num,seed);
 
-    mark = new double [coefficient_number];
     seed_initialization(seed);
-    pseudo_random_generator();
+
+    for(int i = 0; i < marklen; i++)
+        mark[i] = 2.0 * ( pseudo_random_generator() - 0.5);
+
+    // mark modulation
+    ///////////////////////////
+
+    int n=0;
+    int L=marklen/length_BCH;
+    for (int k=length_BCH-1; k>=0; k--)
+    {
+        if (bch_wm[k]==0)
+        {
+            if (k==0)
+            {
+                for (int i=n; i<marklen;i++)
+                    mark[i]*=-1;
+            }
+            else
+                for (int i=n; i<n+L;i++)
+                    mark[i]*=-1;
+            n+=L;
+        }
+        else
+            n+=L;
+    }
 
 }
 
@@ -227,19 +270,19 @@ void Watermarking::generate_mark(int *watermark,int wsize, const char *passw_str
 	di numeri reali uniformemente distribuiti tra [0,1]
 */
 
-void Watermark::seed_initialization(LONG8BYTE *s)
+void Watermarking::seed_initialization(LONG8BYTE *s)
 {
     int j;
 
     for(j = 0; j < 4; j ++)
     {
-        semeiniziale[j] = s[j];
-        semecorrente[j] = semeiniziale[j];
+        init_seed[j] = s[j];
+        current_seed[j] = current_seed[j];
     }
 }
 
 
-double Watermark::pseudo_random_generator()
+double Watermarking::pseudo_random_generator()
 {
     LONG8BYTE 	s;
     double	u;
@@ -250,33 +293,33 @@ double Watermark::pseudo_random_generator()
 
     u = 0.0;
 
-    s = semecorrente[0];
+    s = current_seed[0];
     s = (s * a[0]) % m[0];
 
-    semecorrente[0] = s;
+    current_seed[0] = s;
     u = u + 4.65661287524579692e-10 * s;
     q = 4.65661287524579692e-10;
 
-    s = semecorrente[1];
+    s = current_seed[1];
     s = (s * a[1]) % m[1];
 
-    semecorrente[1] = s;
+    current_seed[1] = s;
     u = u - 4.65661310075985993e-10 * s;
     if(u < 0)
         u = u + 1.0;
 
-    s = semecorrente[2];
+    s = current_seed[2];
     s = (s * a[2]) % m[2];
 
-    semecorrente[2] = s;
+    current_seed[2] = s;
     u = u + 4.65661336096842131e-10 * s;
     if(u >= 1.0)
         u = u - 1.0;
 
-    s = semecorrente[3];
+    s = current_seed[3];
     s = (s * a[3]) % m[3];
 
-    semecorrente[3] = s;
+    current_seed[3] = s;
     u = u - 4.65661357780891134e-10 * s;
     if(u < 0)
         u = u + 1.0;
