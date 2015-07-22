@@ -634,10 +634,6 @@ int ImgWat::WatCod(unsigned char *ImageIn , int nrImageIn, int ncImageIn,
             imidft = AllocImFloat(dimvr, dimvc);
             img_map_flt = AllocImFloat(dimvr, dimvc);
 
-            for (i=0; i<dimvr; i++)
-                for (j=0; j<dimvc; j++)
-                    imyout[i][j] =
-                            static_cast<float>(imy[i+((ntx-1)*dtr)][j+((nty-1)*dtc)]);
 
             if (presenza==1)
             {

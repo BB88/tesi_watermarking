@@ -144,13 +144,37 @@ int Watermarking::WatCod(unsigned char *ImageOut, int width, int height, const c
     double  **imdftfase;	// immagine della fase della DFT
 
     imyout = AllocImFloat(512, 512);
+    imdft = AllocImDouble(512, 512);
+    imdftfase = AllocImDouble(512, 512);
+
+
+    int cont=0;
     for (int i=0; i<512; i++)
-        for (int j=0; j<512; j++)
+        for (int j=0; j<512; j++){
             imyout[i][j] =
-                    static_cast<float>(ImageOut[i+j]);
+                    static_cast<float>(ImageOut[cont]);
+            cont++;
+        }
+
+
 
     FFT2D::dft2d(imyout, imdft, imdftfase, 512, 512);
 
+
+    int coefficient_number;
+    double *coefficient_vector =NULL;
+
+//    if ((size>256)&&(size<=512))
+//    {
+//        dim2 = 512;		// Dimensione 512x512
+    int diag0 = 80;		// Diagonali..
+    int ndiag = 74;
+//    }
+
+    coefficient_vector = zones_to_watermark(imdft, 512, 512, diag0, ndiag, 0, &coefficient_number);
+
+    double * mark;
+    mark = new double[coefficient_number];
 
     /*
      * FFT2D
@@ -336,7 +360,7 @@ double Watermarking::pseudo_random_generator()
 	di numeri pseudo-casuali. Restituisce in uscita il puntatore i
 	al vettore con i 4 semi.
 */
-void Watermarking::seed_generator(LONG8BYTE *s,const char *passw_str, const char *passw_num )
+void Watermarking::seed_generator(const char *passw_str, const char *passw_num, LONG8BYTE *s )
 {
 
     int *string_coding, *number_coding;    // vettori che contengono la codifica dei caratteri
@@ -529,3 +553,201 @@ void Watermarking::seed_generator(LONG8BYTE *s,const char *passw_str, const char
     delete [] number_coding;
 }
 
+/*
+                               ZONE
+
+	Questa funzione raggruppa i coefficienti DFT (appartenenti
+	alle 16 parti in cui viene suddivisa la zona dell'immagine
+	che viene marchiata) nel vettore buff.
+*/
+
+double* Watermarking::zones_to_watermark(double **imdft, int height, int width, int diag0, int ndiag,
+                     int detect, int *coefficient_number)
+{
+    int       m,i,j,d1,nd,max;
+    int       elementi;
+    double	  *ptr0, *ptr1, *ptr2, *ptr3, *ptr4, *ptr5, *ptr6, *ptr7;
+    double	  *ptr8, *ptr9, *ptr10, *ptr11, *ptr12, *ptr13, *ptr14, *ptr15;
+    double	  *buff;
+
+    d1=diag0;
+    nd=ndiag;
+
+    // Calcolo dell' ordine dell' ultima diagonale
+
+    max=d1+(nd-1);
+
+
+    // Conteggio dei coeff. di ogni zona
+
+    for(i=0; i<MAXZONE; i++) cont[i]=0;
+
+    elementi = 0;
+
+    for(m=d1;m<=max;m++)
+    {
+        for(i=1;i<m;i++)
+        {
+            if(m>=d1 && m<(d1+(max-d1)/2))
+            {
+                if (i>0 && i<(m/4))
+                {
+                    cont[0]++;
+                    elementi++;
+                    cont[8]++;
+                    elementi++;
+                }
+                if (i>=(m/4) && i<(m/2))
+                {
+                    cont[1]++;
+                    elementi++;
+                    cont[9]++;
+                    elementi++;
+                }
+                if (i>=(m/2) && i<((3*m)/4))
+                {
+                    cont[2]++;
+                    elementi++;
+                    cont[10]++;
+                    elementi++;
+                }
+                if (i>=((3*m)/4) && i<m)
+                {
+                    cont[3]++;
+                    elementi++;
+                    cont[11]++;
+                    elementi++;
+                }
+            }
+
+            if(m>=(d1+(max-d1)/2) && m<=max)
+            {
+                if (i>0 && i<(m/4))
+                {
+                    cont[4]++;
+                    elementi++;
+                    cont[12]++;
+                    elementi++;
+                }
+                if (i>=(m/4) && i<(m/2))
+                {
+                    cont[5]++;
+                    elementi++;
+                    cont[13]++;
+                    elementi++;
+                }
+                if (i>=(m/2) && i<((3*m)/4))
+                {
+                    cont[6]++;
+                    elementi++;
+                    cont[14]++;
+                    elementi++;
+                }
+                if (i>=((3*m)/4) && i<m)
+                {
+                    cont[7]++;
+                    elementi++;
+                    cont[15]++;
+                    elementi++;
+                }
+            }
+        }
+    }
+
+
+    // Copio i coeff.DFT delle diverse zone su un unico vettore
+
+    buff = new double [elementi];
+
+    ptr0 = buff;
+    ptr1 = ptr0 + cont[0];
+    ptr2 = ptr1 + cont[1];
+    ptr3 = ptr2 + cont[2];
+    ptr4 = ptr3 + cont[3];
+    ptr5 = ptr4 + cont[4];
+    ptr6 = ptr5 + cont[5];
+    ptr7 = ptr6 + cont[6];
+    ptr8 = ptr7 + cont[7];
+    ptr9 = ptr8 + cont[8];
+    ptr10 = ptr9 + cont[9];
+    ptr11 = ptr10 + cont[10];
+    ptr12 = ptr11 + cont[11];
+    ptr13 = ptr12 + cont[12];
+    ptr14 = ptr13 + cont[13];
+    ptr15 = ptr14 + cont[14];
+
+    for(m=d1;m<=max;m++)
+    {
+        for(i=1;i<m;i++)
+        {
+            if(m>=d1 && m<(d1+(max-d1)/2))
+            {
+                if (i>0 && i<(m/4))
+                {
+                    j=m-i;
+                    *ptr0++ = imdft[i][j];
+                    j=height-1-m+i;
+                    *ptr8++ = imdft[i][j];
+                }
+                if (i>=(m/4) && i<(m/2))
+                {
+                    j=m-i;
+                    *ptr1++ = imdft[i][j];
+                    j=height-1-m+i;
+                    *ptr9++ = imdft[i][j];
+                }
+                if (i>=(m/2) && i<((3*m)/4))
+                {
+                    j=m-i;
+                    *ptr2++ = imdft[i][j];
+                    j=height-1-m+i;
+                    *ptr10++ = imdft[i][j];
+                }
+                if (i>=((3*m)/4) && i<m)
+                {
+                    j=m-i;
+                    *ptr3++ = imdft[i][j];
+                    j=height-1-m+i;
+                    *ptr11++ = imdft[i][j];
+                }
+            }
+
+            if(m>=(d1+(max-d1)/2) && m<=max)
+            {
+                if (i>0 && i<(m/4))
+                {
+                    j=m-i;
+                    *ptr4++ = imdft[i][j];
+                    j=height-1-m+i;
+                    *ptr12++ = imdft[i][j];
+                }
+                if (i>=(m/4) && i<(m/2))
+                {
+                    j=m-i;
+                    *ptr5++ = imdft[i][j];
+                    j=height-1-m+i;
+                    *ptr13++ = imdft[i][j];
+                }
+                if (i>=(m/2) && i<((3*m)/4))
+                {
+                    j=m-i;
+                    *ptr6++ = imdft[i][j];
+                    j=height-1-m+i;
+                    *ptr14++ = imdft[i][j];
+                }
+                if (i>=((3*m)/4) && i<m)
+                {
+                    j=m-i;
+                    *ptr7++ = imdft[i][j];
+                    j=height-1-m+i;
+                    *ptr15++ = imdft[i][j];
+                }
+            }
+        }
+    }
+
+
+    *coefficient_number = elementi;
+
+    return buff;
+}
