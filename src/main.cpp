@@ -169,8 +169,6 @@ int main() {
 
 
 
-
-
 /*
     cv::Mat occluded = imread("/home/miky/ClionProjects/tesi_watermarking/img/filtered_bw.png");
     cv::Mat occluded_gt = imread("/home/miky/Scrivania/tsukuba_occlusion_L_00001.png");
@@ -179,15 +177,30 @@ int main() {
 */
 
 
+    cv::Mat disparity = cv::imread("/home/bene/ClionProjects/tesi_watermarking/img/nkz_disp.png", CV_LOAD_IMAGE_GRAYSCALE );
+    cv::Mat new_disparity = cv::Mat::zeros(512, 512, CV_8UC1);
+    for (int j = 0; j < 480; j++)
+        for (int i = 0; i < 512; i++)
+           new_disparity.at<uchar>(j, i) = disparity.at<uchar>(j, i);
+     //   imshow("Disparity", disparity);
+     //   imshow("Squared disparity", squared_disparity);
+     //   waitKey(30000); // 300000 = 5 minutes
+    unsigned char * squared_disparity = new_disparity.data;
+  /*  algoritmo di watermarking   */
 
-    cv::Mat img = cv::imread("/home/miky/ClionProjects/tesi_watermarking/img/nkz_disp.png", CV_LOAD_IMAGE_GRAYSCALE );
+
+
+
+
+
+ /*   cv::Mat img = cv::imread("/home/miky/ClionProjects/tesi_watermarking/img/nkz_disp.png", CV_LOAD_IMAGE_GRAYSCALE );
     unsigned char * image = img.data;
 
     ImgWat iw;
     iw.setPassword("abcd","2545");
 
     bool flagOK = iw.insertWatermark(image,img.cols, img.rows);
-    cout<<flagOK;
+    cout<<flagOK;*/
 
     return 0;
 

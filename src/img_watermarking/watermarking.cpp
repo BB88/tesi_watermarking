@@ -336,7 +336,7 @@ double Watermarking::pseudo_random_generator()
 	di numeri pseudo-casuali. Restituisce in uscita il puntatore i
 	al vettore con i 4 semi.
 */
-void Watermarking::seed_generator(LONG8BYTE *s,const char *passw_str, const char *passw_num )
+void Watermarking::seed_generator(const char *passw_str, const char *passw_num, LONG8BYTE *s)
 {
 
     int *string_coding, *number_coding;    // vettori che contengono la codifica dei caratteri

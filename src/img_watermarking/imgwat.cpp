@@ -65,7 +65,7 @@ void ImgWat::setParameters(int *w, int bits, int size, float pwr, bool useClippi
     memcpy(watermark, w, sizeof(int) * bits);
 
     nbits = bits;
-    tilesize = size;
+    tilesize = size;   //grandezza di un tile 512
     power = pwr;
     clipping = useClipping;
     flagResyncAll = resynchronization;
@@ -467,8 +467,8 @@ int ImgWat::WatCod(unsigned char *ImageIn , int nrImageIn, int ncImageIn,
     if (size<=256)
     {
         dim2 = 256;		// Dimensione 256x256
-        d1 = 40;		// Diagonali..
-        nd = 40;
+        d1 = 40;		// Diagonali..  1^ diagonale
+        nd = 40;        // numero diagonali da marcare
     }
 
     if ((size>256)&&(size<=512))
@@ -522,10 +522,10 @@ int ImgWat::WatCod(unsigned char *ImageIn , int nrImageIn, int ncImageIn,
     // Allocazione della memoria
     /////////////////////////////
 
-    imy = AllocImFloat(nr, nc);
+    imy = AllocImFloat(nr, nc);        //   matrice luminanza
     imc2 = AllocImFloat(nr, nc);
     imc3 = AllocImFloat(nr, nc);
-    impicout = AllocImFloat(nr, nc);
+    impicout = AllocImFloat(nr, nc);       //immagine finale marchiata
 
 
 /********************************************************************/
@@ -592,10 +592,10 @@ int ImgWat::WatCod(unsigned char *ImageIn , int nrImageIn, int ncImageIn,
     }
     else
     {
-        for (i=1; i<=32; i++)    // Controllo marchiatura tile inesistente
+        for (i=1; i<=32; i++)    // Controllo marchiatura di almeno un tile inesistente
         {
-            if ((vettoretile[i]==1)&&(i>nt))
-                return 2;
+            if ((vettoretile[i]==1)&&(i>nt))    // in ingresso gli ho detto di marchiare il tile x, ma i tile totali sono y,
+                return 2;                       // con y < x
         }
     }
 
@@ -622,7 +622,7 @@ int ImgWat::WatCod(unsigned char *ImageIn , int nrImageIn, int ncImageIn,
                 for (j=0; j<dtc; j++)
                     if ((i+((ntx-1)*dtr)<nr)&&(j+((nty-1)*dtc)<nc))
                     {
-                        dimvr=i+1;
+                        dimvr=i+1;  // Dimensioni effettive dell'immagine
                         dimvc=j+1;
                     }
 
@@ -649,7 +649,7 @@ int ImgWat::WatCod(unsigned char *ImageIn , int nrImageIn, int ncImageIn,
                 syncro(imyout, im_M, dimvr, dimvc, periodo, ampiezza);
 
                 // Si calcola la maschera di sensibilita' del tile
-                DecimVarfloat(imyout, dimvr, dimvc, WINDOW, img_map_flt);
+                DecimVarfloat(imyout, dimvr, dimvc, WINDOW, img_map_flt);    //luminance mask building
 
                 // Si controllano le dimensioni dell'immagine per effettuare
                 // un'eventuale estensione e si calcola la
@@ -748,7 +748,7 @@ int ImgWat::WatCod(unsigned char *ImageIn , int nrImageIn, int ncImageIn,
                 L=marklen/length_BCH;
                 for (k=length_BCH-1; k>=0; k--)
                 {
-                    if (bit[k]==0)
+                    if (bit[k]==0)  // bit è il marchio che gli ho passato dall'inizio codificato BCh
                     {
                         if (k==0)
                         {
