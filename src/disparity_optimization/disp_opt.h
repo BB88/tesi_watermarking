@@ -16,8 +16,11 @@
 class Disp_opt {
 
 public:
+
     void disparity_filtering(cv::Mat kz_disp);
+
     void disparity_normalization(cv::Mat kz_disp);
+
     // to compare with the grouond truth occlusion map
     void occlusions_enhancing(cv::Mat f_disp);
 
