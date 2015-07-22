@@ -202,6 +202,8 @@ int main() {
     bool flagOK = iw.insertWatermark(image,img.cols, img.rows);
     cout<<flagOK;*/
 
+//    Watermarking::configPars pars = binocular_dense_stereo::ConfigLoader::get_instance().loadGeneralConfiguration(datasetType);
+
     return 0;
 
 

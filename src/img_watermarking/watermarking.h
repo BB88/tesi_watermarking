@@ -180,8 +180,9 @@ private:
     void generate_mark(int *watermark,int wsize, const char *passw_str, const char *passw_num, int coefficient_number,double* mark) ;
     void seed_initialization(LONG8BYTE *s);
     double pseudo_random_generator();
-    double* zones_to_watermark(double **imdft, int height, int width, int diag0, int ndiag,
-                               int detect, int *coefficient_number);
+    double* zones_to_watermark(double **imdft, int height, int width, int diag0, int ndiag, int detect, int *coefficient_number);
+    void addmark(double *buff, double *mark, int num_camp, double peso);
+    void antizone(double **imdft,int nr, int nc, int diag0, int ndiag, double *buff);
 
 
 };

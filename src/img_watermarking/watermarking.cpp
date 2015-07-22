@@ -176,6 +176,14 @@ int Watermarking::WatCod(unsigned char *ImageOut, int width, int height, const c
     double * mark;
     mark = new double[coefficient_number];
 
+    generate_mark(watermark,wsize,passw_str,passw_num,coefficient_number,mark);
+
+    addmark(coefficient_vector,mark,coefficient_number,power);
+
+    antizone(imdft, 512, 512, diag0, ndiag, coefficient_vector);
+
+//    FFT2D::idft2d(imdft, imdftfase, imidft, nre, nce);
+
     /*
      * FFT2D
      *
@@ -285,7 +293,164 @@ void Watermarking::generate_mark(int *watermark,int wsize, const char *passw_str
 
 }
 
+/*
+	addmark(..)
+	-----------
 
+    ADDMARK somma il marchio ai coefficienti dft
+
+	Argomenti:
+		dft: vettore di coeff. dft;
+		mark: vettore dei coefficienti del marchio;
+		num_camp:  lunghezza del marchio;
+		peso:      coefficiente alfa di peso.
+*/
+
+void Watermarking::addmark(double *buff, double *mark, int num_camp, double peso)
+{
+    int n;
+    int i;
+    double alfa;
+
+    n = num_camp;	// lunghezza del vettore
+    alfa = peso;	// peso con cui sommo il marchio
+
+    // aggiorna il valore di dft
+    for(i=0; i<n; i++)
+        buff[i] = buff[i]*(1.0 + alfa*mark[i]);
+}
+
+/*
+	antizone(..)
+	------------
+
+	Questa funzione rimette i coefficienti marchiati al loro posto
+*/
+
+
+void Watermarking::antizone(double **imdft,int nr, int nc, int diag0, int ndiag, double *buff)
+{
+    int m,i,j,d1,nd,max,c[MAXZONE];
+
+    d1=diag0;
+    nd=ndiag;
+
+    // Calcolo dell' ordine dell' ultima diagonale
+
+    max=d1+(nd-1);
+
+
+    // Costruzione del vett. contatore per il reinserimento dei coeff. marchiati
+
+    c[0]=0;
+    for(i=1; i<MAXZONE; i++)
+        c[i] = c[i-1]+cont[i-1];
+
+    // Reinserimento dei coeff. marchiati nella dft dell'immagine
+
+    for(m=d1;m<=max;m++)
+    {
+        for(i=1;i<m;i++)
+        {
+            if(m>=d1 && m<(d1+(max-d1)/2))
+            {
+                if (i>0 && i<(m/4))
+                {
+                    j=m-i;
+                    imdft[i][j]=buff[c[0]];
+                    imdft[nr-i][nc-j]=buff[c[0]];
+                    c[0]++;
+                    j=nc-1-m+i;
+                    imdft[i][j]=buff[c[8]];
+                    imdft[nr-i][nc-j]=buff[c[8]];
+                    c[8]++;
+                }
+                if (i>=(m/4) && i<(m/2))
+                {
+                    j=m-i;
+                    imdft[i][j]=buff[c[1]];
+                    imdft[nr-i][nc-j]=buff[c[1]];
+                    c[1]++;
+                    j=nc-1-m+i;
+                    imdft[i][j]=buff[c[9]];
+                    imdft[nr-i][nc-j]=buff[c[9]];
+                    c[9]++;
+                }
+                if (i>=(m/2) && i<((3*m)/4))
+                {
+                    j=m-i;
+                    imdft[i][j]=buff[c[2]];
+                    imdft[nr-i][nc-j]=buff[c[2]];
+                    c[2]++;
+                    j=nc-1-m+i;
+                    imdft[i][j]=buff[c[10]];
+                    imdft[nr-i][nc-j]=buff[c[10]];
+                    c[10]++;
+                }
+                if (i>=((3*m)/4) && i<m)
+                {
+                    j=m-i;
+                    imdft[i][j]=buff[c[3]];
+                    imdft[nr-i][nc-j]=buff[c[3]];
+                    c[3]++;
+                    j=nc-1-m+i;
+                    imdft[i][j]=buff[c[11]];
+                    imdft[nr-i][nc-j]=buff[c[11]];
+                    c[11]++;
+                }
+            }
+
+            if(m>=(d1+(max-d1)/2) && m<=max)
+            {
+                if (i>0 && i<(m/4))
+                {
+                    j=m-i;
+                    imdft[i][j]=buff[c[4]];
+                    imdft[nr-i][nc-j]=buff[c[4]];
+                    c[4]++;
+                    j=nc-1-m+i;
+                    imdft[i][j]=buff[c[12]];
+                    imdft[nr-i][nc-j]=buff[c[12]];
+                    c[12]++;
+                }
+                if (i>=(m/4) && i<(m/2))
+                {
+                    j=m-i;
+                    imdft[i][j]=buff[c[5]];
+                    imdft[nr-i][nc-j]=buff[c[5]];
+                    c[5]++;
+                    j=nc-1-m+i;
+                    imdft[i][j]=buff[c[13]];
+                    imdft[nr-i][nc-j]=buff[c[13]];
+                    c[13]++;
+                }
+                if (i>=(m/2) && i<((3*m)/4))
+                {
+                    j=m-i;
+                    imdft[i][j]=buff[c[6]];
+                    imdft[nr-i][nc-j]=buff[c[6]];
+                    c[6]++;
+                    j=nc-1-m+i;
+                    imdft[i][j]=buff[c[14]];
+                    imdft[nr-i][nc-j]=buff[c[14]];
+                    c[14]++;
+                }
+                if (i>=((3*m)/4) && i<m)
+                {
+                    j=m-i;
+                    imdft[i][j]=buff[c[7]];
+                    imdft[nr-i][nc-j]=buff[c[7]];
+                    c[7]++;
+                    j=nc-1-m+i;
+                    imdft[i][j]=buff[c[15]];
+                    imdft[nr-i][nc-j]=buff[c[15]];
+                    c[15]++;
+                }
+            }
+        }
+    }
+
+}
 /*
 	inizializzaza(..) e generatore()
 	--------------------------------
