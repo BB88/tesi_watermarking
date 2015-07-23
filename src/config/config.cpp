@@ -27,20 +27,7 @@ namespace Watermarking {
     };
 
 
-    configPars ConfigLoader::loadGeneralConfiguration(int dtype) {
-
-        std::string dataset;
-        switch (dtype) {
-            case TSUKUBA:
-                dataset = "tsukubaParams";
-                break;
-            case MIDDLEBURY:
-                dataset = "middleburyParams";
-                break;
-            case KITTI:
-                dataset = "kittiParams";
-                break;
-        }
+    configPars ConfigLoader::loadGeneralConfiguration() {
 
         configPars pars;
         try

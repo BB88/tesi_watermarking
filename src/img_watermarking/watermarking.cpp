@@ -37,13 +37,13 @@ const int Watermarking::WINDOW = 9;
 using namespace AllocIm;
 using namespace std;
 
-void Watermarking::setParameters(int *w, int wsize, int tsize, float pwr, bool useClipping,
+void Watermarking::setParameters(int *w, int watsize, int tsize, float pwr, bool useClipping,
                            bool resynchronization, int *tilelist, int tilelistsize)
 {
     // list of wsize (watermark)
-    memcpy(watermark, w, sizeof(int) * wsize);
+    memcpy(watermark, w, sizeof(int) * watsize);
 
-    wsize = wsize;
+    wsize = watsize;
     tilesize = tsize;
     power = pwr;
     clipping = useClipping;
@@ -64,8 +64,8 @@ unsigned char * Watermarking::insertWatermark(unsigned char *image, int w, int h
 {
     bool flagOk;
 
-    unsigned char *output_img = new unsigned char[w * h * 3];
-    memcpy(output_img, image, w * h * 3);
+    unsigned char *output_img = new unsigned char[w * h];
+    memcpy(output_img, image, w * h);
 
     const char *passw_str = passwstr.c_str();
     const char *passw_num = passwnum.c_str();
@@ -126,13 +126,13 @@ unsigned char * Watermarking::insertWatermark(unsigned char *image, int w, int h
         flagOk = false;
     }
 
-    if (flagOk)
+//    if (flagOk)
         return output_img;
-    else
-    {
-        delete [] output_img;
-        return NULL;
-    }
+//    else
+//    {
+//        delete [] output_img;
+//        return NULL;
+//    }
 }
 
 int Watermarking::WatCod(unsigned char *ImageOut, int width, int height, const char *passw_str, const char *passw_num,
@@ -143,6 +143,8 @@ int Watermarking::WatCod(unsigned char *ImageOut, int width, int height, const c
     double  **imdft;		// immagine della DFT
     double  **imdftfase;	// immagine della fase della DFT
     float   **imidft;		// immagine della IDFT
+
+
 
     imyout = AllocImFloat(512, 512);
     imdft = AllocImDouble(512, 512);
@@ -158,12 +160,24 @@ int Watermarking::WatCod(unsigned char *ImageOut, int width, int height, const c
         }
 
 
+//    DecimVarfloat(imyout, 512, 512, WINDOW, img_map_flt);
 
     FFT2D::dft2d(imyout, imdft, imdftfase, 512, 512);
 
+//    int mmedio = 0;
+//
+//    for(int i = 0; i < 512; i++)
+//        for(int j = 0; j < 512; j++)
+//            mmedio += (double)img_map_flt[i][j];
+//
+//    mmedio = mmedio/(double)(512 * 512);
+//    mmedio = 1.0 - mmedio;
+
+    // Si calcola il valore massimo di alfa
+//    double alfamax = power/mmedio;
 
     int coefficient_number;
-    double *coefficient_vector =NULL;
+    double *coefficient_vector = NULL;
 
 //    if ((size>256)&&(size<=512))
 //    {
@@ -177,7 +191,7 @@ int Watermarking::WatCod(unsigned char *ImageOut, int width, int height, const c
     double * mark;
     mark = new double[coefficient_number];
 
-    generate_mark(watermark,wsize,passw_str,passw_num,coefficient_number,mark);
+    generate_mark(watermark,wsize,passw_str,passw_num,coefficient_number, mark);
 
     addmark(coefficient_vector,mark,coefficient_number,power);
 
@@ -185,6 +199,13 @@ int Watermarking::WatCod(unsigned char *ImageOut, int width, int height, const c
 
 
     FFT2D::idft2d(imdft, imdftfase, imidft, 512, 512);
+
+    count=0;
+    for (int i=0; i<512; i++)
+        for (int j=0; j<512; j++){
+                    ImageOut[count] =  static_cast<unsigned char> (imidft[i][j]);
+            count++;
+        }
 
     /*
      * FFT2D
@@ -205,6 +226,13 @@ int Watermarking::WatCod(unsigned char *ImageOut, int width, int height, const c
      *
      */
 
+
+    AllocIm::FreeIm(imyout);
+    AllocIm::FreeIm(imdft);
+    AllocIm::FreeIm(imdftfase);
+    AllocIm::FreeIm(imidft);
+
+//    return 0;
 
 }
 
@@ -292,6 +320,8 @@ void Watermarking::generate_mark(int *watermark,int wsize, const char *passw_str
         else
             n+=L;
     }
+
+
 
 }
 
@@ -917,4 +947,585 @@ double* Watermarking::zones_to_watermark(double **imdft, int height, int width, 
     *coefficient_number = elementi;
 
     return buff;
+}
+
+
+
+
+//////////watermark estraction//////////////////
+
+
+bool Watermarking::extractWatermark(unsigned char *image, int w, int h)
+{
+    bool flagOk;
+
+    const char *passw_str = passwstr.c_str();
+    const char *passw_num = passwnum.c_str();
+
+    // image after resynchronization
+    unsigned char *imrsinc = new unsigned char[w * h * 3];
+
+    // resynchronization data for each tile... not used(!!)
+    // (see inside WatDec(.) for further details)
+    double *datiuscita = new double[32000];
+
+    int result = WatDec(image, h, w, passw_str, passw_num, watermark,
+                        tilesize, wsize, power, datiuscita, imrsinc, tiles, flagResyncAll);
+
+
+    if (result == -3)
+    {
+        // LOG
+        FILE *flog = fopen("watcod.log","wt");;
+        fprintf(flog, " - Invalid number of bits!\nValid watermarks have 32 or 64 bits.");
+
+//        // invalid 'nbit'
+//        QMessageBox::warning(NULL, tr(MSG_TITLE),
+//                             tr("Invalid number of bits!\nValid watermarks have 32 or 64 bits."));
+        flagOk = false;
+    }
+    else if (result == -2)
+    {
+        // LOG
+        FILE *flog = fopen("watcod.log","wt");;
+        fprintf(flog, " - Invalid size of the tile. Valid size are 256, 512 or 1024.");
+
+//        // invalid 'size'
+//        QMessageBox::warning(NULL, tr(MSG_TITLE),
+//                             tr("Invalid size of the tile. Valid size are 256, 512 or 1024."));
+        flagOk = false;
+    }
+    else if (result == -1)
+    {
+        // LOG
+        FILE *flog = fopen("watcod.log","wt");;
+        fprintf(flog, " - The watermark power is out-of-range.");
+
+//        // the watermark power is out-of-range
+//        QMessageBox::warning(NULL, tr(MSG_TITLE), tr("The watermark power is out-of-range."));
+//        flagOk = false;
+    }
+    else if (result == 0)
+    {
+        // Watermark bits successfully recovered!!
+        flagOk = true;
+    }
+    else if (result == 1)
+    {
+        // LOG
+        FILE *flog = fopen("watcod.log","wt");;
+        fprintf(flog, " - Image too big to be processed!.");
+//        // image too big!
+//        QMessageBox::warning(NULL, tr(MSG_TITLE), tr("Image too big to be processed!"));
+        flagOk = false;
+    }
+    else if (result == 2)
+    {
+        // LOG
+        FILE *flog = fopen("watcod.log","wt");;
+        fprintf(flog, " - Invalid BCH code!!.");
+//        // invalid BCH code (!!)
+//        QMessageBox::warning(NULL, tr(MSG_TITLE),
+//                             tr("Invalid BCH code!!"));
+        flagOk = false;
+    }
+    else if (result == 3)
+    {
+        // LOG
+        FILE *flog = fopen("watcod.log","wt");;
+        fprintf(flog, " - Watermark not found!!.");
+//        // watermark not found (!!)
+//        QMessageBox::warning(NULL, tr(MSG_TITLE),
+//                             tr("Watermark not found!!"));
+        flagOk = false;
+    }
+    else if (result == 4)
+    {
+        // LOG
+        FILE *flog = fopen("watcod.log","wt");;
+        fprintf(flog, " - Invalid tile!!.");
+//        // invalid watermark tile (!!)
+//        QMessageBox::warning(NULL, tr(MSG_TITLE),
+//                             tr("Invalid tile!!"));
+        flagOk = false;
+    }
+
+    return flagOk;
+}
+int Watermarking::WatDec(unsigned char *ImageIn, int nrImageIn, int ncImageIn,
+                   const char *campolett, const char *camponum,
+                   int *bit, int size, int nbit,
+                   float power, double *datiuscita, unsigned char *buffimrisinc,
+                   int *vettoretile, bool flagRisincTotale )
+{
+
+    int d1;					// prima diagonale marchiata
+    int nd;					// numero diagonali marchiate
+
+    double alpha;			// potenza media del marchio cercato
+
+    float **imy;			// matrice luminanza
+    float **imc2;			// matrice crominanza c2
+    float **imc3;			// matrice crominanza c3
+    float **imridim;		// matrice luminanza estesa
+    float **imrisinc;		// matrice luminanza risincronizzata
+    double **imdft;			// matrice contenente il modulo della DFT
+    double **imdftfase;		// matrice contenente la fase della DFT
+    double **im1dft;		// matrice contenente il modulo della DFT
+    double **im1dftfase;	// matrici contenente la fase della DFT
+    LONG8BYTE *seed;		// variabile per generare il marchio
+
+    // Added by CORMAX
+    int BitLetti[200];		// Max 200 bit da leggere
+    int dec=0;
+    long offset;
+
+
+    /******************MODIFICHE BY GIOVANNI FONDELLI********************/
+
+
+
+
+    float **imyout;			// Matrice di luminanza del tile
+    double **imdftout;		// Matrice dft del tile ridimensionato
+    double **imdftoutfase;
+
+
+    double **im1dftrisinc;	// Matrice contenente la somma dei moduli
+    // delle dft delle immagini risincronizzate
+    float **imrisincout;	// Matrice luminanza immagine risincronizzata
+
+
+
+
+    float **imrisinctotale;	// Matrice luminanza immagine totale risinc.
+
+    int nouniforme=0;		// Controllo ver vedere se ho una zona uniforme
+
+
+    /********************************************************************/
+
+
+
+
+
+    // Parametri per decodifica BCH del marchio
+    ///////////////////////////////////////////
+
+    if (nbit == 64)
+    {
+        m_BCH = 7;			// order of the Galois Field GF(2^m)
+        t_BCH = 10;			// Error correcting capability
+        length_BCH = 127;	// length of the BCH code
+    }
+
+    if (nbit == 32)
+    {
+        m_BCH = 6;			// order of the Galois Field GF(2^m)
+        t_BCH = 5;			// Error correcting capability
+        length_BCH = 59;	// length of the BCH code
+    }
+
+    if ((nbit != 64)&&(nbit != 32))
+    {
+        return -3;	// Incorrect 'nbit'
+    }
+
+//    FILE *flog;
+//    flog = fopen("watdec.log", "wt");
+//
+//    // LOG
+//    fprintf(flog, " - Image dimensions: nr=%d nc=%d\n\n",nr,nc);
+//    fprintf(flog, " - BCH: m=%d t=%d length=%d\n\n",m_BCH,t_BCH,length_BCH);
+
+    // Parametri di marchiatura
+    ////////////////////////////
+
+    // NOTA: Se si vuole modificare questi parametri � necessario
+    //       modificarli pure in WatDec(..), poich� devono essere
+    //		 identici
+
+    // Controllo sulle dimensioni del tile
+    //////////////////////////////////////
+
+
+
+    /********************************************************************/
+
+
+    alpha = power;	// Potenza del Marchio
+
+    if ((alpha < 0.1)||(alpha > 0.9))
+    {
+        return -1;		// Power out-of-range
+    }
+
+
+
+
+
+
+
+    // Allocazione della memoria
+    ////////////////////////////
+
+//    imy = AllocImFloat(nr, nc);
+//    imc2 = AllocImFloat(nr, nc);
+//    imc3 = AllocImFloat(nr, nc);
+//    imrisinc = AllocImFloat(nre, nce);
+//    imridim = AllocImFloat(nre, nce);
+//    imdft = AllocImDouble(nre, nce);
+//    imdftfase = AllocImDouble(nre, nce);
+//    imdftout = AllocImDouble(nre, nce);
+//    imdftoutfase = AllocImDouble(nre, nce);
+//    im1dft = AllocImDouble(nre, nce);
+//    im1dftfase = AllocImDouble(nre, nce);
+//    im1dftrisinc = AllocImDouble(nre, nce);
+//    imrisincout = AllocImFloat(nr, nc);
+
+
+
+
+
+
+    // Codifica delle stringhe-marchio per la generazione dei semi dei 4 lcg
+    ////////////////////////////////////////////////////////////////////////
+
+    seed = new LONG8BYTE [4];
+
+    seed_generator(campolett, camponum, seed);
+
+//    // LOG
+//    fprintf(flog, " - Seed: %f %f %f %f\n\n",
+//            (double)seed[0], (double)seed[1], (double)seed[2], (double)seed[3]);
+
+    // Inizio ciclo decodifica
+    //////////////////////////
+
+
+
+    imyout = AllocImFloat(512, 512);
+
+
+
+
+    FFT2D::dft2d(imridim, imdftout, imdftoutfase, 512, 512);
+
+
+
+    decoale(imdftout, 512, 512, d1, nd, seed, alpha,BitLetti, length_BCH);
+
+    for (int i=0; i<200; i++)
+        nouniforme += BitLetti[i];
+
+
+
+    if ((BCH::decode_bch(m_BCH,length_BCH,t_BCH,BitLetti)) &&
+        (nouniforme>0))
+    {
+        // THE WATERMARK HAS BEEN DETECTED
+        FreeIm(imy);
+        FreeIm(imc2);
+        FreeIm(imc3);
+        FreeIm(imyout);
+        FreeIm(imrisinc);
+        FreeIm(imridim);
+        FreeIm(imdft);
+        FreeIm(imdftfase);
+        FreeIm(imdftout);
+        FreeIm(imdftoutfase);
+        FreeIm(im1dft);
+        FreeIm(im1dftfase);
+        FreeIm(im1dftrisinc);
+
+
+        // NOTA: I bit decodificati vengono salvati alla fine
+        //		 di BitLetti, ossia a partire dalla posizione
+        //		 (BCH length)-(information message)
+
+        int offs;
+        offs = length_BCH - nbit;
+        for (int i=0; i<nbit; i++)
+            bit[i] = BitLetti[i+offs];
+
+
+//                    // LOG
+//                    fclose(flog);
+
+        return 0;	// OK! Marchio rivelato
+    }
+
+    FreeIm(imyout);
+
+}
+
+/*
+	decoale(..)
+	-----------
+
+	Rivela il marchio in un'immagine di dimensioni potenze d
+	del 2 utilizzando il criterio di Neyman-Pearson; si calcola il
+	rapporto di verosimiglianza logaritmico :
+
+		L(x)=f(x|m*)/f(x|0) e la soglia.
+
+	Beta e alfa sono stimati a posteriori sull'immagine analizzata.
+
+	La funzione ritorna L(x) - la soglia
+*/
+
+void Watermarking::decoale(double **imr, int nre, int nce, int d1, int nd,
+                     LONG8BYTE *seed, double alpha,int *bit, int nbit)
+{
+    int i,k,n;
+    int	tot;
+    int marklen;			// lunghezza del marchio
+    double  *mark;			// vettore marchio
+    double  aweib[MAXZONE];
+    double  bweib[MAXZONE];	// vettori alfa e beta per ogni zona
+    double  v1,v2;			// var. di appoggio per il
+    //   calcolo della soglia
+    double  *aw,*bw;
+    double	soma,somb;
+    int L;
+
+    double *appbuff = NULL;
+
+    // La funzione zone raggruppa i coeff. marchiati in MAX zone
+    // e restituisce la lunghezza del marchio (ossia il numero
+    // di coefficienti selezionati)
+
+    appbuff = zones_to_watermark(imr, nre, nce, d1, nd, 1, &marklen);
+
+    // Studio della statistica delle MAX zone (si calcolano i beta
+    // e gli alfa dell'immagine con il criterio della Massima Verosimiglianza)
+
+    tot = 0;
+
+    for(k=0; k<MAXZONE; k++)
+    {
+        // studio della statistica della zona i-esima
+
+        mlfunc(appbuff,cont[k],NIT);
+
+        appbuff += cont[k];
+        tot += cont[k];
+
+        aweib[k]=z[2];
+        bweib[k]=z[1];
+    }
+
+
+    // Si genera il marchio seed  e si calcola L(X) e soglia
+
+    mark = new double [marklen];
+    aw = new double [marklen];
+    bw = new double [marklen];
+
+    appbuff -= tot;
+
+    n=0;
+    for (k=0; k<MAXZONE; k++)
+    {
+        for (i=n;i<n+cont[k];i++)
+        {
+            aw[i]=aweib[k];
+            if (aw[i]==0) aw[i]=0.000001;
+            bw[i]=bweib[k];
+        }
+
+        n+=cont[k];
+    }
+
+    seed_initialization(seed);
+
+    for(i = 0; i < marklen; i++)
+        mark[i] = 2.0 * (pseudo_random_generator() - 0.5);
+
+    // Calcolo della soglia del rivelatore
+
+    /*
+        ...
+
+        // ADDED BY CORMAX
+        //
+        // LA SOGLIA NON SERVE, ESSENDO UNA MARCHIATURA A LETTURA!!
+
+    */
+
+    // DECODIFICA (LETTURA)
+    ////////////////////////
+
+    n=0;
+    L=marklen/nbit;
+    soma=somb=0.0;
+    for (k=nbit-1;k>0;k--)
+    {
+        v1=v2=0;
+
+        for (i=n;i<n+L;i++)
+        {
+            v1-=pow((appbuff[i]/(aw[i]*(1.0+alpha*mark[i]))),bw[i]);
+            v2-=pow((appbuff[i]/(aw[i]*(1.0-alpha*mark[i]))),bw[i]);
+        }
+
+        if (v1>v2)
+        {
+            bit[k]=1;
+        }
+        else bit[k]=0;
+
+        n+=L;
+    }
+
+    // Ultimo bit
+    v1=v2=0;
+    for (i=n;i<marklen;i++)
+    {
+        v1-=pow((appbuff[i]/(aw[i]*(1.0+alpha*mark[i]))),bw[i]);
+        v2-=pow((appbuff[i]/(aw[i]*(1.0-alpha*mark[i]))),bw[i]);
+    }
+
+    if (v1>v2)
+    {
+        bit[k]=1;
+    }
+    else bit[k]=0;
+
+    delete [] mark;
+    delete [] aw;
+    delete [] bw;
+
+    if (appbuff != NULL)
+        delete [] appbuff;
+}
+
+
+/*
+	mlfunc(..)
+	----------
+
+	Risolve numericamente l'equazione del criterio ML
+	per calcolare i parametri della p.d.f. Weibull
+*/
+
+void Watermarking::mlfunc(double *buff,int nrfile,int niteraz)
+{
+    int i,k,nr,ny;
+    double a,b,c,beta0,beta1,beta,dbeta,prec,alfa,media,var,pu;
+    double *y;
+
+
+    nr=nrfile;
+    beta0=0.7;
+    beta1=2.3;
+    ny=niteraz;
+
+    dbeta=beta1-beta0;
+    prec=dbeta/ny;
+
+    y = new double [ny];
+
+    // Calcolo elementi della matrice di uscita
+
+    for(k=0;k<ny;k++)
+    {
+        a=b=c=0.0;
+        beta=beta0+prec*k;
+
+        for(i=0;i<nr;i++)
+        {
+            a+=pow(buff[i],beta);
+            b+=pow(buff[i],beta)*log(buff[i]);
+            if (buff[i] == 0.0)
+            {
+                c+= -23.03;
+            }
+            else c+=log(buff[i]);
+        }
+
+        if(a<0.000001)
+        {
+            a=0.000001;
+        }
+
+        y[k]=c/nr-b/a+1.0/beta;
+    }
+
+
+    // Calcolo dei valori minimi e dei corrispondenti alfa e beta
+    // per ogni riga
+
+    k=0;
+    z[0]=fabs(y[k]);
+    z[1]=beta0;
+    for(k=1;k<ny;k++)
+    {
+        if(fabs(y[k])<z[0])
+        {
+            z[0]=fabs(y[k]);
+            z[1]=beta0+prec*k;
+        }
+    }
+    alfa=0.0;
+    for(i=0;i<nr;i++)
+        alfa+=pow((buff[i]),(z[1]));
+    alfa=alfa/(double)nr;
+    z[2]=pow(alfa,(1.0/(z[1])));
+
+
+    /* OCCHIO!! BISOGNA INFORMARSI SU QUESTA FUNZIONE Gamma(..)
+
+        ANCHE SE z[3] e z[4] NON VENGONO MAI UTILIZZATI!!!!
+
+    */
+
+    pu = dgamma(1.0+1.0/z[1]);
+
+    media=z[2]*pu;
+
+    pu = dgamma(1.0+2.0/z[1]);
+
+    var=pow(z[2],2.0)*pu-pow(media,2.0);
+    z[3]=media;
+    z[4]=var;
+
+    delete [] y;
+}
+/*
+	dgamma(..)
+	----------
+
+	Gamma function in double precision
+
+	Added by CORMAX,	14/MAR/2001
+
+*/
+
+double Watermarking::dgamma(double x)
+{
+    int k, n;
+    double w, y;
+
+    n = x < 1.5 ? -((int) (2.5 - x)) : (int) (x - 1.5);
+    w = x - (n + 2);
+    y = ((((((((((((-1.99542863674e-7 * w + 1.337767384067e-6) * w -
+                   2.591225267689e-6) * w - 1.7545539395205e-5) * w +
+                 1.45596568617526e-4) * w - 3.60837876648255e-4) * w -
+               8.04329819255744e-4) * w + 0.008023273027855346) * w -
+             0.017645244547851414) * w - 0.024552490005641278) * w +
+           0.19109110138763841) * w - 0.233093736421782878) * w -
+         0.422784335098466784) * w + 0.99999999999999999;
+    if (n > 0) {
+        w = x - 1;
+        for (k = 2; k <= n; k++) {
+            w *= x - k;
+        }
+    } else {
+        w = 1;
+        for (k = 0; k > n; k--) {
+            y *= x - k;
+        }
+    }
+    return w / y;
 }

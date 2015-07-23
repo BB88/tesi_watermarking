@@ -18,11 +18,15 @@
 #include <fstream>
 
 //includes watermarking
-#include "./img_watermarking/imgwat.h"
+#include "./img_watermarking/watermarking.h"
+//libconfig
+#include <libconfig.h++>
 
 using namespace std;
 using namespace cv;
 using namespace cv::datasets;
+using namespace libconfig;
+
 
 int main() {
 
@@ -72,18 +76,18 @@ int main() {
 
     /*STEP 4: RECONSTRUCT RIGHT VIEW*/
 
-/*
-    cv::Mat left = imread("/home/bene/ClionProjects/tesi_watermarking//img/l.png",
+
+    cv::Mat left = imread("/home/miky/ClionProjects/tesi_watermarking//img/l.png",
                           CV_LOAD_IMAGE_COLOR);
     // our disp
-    cv::Mat disp = imread("/home/bene/ClionProjects/tesi_watermarking/img/nkz_disp.png", CV_LOAD_IMAGE_GRAYSCALE);
+    cv::Mat disp = imread("/home/miky/ClionProjects/tesi_watermarking/img/nkz_disp.png", CV_LOAD_IMAGE_GRAYSCALE);
     // ground truth
     // cv::Mat disp = imread("/home/bene/ClionProjects/tesi_watermarking/dataset/NTSD-200/disparity_maps/left/frame_1.png",
     //                      CV_LOAD_IMAGE_GRAYSCALE);
 
     Right_view rv;
     rv.right_reconstruction(left, disp);
-*/
+
 
 
     /*ENHANCING OCCLUSIONS*/
@@ -177,20 +181,56 @@ int main() {
 */
 
 
-    cv::Mat disparity = cv::imread("/home/bene/ClionProjects/tesi_watermarking/img/nkz_disp.png", CV_LOAD_IMAGE_GRAYSCALE );
+    cv::Mat disparity = cv::imread("/home/miky/ClionProjects/tesi_watermarking/img/nkz_disp.png", CV_LOAD_IMAGE_GRAYSCALE );
     cv::Mat new_disparity = cv::Mat::zeros(512, 512, CV_8UC1);
     for (int j = 0; j < 480; j++)
-        for (int i = 0; i < 512; i++)
-           new_disparity.at<uchar>(j, i) = disparity.at<uchar>(j, i);
+        for (int i = 0; i < 512; i++){
+            new_disparity.at<uchar>(j, i) = disparity.at<uchar>(j, i);}
      //   imshow("Disparity", disparity);
      //   imshow("Squared disparity", squared_disparity);
      //   waitKey(30000); // 300000 = 5 minutes
     unsigned char * squared_disparity = new_disparity.data;
-  /*  algoritmo di watermarking   */
 
 
+   /* algoritmo di watermarking  */
+
+    unsigned char *output_img = new unsigned char[512 * 512 ];
+//    memcpy(output_img, squared_disparity,512*512);
+
+    Watermarking image_watermarking;
+    int watermark[64];
+    for (int i = 0; i < 64; i++){
+        int b = rand() % 2;
+        watermark[i]=b;
+    }
 
 
+    image_watermarking.setParameters(watermark,64,0,0.1,0,0,NULL,0);
+    image_watermarking.setPassword("ciao","0453");
+    output_img = image_watermarking.insertWatermark(squared_disparity,512,512);
+
+    cv::Mat new_disparity2 = disparity ;
+    int count=0;
+    for (int j = 0; j < 480; j++)
+        for (int i = 0; i < 512; i++){
+            new_disparity2.at<uchar>(j, i) = output_img[count];
+            count ++;
+        }
+//    imshow("newdisp",new_disparity2);
+//    waitKey(0);
+
+
+    rv.right_reconstruction(left, new_disparity2);
+
+//    int c=0;
+//    int diversi=0;
+//    for (int i=0;i<512;i++)
+//        for(int j=0;j<512;j++) {
+//            if (output_img[c] != squared_disparity[c])
+//                diversi++;
+//            c++;
+//        }
+//    cout<<diversi;
 
 
  /*   cv::Mat img = cv::imread("/home/miky/ClionProjects/tesi_watermarking/img/nkz_disp.png", CV_LOAD_IMAGE_GRAYSCALE );

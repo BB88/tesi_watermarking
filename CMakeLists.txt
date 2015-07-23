@@ -16,6 +16,14 @@ set(SOURCE_FILES
     src/dataset/msm_middlebury.cpp
     src/dataset/tsukuba_dataset.cpp
     src/dataset/util.cpp
+    src/img_watermarking/fft2d.cpp
+    src/img_watermarking/watermarking.cpp
+    src/img_watermarking/allocim.cpp
+    src/img_watermarking/bch.cpp
+    src/img_watermarking/fft2d.h
+    src/img_watermarking/watermarking.h
+    src/img_watermarking/bch.h
+    src/img_watermarking/allocim.h
 
 )
 
