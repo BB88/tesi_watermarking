@@ -1,66 +1,61 @@
-#ifndef BINOCULAR_DENSE_STEREO_CONFIG_H
-#define BINOCULAR_DENSE_STEREO_CONFIG_H
+#ifndef TESI_WATERMARKING_CONFIG_H
+#define TESI_WATERMARKING_CONFIG_H
+
 
 #include <libconfig.h++>
 #include <iostream>
 
-#include "../registration/registration.hpp"
+using namespace std;
 
-namespace binocular_dense_stereo {
+namespace Watermarking_config {
 
-    struct middleburyPair {
-        int left_image = 0;
-        int right_image = 0;
+    struct general_params{
+        std::string passwstr;
+        std::string passwnum;
+        bool masking;
     };
 
-    struct configPars {
-
-        bool load_clouds = true;
-        bool incremental = false;
-        bool save_generated_clouds = false;
-        bool show_single_cloud = false;
-        bool show_sum_cloud = false;
-        int load_n_clouds = 20;
-        int first_frame = 0;
-        int last_frame = 200;
-        int step = 10;
-        int reg_cloud_1 = 0;
-        int reg_cloud_2 = 1;
+    struct set_parameters_params {
+        int wsize ;
+        int tilesize;
+        float power;
+        bool clipping;
+        bool flagResyncAll;
+        int tilelistsize;
     };
-
-    enum datasetType { TSUKUBA, MIDDLEBURY, KITTI};
 
     class ConfigLoader {
 
-        private:
+    private:
 
-            ConfigLoader();
-            virtual ~ConfigLoader(){}
+        ConfigLoader();
+        virtual ~ConfigLoader(){}
 
     private:
         libconfig::Config cfg;
 
-        public:
+    public:
 
-            static ConfigLoader& get_instance() {
-                // l'unica istanza della classe viene creata alla prima chiamata di get_instance()
-                // e verrà distrutta solo all'uscita dal programma
-                static ConfigLoader instance;
-                return instance;
-            }
+        static ConfigLoader& get_instance() {
+            // l'unica istanza della classe viene creata alla prima chiamata di get_instance()
+            // e verrà distrutta solo all'uscita dal programma
+            static ConfigLoader instance;
+            return instance;
+        }
 
-            configPars loadGeneralConfiguration(int dtype);
-            registrationParams loadRegistrationParams(int dtype);
-            std::vector<middleburyPair> loadMiddleburyAssociations();
+        set_parameters_params loadSetParametersConfiguration();
+        general_params loadGeneralParamsConfiguration();
+
 
         // C++ 11
-            // =======
-            // We can use the better technique of deleting the methods
-            // we don't want.
-            ConfigLoader(ConfigLoader const&)               = delete;
-            void operator=(ConfigLoader const&)  = delete;
+        // =======
+        // We can use the better technique of deleting the methods
+        // we don't want.
+        ConfigLoader(ConfigLoader const&)               = delete;
+        void operator=(ConfigLoader const&)  = delete;
     };
 
 
+
 }
-#endif
+#endif //TESI_WATERMARKING_CONFIG_H

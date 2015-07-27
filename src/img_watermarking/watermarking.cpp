@@ -143,13 +143,17 @@ int Watermarking::WatCod(unsigned char *ImageOut, int width, int height, const c
     double  **imdft;		// immagine della DFT
     double  **imdftfase;	// immagine della fase della DFT
     float   **imidft;		// immagine della IDFT
-
+    float   **img_map_flt;	// immagine maschera
+    float   **impic;		// immagine finale marchiata
 
 
     imyout = AllocImFloat(512, 512);
     imdft = AllocImDouble(512, 512);
     imdftfase = AllocImDouble(512, 512);
     imidft = AllocImFloat(512, 512);
+    img_map_flt = AllocImFloat(512, 512);
+    impic = AllocImFloat(512, 512);
+
 
     int count=0;
     for (int i=0; i<512; i++)
@@ -160,21 +164,54 @@ int Watermarking::WatCod(unsigned char *ImageOut, int width, int height, const c
         }
 
 
-//    DecimVarfloat(imyout, 512, 512, WINDOW, img_map_flt);
+//    unsigned char **imr;	// matrici delle componenti RGB
+//    unsigned char **img;
+//    unsigned char **imb;
+//    float **imy;
+//    float **imc2;			// matrice di crominanza c2
+//    float **imc3;
+//
+//
+//    imy = AllocImFloat(512, 512);
+//    imc2 = AllocImFloat(512, 512);
+//    imc3 = AllocImFloat(512, 512);
+//    imr = AllocImByte(512, 512);
+//    img = AllocImByte(512, 512);
+//    imb = AllocImByte(512, 512);
+
+//    int offset = 0;
+//    for (int i=0; i<512; i++)
+//        for (int j=0; j<512; j++)
+//        {
+//            imr[i][j] = ImageOut[offset];offset++;
+//            img[i][j] = ImageOut[offset];offset++;
+//            imb[i][j] = ImageOut[offset];offset++;
+//        }
+
+    // Pre-elaborazioni, Estensioni, Sincronizzazione, FFT, etc
+    ////////////////////////////////////////////////////////////
+
+    // Si calcolano le componenti di luminanza e crominanza dell'immagine
+//    rgb_to_crom(imr, img, imb, 512, 512, 1, imy, imc2, imc3);
+
+
+
+
+    DecimVarfloat(imyout, 512, 512, WINDOW, img_map_flt); //per la maschera
 
     FFT2D::dft2d(imyout, imdft, imdftfase, 512, 512);
 
-//    int mmedio = 0;
-//
-//    for(int i = 0; i < 512; i++)
-//        for(int j = 0; j < 512; j++)
-//            mmedio += (double)img_map_flt[i][j];
-//
-//    mmedio = mmedio/(double)(512 * 512);
-//    mmedio = 1.0 - mmedio;
+    int mmedio = 0;
 
-    // Si calcola il valore massimo di alfa
-//    double alfamax = power/mmedio;
+    for(int i = 0; i < 512; i++)
+        for(int j = 0; j < 512; j++)
+            mmedio += (double)img_map_flt[i][j];
+
+    mmedio = mmedio/(double)(512 * 512);
+    mmedio = 1.0 - mmedio;
+
+//     Si calcola il valore massimo di alfa
+    double alfamax = power/mmedio;
 
     int coefficient_number;
     double *coefficient_vector = NULL;
@@ -193,17 +230,25 @@ int Watermarking::WatCod(unsigned char *ImageOut, int width, int height, const c
 
     generate_mark(watermark,wsize,passw_str,passw_num,coefficient_number, mark);
 
-    addmark(coefficient_vector,mark,coefficient_number,power);
+    addmark(coefficient_vector,mark,coefficient_number,alfamax);
 
     antizone(imdft, 512, 512, diag0, ndiag, coefficient_vector);
 
 
     FFT2D::idft2d(imdft, imdftfase, imidft, 512, 512);
 
+    for(int i=0;i<512;i++)
+        for(int j=0;j<512;j++)
+            img_map_flt[i][j] = 255.0f*img_map_flt[i][j];
+
+    PicRoutfloat(imyout, 512, 512, imidft, img_map_flt, impic);
+
     count=0;
     for (int i=0; i<512; i++)
         for (int j=0; j<512; j++){
-                    ImageOut[count] =  static_cast<unsigned char> (imidft[i][j]);
+
+                    ImageOut[count] =  static_cast<unsigned char> (impic[i][j]); //imidft per quella senza maschera, impic per quella con la maschera
+
             count++;
         }
 
@@ -547,7 +592,179 @@ double Watermarking::pseudo_random_generator()
     return u;
 }
 
+void Watermarking::DecimVarfloat(float **imc1, int nr, int nc,
+                           int win, float **img_map_flt)
+{
+    int         i,j,r,c,x,y;
+    int         win2,ja,jb;
+    double      add_med, sottr_med, add_vqm, sottr_vqm, var_max, wintot,mmedio;
+    double      **vlocal, **vnorm, **mlocal, **vqm;
+    double      aux;
 
+
+    vlocal = AllocImDouble(nr, nc);  // matrice delle varianze locali
+    vnorm = AllocImDouble(nr, nc);  // matrice delle varianze locali normalizzate
+    mlocal= AllocImDouble(nr, nc);  // matrice delle medie locali
+    vqm = AllocImDouble(nr, nc);  // matrice dei vqm locali
+
+
+    // Calcolo la matrice delle varianze locali dell'immagine decimata
+    win2 = win/2;
+    wintot = win*win;
+
+    for(r=0;r<nr;r++)
+        for(c=0;c<nc;c++)
+        {
+            mlocal[r][c] = 0.0;	// Inizializzazione
+            vqm[r][c] = 0.0;
+            vlocal[r][c] = 0.0;
+        }
+
+    // Ciclo per pixel [r][0]
+    for(r=0;r<nr;r++)
+    {
+        for(x = -win2;x <= win2;x++)
+        {
+            i=r+x;
+            // Rendo l'imm simmetrica quando la finestra
+            if(i>=0 && i<nr) 	// esce dai bordi
+            {
+
+            }
+            else
+            {
+                i=i<0 ? -i : (2*r-i);
+            }
+            for(y = -win2;y <= win2;y++)
+            {
+                j=y;
+                j=j>0 ? j : -j;
+                mlocal[r][0] += (double)imc1[i][j]/wintot;
+                vqm[r][0] += (double)(imc1[i][j]*imc1[i][j])/wintot;
+            }
+        }
+    }
+
+    // Ciclo per tutti gli altri pixel
+    for(r=0;r<nr;r++)
+    {
+        for(c=1;c<nc;c++)
+        {
+            add_med = sottr_med = add_vqm = sottr_vqm = 0.0;
+
+            jb=c-win2-1;
+            // jb: j Before, indice colonna pixel da sottrarre
+            jb=jb>0 ? jb : -jb;
+            ja=c+win2;
+            // ja: j After, indice colonna pixel da aggiungere
+            ja=ja<nc ? ja : (2*c-ja);
+
+            for(x = -win2;x <= win2;x++)
+            {
+                i=r+x;
+                // Rendo l'immagine simmetrica quando la finestra
+                if(i>=0 && i<nr)	// esce dai bordi
+                {
+
+                }
+                else
+                {
+                    i=i<0 ? -i : (2*r-i);
+                }
+                add_med += (double)imc1[i][ja];
+                sottr_med += (double)imc1[i][jb];
+                add_vqm += (double)(imc1[i][ja]*imc1[i][ja]);
+                sottr_vqm += (double)(imc1[i][jb]*imc1[i][jb]);
+            }
+            mlocal[r][c] = mlocal[r][c-1] + add_med/wintot - sottr_med/wintot;
+            vqm[r][c] = vqm[r][c-1] + add_vqm/wintot  - sottr_vqm/wintot;
+        }
+    }
+
+    //  Cerco il max. delle varianze per normalizzare rispetto a questo
+    var_max	 = 0.0;
+    for(r=0;r<nr;r++)
+        for(c=0;c<nc;c++)
+        {
+            aux = ((double)vqm[r][c]-(double)mlocal[r][c]*(double)mlocal[r][c]);
+            if(aux < 0.0)
+                aux = 0.0;
+
+            vlocal[r][c] = (double)sqrt(aux);
+
+
+            var_max = vlocal[r][c] > var_max ? vlocal[r][c] : var_max;
+        }
+
+    for(r=0;r<nr;r++)
+        for(c=0;c<nc;c++)
+        {
+            vnorm[r][c] = vlocal[r][c]/var_max*2.0;
+            if (vnorm[r][c] < 0.1)
+                vnorm[r][c]=0.1;
+            else if (vnorm[r][c] > 1.0)
+                vnorm[r][c]=1.0;
+
+        }
+
+
+    // modifico l'immagine finale secondo i valori di vnorm[r][c]
+    mmedio=0;
+    for(r=0;r<nr;r++)
+    {
+        for(c=0;c<nc;c++)
+        {
+            vnorm[r][c] = 1.0-vnorm[r][c];
+            img_map_flt[r][c] = (float)vnorm[r][c];
+        }
+    }
+
+    // Libero aree di memoria
+    FreeIm(vlocal);
+    FreeIm(vqm);
+    FreeIm(mlocal);
+    FreeIm(vnorm);
+}
+
+/*
+	PicRoutfloat(..)
+	----------------
+
+	Effettua la pesatura tra l'immagine originale (in float)
+	e l'immagine marchiata(in float) in base ai valori della
+	maschera di sensibilita'.
+
+	Restituisce l'immagine marchiata finale (unsigned char)
+
+	Argomenti:
+
+		img_orig:    nome dell'immagine originale;
+		nr:          numero righe dell'immagine;
+		nc:          numero colonne dell'immagine;
+		img_mark:    nome dell'immagine marchiata;
+		nomeimgmap:  nome dell'immagine mappa;
+		nomeimgout:  nome dell'immagine marchiata finale;
+*/
+
+void Watermarking::PicRoutfloat(float **img_orig, int nr, int nc,
+                          float **img_mark, float **img_map_flt, float **impic)
+{
+    int r, c;
+    double max;
+
+    // cerco il valore massimo della mappa
+
+    max = 255.0;
+
+    // Adesso modifico l'immagine finale secondo i valori di
+    // mappatura
+
+    for(r=0;r<nr;r++)
+        for(c=0;c<nc;c++)
+            impic[r][c] = (float)((double)img_orig[r][c]*((double)img_map_flt[r][c]/max) +
+                                  (double)img_mark[r][c]*(max -(double)img_map_flt[r][c])/max);
+
+}
 /*
 	codmarchio(..)
 	-------------
@@ -1529,3 +1746,127 @@ double Watermarking::dgamma(double x)
     }
     return w / y;
 }
+
+/*
+	rgb_to_crom (..)
+	----------------
+
+	Converte un'immagine in formato r, g, b, in un'immagine in
+	formato c1, c2, c3 dove c1 rappresenta la luminanza dell'immagine
+	(calcolata come semplice somma tra le componenti r, g, b) e c2 e c3
+	sono le componenti di crominanza).
+
+	Se il flag fornito in ingresso e' 1 si ha la trasformazione
+	rgb->crom, se e' -1 si ha crom->rgb.
+
+	La trasformazione rgb->crom da' in uscita tre file (*.flt) di float
+	(evitando cosi' la propagazione di errori di arrotondamento ad unsigned char)
+*/
+
+void Watermarking::rgb_to_crom(unsigned char **imr, unsigned char **img,
+                         unsigned char **imb, int nr, int nc, int flag,
+                         float ** imc1, float **imc2, float ** imc3)
+{
+    int i,j;
+    double red, green, blue;
+    double c1, c2, c3;
+
+
+    if(flag == 1)   /* rgb -> crom */
+    {
+
+        for(i = 0; i< nr; i++)
+        {
+            for(j = 0; j < nc; j++)
+            {
+                red = (double)imr[i][j];
+                green = (double)img[i][j];
+                blue = (double)imb[i][j];
+
+                c1 = red + green + blue;
+
+                if(c1 == 0)
+                {
+                    c2 = 0;
+                    c3 = 0;
+                }
+                else
+                {
+                    c2 = blue / c1;
+                    c3 = (2.0 * red + blue)/(2.0 * c1);
+                    c1 /= 3.0;
+                    c2 = c2 * 255.0;
+                    c3 = c3 * 255.0;
+                }
+
+                if(c1 > 255.0)
+                    c1 = 255.0;
+                else if(c1 < 0.0)
+                    c1 = 0.0;
+
+                if(c2 > 255.0)
+                    c2 = 255.0;
+                else if(c2 < 0.0)
+                    c2 = 0.0;
+
+                if(c3 > 255.0)
+                    c3 = 255.0;
+                else if(c3 < 0.0)
+                    c3 = 0.0;
+
+                imc1[i][j] = (float)c1;
+                imc2[i][j] = (float)c2;
+                imc3[i][j] = (float)c3;
+            }
+        }
+    }
+    else if(flag == -1)
+    {
+        for(i = 0; i < nr; i++)
+        {
+            for(j = 0; j < nc; j++)
+            {
+                c1 = (double)imc1[i][j];
+
+                c2 = (double)imc2[i][j];
+                c3 = (double)imc3[i][j];
+
+                c1 /= 85.0;
+                c2 /= 255.0;
+                c3 /= 255.0;
+
+                red = c1 * (c3 - 0.5 * c2);
+                green = c1 * (1.0 - c3 - (c2 / 2.0));
+                blue = c1 * c2;
+
+                red = red * 255.0;
+                green = green * 255.0;
+                blue = blue * 255.0;
+
+                if(red > 255.0)
+                {
+                    red = 255.0;
+                }
+                else if(red < 0.0) red = 0.0;
+
+                if(green > 255.0)
+                {
+                    green = 255.0;
+                }
+                else if(green < 0.0) green = 0.0;
+
+                if(blue > 255.0)
+                {
+                    blue = 255.0;
+                }
+                else if(blue < 0.0) blue = 0.0;
+
+                imr[i][j] = (unsigned char)(red + 0.5);
+                img[i][j] = (unsigned char)(green + 0.5);
+                imb[i][j] = (unsigned char)(blue + 0.5);
+            }
+        }
+    }
+
+}
+

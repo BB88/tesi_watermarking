@@ -183,7 +183,11 @@ private:
     double* zones_to_watermark(double **imdft, int height, int width, int diag0, int ndiag, int detect, int *coefficient_number);
     void addmark(double *buff, double *mark, int num_camp, double peso);
     void antizone(double **imdft,int nr, int nc, int diag0, int ndiag, double *buff);
+    void DecimVarfloat(float **imc1, int nr, int nc,
+                                     int win, float **img_map_flt);
 
+    void PicRoutfloat(float **img_orig, int nr, int nc,
+                                    float **img_mark, float **img_map_flt, float **impic);
 
     int WatDec(unsigned char *ImageIn, int nrImageIn, int ncImageIn,
                              const char *campolett, const char *camponum,
@@ -195,5 +199,9 @@ private:
 
     void mlfunc(double *buff,int nrfile,int niteraz);
     double dgamma(double x);
+
+    void rgb_to_crom(unsigned char **imr, unsigned char **img,
+                                   unsigned char **imb, int nr, int nc, int flag,
+                                   float ** imc1, float **imc2, float ** imc3);
 
 };

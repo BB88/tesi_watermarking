@@ -19,8 +19,10 @@
 
 //includes watermarking
 #include "./img_watermarking/watermarking.h"
+
 //libconfig
 #include <libconfig.h++>
+#include "./config/config.hpp"
 
 using namespace std;
 using namespace cv;
@@ -29,6 +31,25 @@ using namespace libconfig;
 
 
 int main() {
+
+
+    //CONFIG SETTING//
+    Watermarking_config::set_parameters_params pars = Watermarking_config::ConfigLoader::get_instance().loadSetParametersConfiguration();
+
+    int wsize = pars.wsize;
+    int tilesize=pars.tilesize;
+    float power=pars.power;
+    bool clipping=pars.clipping;
+    bool flagResyncAll=pars.flagResyncAll;
+    int tilelistsize=pars.tilelistsize;
+
+
+    Watermarking_config::general_params generalPars = Watermarking_config::ConfigLoader::get_instance().loadGeneralParamsConfiguration();
+
+    bool masking=generalPars.masking;
+//    std::string passwstr=generalPars.passwstr;
+//    std::string passwnum=generalPars.passwnum;
+
 
     /*  kz_disp PARAMETERS :
      *
@@ -204,10 +225,14 @@ int main() {
         watermark[i]=b;
     }
 
-
-    image_watermarking.setParameters(watermark,64,0,0.1,0,0,NULL,0);
-    image_watermarking.setPassword("ciao","0453");
+    image_watermarking.setParameters(watermark,wsize,tilesize,power,clipping,flagResyncAll,NULL,tilelistsize);
+//    image_watermarking.setParameters(watermark,64,0,0.1,0,0,NULL,0);
+    image_watermarking.setPassword("lskdjsuyiaj","12578965410");
     output_img = image_watermarking.insertWatermark(squared_disparity,512,512);
+
+    //QUESTO LO FA SULLA DISPARITY, VA RIFATTO SULLA LEFT PRIMA RIMETTENDO RGB
+
+
 
     cv::Mat new_disparity2 = disparity ;
     int count=0;
