@@ -47,8 +47,8 @@ int main() {
     Watermarking_config::general_params generalPars = Watermarking_config::ConfigLoader::get_instance().loadGeneralParamsConfiguration();
 
     bool masking=generalPars.masking;
-//    std::string passwstr=generalPars.passwstr;
-//    std::string passwnum=generalPars.passwnum;
+    std::string passwstr=generalPars.passwstr;
+    std::string passwnum=generalPars.passwnum;
 
 
     /*  kz_disp PARAMETERS :
@@ -201,73 +201,84 @@ int main() {
     cout << occlusions_handler::getSimilarity(occluded,occluded_gt);
 */
 
+    //CARICA IMMAGINE DA MARCHIARE
+//    cv::Mat image_to_mark = cv::imread("/home/miky/ClionProjects/tesi_watermarking/img/nkz_disp.png", CV_LOAD_IMAGE_GRAYSCALE );
+    cv::Mat image_to_mark = cv::imread("/home/miky/ClionProjects/tesi_watermarking/img/l.png", CV_LOAD_IMAGE_COLOR );
 
-    cv::Mat disparity = cv::imread("/home/miky/ClionProjects/tesi_watermarking/img/nkz_disp.png", CV_LOAD_IMAGE_GRAYSCALE );
-    cv::Mat new_disparity = cv::Mat::zeros(512, 512, CV_8UC1);
+
+    //IF GREYSCALE IMAGE
+//    cv::Mat new_image = cv::Mat::zeros(512, 512, CV_8UC1);
+
+//    for (int j = 0; j < 480; j++)
+//        for (int i = 0; i < 512; i++){
+//            new_image.at<uchar>(j, i) = image_to_mark.at<uchar>(j, i);}
+//
+
+    //IF COLOUR IMAGE
+    cv::Mat new_image = cv::Mat::zeros(512, 512, CV_8UC3);
     for (int j = 0; j < 480; j++)
         for (int i = 0; i < 512; i++){
-            new_disparity.at<uchar>(j, i) = disparity.at<uchar>(j, i);}
-     //   imshow("Disparity", disparity);
-     //   imshow("Squared disparity", squared_disparity);
-     //   waitKey(30000); // 300000 = 5 minutes
-    unsigned char * squared_disparity = new_disparity.data;
+            new_image.at<Vec3b>(j,i) [0] = image_to_mark.at<Vec3b>(j,i) [0];
+            new_image.at<Vec3b>(j,i) [1] = image_to_mark.at<Vec3b>(j,i) [1];
+            new_image.at<Vec3b>(j,i) [2] = image_to_mark.at<Vec3b>(j,i) [2];
+        }
 
+
+    unsigned char *squared_image = new_image.data; //SPERO SIA GIUSTO PER LE COLOUR
 
    /* algoritmo di watermarking  */
 
     unsigned char *output_img = new unsigned char[512 * 512 ];
-//    memcpy(output_img, squared_disparity,512*512);
+//    memcpy(output_img, squared_image,512*512);
 
     Watermarking image_watermarking;
-    int watermark[64];
-    for (int i = 0; i < 64; i++){
+
+    //random binary watermark
+    int watermark[wsize];
+    for (int i = 0; i < wsize; i++){
         int b = rand() % 2;
         watermark[i]=b;
     }
 
     image_watermarking.setParameters(watermark,wsize,tilesize,power,clipping,flagResyncAll,NULL,tilelistsize);
 //    image_watermarking.setParameters(watermark,64,0,0.1,0,0,NULL,0);
-    image_watermarking.setPassword("lskdjsuyiaj","12578965410");
-    output_img = image_watermarking.insertWatermark(squared_disparity,512,512);
-
-    //QUESTO LO FA SULLA DISPARITY, VA RIFATTO SULLA LEFT PRIMA RIMETTENDO RGB
+    image_watermarking.setPassword(passwstr,passwnum);
+    output_img = image_watermarking.insertWatermark(squared_image,512,512);
 
 
 
-    cv::Mat new_disparity2 = disparity ;
     int count=0;
+
+    //IF GREYSCALE IMAGE
+//    for (int j = 0; j < 480; j++)
+//        for (int i = 0; i < 512; i++){
+//            image_to_mark.at<uchar>(j, i) = output_img[count];
+//            count ++;
+//        }
+
+    //IF COLOUR IMAGE
     for (int j = 0; j < 480; j++)
         for (int i = 0; i < 512; i++){
-            new_disparity2.at<uchar>(j, i) = output_img[count];
-            count ++;
+            image_to_mark.at<Vec3b>(j,i) [0] = output_img[count]; count++;
+            image_to_mark.at<Vec3b>(j,i) [1] = output_img[count]; count++;
+            image_to_mark.at<Vec3b>(j,i) [2] = output_img[count]; count++;
         }
-//    imshow("newdisp",new_disparity2);
-//    waitKey(0);
 
 
-    rv.right_reconstruction(left, new_disparity2);
+
+    rv.right_reconstruction(image_to_mark,disp );
 
 //    int c=0;
 //    int diversi=0;
 //    for (int i=0;i<512;i++)
 //        for(int j=0;j<512;j++) {
-//            if (output_img[c] != squared_disparity[c])
+//            if (output_img[c] != squared_image[c])
 //                diversi++;
 //            c++;
 //        }
 //    cout<<diversi;
 
 
- /*   cv::Mat img = cv::imread("/home/miky/ClionProjects/tesi_watermarking/img/nkz_disp.png", CV_LOAD_IMAGE_GRAYSCALE );
-    unsigned char * image = img.data;
-
-    ImgWat iw;
-    iw.setPassword("abcd","2545");
-
-    bool flagOK = iw.insertWatermark(image,img.cols, img.rows);
-    cout<<flagOK;*/
-
-//    Watermarking::configPars pars = binocular_dense_stereo::ConfigLoader::get_instance().loadGeneralConfiguration(datasetType);
 
     return 0;
 

@@ -66,8 +66,8 @@ namespace Watermarking_config {
             const libconfig::Setting & ConfigSettings  = root["general_params"];
 
             pars.masking = (bool) ConfigSettings["masking"];
-//            pars.passwstr = (std::string) ConfigSettings["passwstr"];
-//            pars.passwnum = (std::string) ConfigSettings["passwnum"];
+            pars.passwstr = (std::string) ConfigSettings["passwstr"].c_str();
+            pars.passwnum = (std::string) ConfigSettings["passwnum"].c_str();
 
 
         }

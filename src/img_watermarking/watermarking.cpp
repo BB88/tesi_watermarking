@@ -64,8 +64,13 @@ unsigned char * Watermarking::insertWatermark(unsigned char *image, int w, int h
 {
     bool flagOk;
 
-    unsigned char *output_img = new unsigned char[w * h];
-    memcpy(output_img, image, w * h);
+// SE IMMAGINE GREY
+//    unsigned char *output_img = new unsigned char[w * h];
+//    memcpy(output_img, image, w * h);
+
+// SE COLOUR
+    unsigned char *output_img = new unsigned char[w * h*3];
+    memcpy(output_img, image, w * h*3);
 
     const char *passw_str = passwstr.c_str();
     const char *passw_num = passwnum.c_str();
@@ -154,50 +159,48 @@ int Watermarking::WatCod(unsigned char *ImageOut, int width, int height, const c
     img_map_flt = AllocImFloat(512, 512);
     impic = AllocImFloat(512, 512);
 
+// SE IMMAGINE GREY
+//    int count=0;
+//    for (int i=0; i<512; i++)
+//        for (int j=0; j<512; j++){
+//            imyout[i][j] =
+//                    static_cast<float>(ImageOut[count]);
+//            count++;
+//        }
 
-    int count=0;
+// SE COLOUR
+    unsigned char **imr;	// matrici delle componenti RGB
+    unsigned char **img;
+    unsigned char **imb;
+
+    float **imc2;			// matrice di crominanza c2
+    float **imc3;
+
+    imc2 = AllocImFloat(512, 512);
+    imc3 = AllocImFloat(512, 512);
+    imr = AllocImByte(512, 512);
+    img = AllocImByte(512, 512);
+    imb = AllocImByte(512, 512);
+
+
+
+    int offset = 0;
     for (int i=0; i<512; i++)
-        for (int j=0; j<512; j++){
-            imyout[i][j] =
-                    static_cast<float>(ImageOut[count]);
-            count++;
+        for (int j=0; j<512; j++)
+        {
+            imr[i][j] = ImageOut[offset];offset++;
+            img[i][j] = ImageOut[offset];offset++;
+            imb[i][j] = ImageOut[offset];offset++;
         }
 
 
-//    unsigned char **imr;	// matrici delle componenti RGB
-//    unsigned char **img;
-//    unsigned char **imb;
-//    float **imy;
-//    float **imc2;			// matrice di crominanza c2
-//    float **imc3;
-//
-//
-//    imy = AllocImFloat(512, 512);
-//    imc2 = AllocImFloat(512, 512);
-//    imc3 = AllocImFloat(512, 512);
-//    imr = AllocImByte(512, 512);
-//    img = AllocImByte(512, 512);
-//    imb = AllocImByte(512, 512);
-
-//    int offset = 0;
-//    for (int i=0; i<512; i++)
-//        for (int j=0; j<512; j++)
-//        {
-//            imr[i][j] = ImageOut[offset];offset++;
-//            img[i][j] = ImageOut[offset];offset++;
-//            imb[i][j] = ImageOut[offset];offset++;
-//        }
-
-    // Pre-elaborazioni, Estensioni, Sincronizzazione, FFT, etc
-    ////////////////////////////////////////////////////////////
-
     // Si calcolano le componenti di luminanza e crominanza dell'immagine
-//    rgb_to_crom(imr, img, imb, 512, 512, 1, imy, imc2, imc3);
+    rgb_to_crom(imr, img, imb, 512, 512, 1, imyout, imc2, imc3);
 
 
 
 
-    DecimVarfloat(imyout, 512, 512, WINDOW, img_map_flt); //per la maschera
+//    DecimVarfloat(imyout, 512, 512, WINDOW, img_map_flt); //per la maschera
 
     FFT2D::dft2d(imyout, imdft, imdftfase, 512, 512);
 
@@ -243,34 +246,39 @@ int Watermarking::WatCod(unsigned char *ImageOut, int width, int height, const c
 
     PicRoutfloat(imyout, 512, 512, imidft, img_map_flt, impic);
 
-    count=0;
+
+    //reinserimento della luminanza
+
+    rgb_to_crom(imr, img, imb, 512, 512, -1, impic, imc2, imc3);
+
+//SE GREY
+//    count=0;
+//    for (int i=0; i<512; i++)
+//        for (int j=0; j<512; j++){
+//
+//                    ImageOut[count] =  static_cast<unsigned char> (imidft[i][j]); //imidft per quella senza maschera, impic per quella con la maschera
+//
+//            count++;
+//        }
+
+//SE COLOUR
+    offset = 0;
     for (int i=0; i<512; i++)
-        for (int j=0; j<512; j++){
-
-                    ImageOut[count] =  static_cast<unsigned char> (impic[i][j]); //imidft per quella senza maschera, impic per quella con la maschera
-
-            count++;
+        for (int j=0; j<512; j++)
+        {
+            ImageOut[offset] = imr[i][j]; offset++;
+            ImageOut[offset] = img[i][j]; offset++;
+            ImageOut[offset] = imb[i][j]; offset++;
         }
 
-    /*
-     * FFT2D
-     *
-     * int coefficient_number;
-     *
-     * zone alias coefficient selection
-     *
-        double * mark;
-        mark = new double[coefficient_number];
 
-       generate_mark();
-     * watermark embedding : addmark + antizone
-     * IFFT2D
-     *
-     *
-     *
-     *
-     */
 
+
+    AllocIm:: FreeIm(imc2) ;
+    AllocIm::FreeIm(imc3) ;
+    AllocIm::FreeIm(imr);
+    AllocIm::FreeIm(img);
+    AllocIm::FreeIm(imb);
 
     AllocIm::FreeIm(imyout);
     AllocIm::FreeIm(imdft);
