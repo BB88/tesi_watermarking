@@ -231,9 +231,12 @@ int Watermarking::WatCod(unsigned char *ImageOut, int width, int height, const c
     double * mark;
     mark = new double[coefficient_number];
 
-    generate_mark(watermark,wsize,passw_str,passw_num,coefficient_number, mark);
+    generate_mark(watermark,wsize,passw_str,passw_num,coefficient_number, mark,false);
 
-    addmark(coefficient_vector,mark,coefficient_number,alfamax);
+//    if (view=="left")
+    addmark(coefficient_vector, mark, coefficient_number, alfamax);
+//    else if (view=="right")
+//        addmark_right_view(coefficient_vector, mark, coefficient_number, alfamax);
 
     antizone(imdft, 512, 512, diag0, ndiag, coefficient_vector);
 
@@ -274,7 +277,7 @@ int Watermarking::WatCod(unsigned char *ImageOut, int width, int height, const c
 
 
 
-    AllocIm:: FreeIm(imc2) ;
+    AllocIm::FreeIm(imc2) ;
     AllocIm::FreeIm(imc3) ;
     AllocIm::FreeIm(imr);
     AllocIm::FreeIm(img);
@@ -291,7 +294,7 @@ int Watermarking::WatCod(unsigned char *ImageOut, int width, int height, const c
 
 
 
-void Watermarking::generate_mark(int *watermark,int wsize, const char *passw_str, const char *passw_num, int marklen, double* mark)
+void Watermarking::generate_mark(int *watermark,int wsize, const char *passw_str, const char *passw_num, int marklen, double* mark, bool detection)
 {
 /*
  * BCH coding
@@ -318,7 +321,7 @@ void Watermarking::generate_mark(int *watermark,int wsize, const char *passw_str
         return ;
 //        return -3;	// Incorrect 'nbit'
     }
-//
+
 //    // LOG
 //    fprintf(flog, " - BCH: m=%d t=%d length=%d\n\n",m_BCH,t_BCH,length_BCH);
 //
@@ -346,13 +349,15 @@ void Watermarking::generate_mark(int *watermark,int wsize, const char *passw_str
     seed = new LONG8BYTE [4];
     seed_generator(passw_str,passw_num,seed);
 
+    if (!detection){
     seed_initialization(seed);
 
     for(int i = 0; i < marklen; i++)
         mark[i] = 2.0 * ( pseudo_random_generator() - 0.5);
 
+
     // mark modulation
-    ///////////////////////////
+
 
     int n=0;
     int L=marklen/length_BCH;
@@ -374,8 +379,7 @@ void Watermarking::generate_mark(int *watermark,int wsize, const char *passw_str
             n+=L;
     }
 
-
-
+    }
 }
 
 /*
@@ -404,6 +408,8 @@ void Watermarking::addmark(double *buff, double *mark, int num_camp, double peso
     for(i=0; i<n; i++)
         buff[i] = buff[i]*(1.0 + alfa*mark[i]);
 }
+
+
 
 /*
 	antizone(..)
@@ -1284,16 +1290,14 @@ int Watermarking::WatDec(unsigned char *ImageIn, int nrImageIn, int ncImageIn,
                    int *vettoretile, bool flagRisincTotale )
 {
 
-    int d1;					// prima diagonale marchiata
-    int nd;					// numero diagonali marchiate
+    int diag0 = 80;		// Diagonali..
+    int ndiag = 74;		// numero diagonali marchiate
 
-    double alpha;			// potenza media del marchio cercato
 
     float **imy;			// matrice luminanza
     float **imc2;			// matrice crominanza c2
     float **imc3;			// matrice crominanza c3
-    float **imridim;		// matrice luminanza estesa
-    float **imrisinc;		// matrice luminanza risincronizzata
+
     double **imdft;			// matrice contenente il modulo della DFT
     double **imdftfase;		// matrice contenente la fase della DFT
     double **im1dft;		// matrice contenente il modulo della DFT
@@ -1316,14 +1320,11 @@ int Watermarking::WatDec(unsigned char *ImageIn, int nrImageIn, int ncImageIn,
     double **imdftoutfase;
 
 
-    double **im1dftrisinc;	// Matrice contenente la somma dei moduli
-    // delle dft delle immagini risincronizzate
-    float **imrisincout;	// Matrice luminanza immagine risincronizzata
 
 
 
 
-    float **imrisinctotale;	// Matrice luminanza immagine totale risinc.
+
 
     int nouniforme=0;		// Controllo ver vedere se ho una zona uniforme
 
@@ -1332,93 +1333,86 @@ int Watermarking::WatDec(unsigned char *ImageIn, int nrImageIn, int ncImageIn,
 
 
 
-
-
-    // Parametri per decodifica BCH del marchio
-    ///////////////////////////////////////////
-
-    if (nbit == 64)
-    {
-        m_BCH = 7;			// order of the Galois Field GF(2^m)
-        t_BCH = 10;			// Error correcting capability
-        length_BCH = 127;	// length of the BCH code
-    }
-
-    if (nbit == 32)
-    {
-        m_BCH = 6;			// order of the Galois Field GF(2^m)
-        t_BCH = 5;			// Error correcting capability
-        length_BCH = 59;	// length of the BCH code
-    }
-
-    if ((nbit != 64)&&(nbit != 32))
-    {
-        return -3;	// Incorrect 'nbit'
-    }
-
-//    FILE *flog;
-//    flog = fopen("watdec.log", "wt");
 //
-//    // LOG
-//    fprintf(flog, " - Image dimensions: nr=%d nc=%d\n\n",nr,nc);
-//    fprintf(flog, " - BCH: m=%d t=%d length=%d\n\n",m_BCH,t_BCH,length_BCH);
-
-    // Parametri di marchiatura
-    ////////////////////////////
-
-    // NOTA: Se si vuole modificare questi parametri � necessario
-    //       modificarli pure in WatDec(..), poich� devono essere
-    //		 identici
-
-    // Controllo sulle dimensioni del tile
-    //////////////////////////////////////
-
-
-
-    /********************************************************************/
-
-
-    alpha = power;	// Potenza del Marchio
-
-    if ((alpha < 0.1)||(alpha > 0.9))
-    {
-        return -1;		// Power out-of-range
-    }
-
-
-
-
-
-
-
-    // Allocazione della memoria
-    ////////////////////////////
-
-//    imy = AllocImFloat(nr, nc);
-//    imc2 = AllocImFloat(nr, nc);
-//    imc3 = AllocImFloat(nr, nc);
-//    imrisinc = AllocImFloat(nre, nce);
-//    imridim = AllocImFloat(nre, nce);
-//    imdft = AllocImDouble(nre, nce);
-//    imdftfase = AllocImDouble(nre, nce);
-//    imdftout = AllocImDouble(nre, nce);
-//    imdftoutfase = AllocImDouble(nre, nce);
-//    im1dft = AllocImDouble(nre, nce);
-//    im1dftfase = AllocImDouble(nre, nce);
-//    im1dftrisinc = AllocImDouble(nre, nce);
-//    imrisincout = AllocImFloat(nr, nc);
-
-
-
-
-
-
-    // Codifica delle stringhe-marchio per la generazione dei semi dei 4 lcg
-    ////////////////////////////////////////////////////////////////////////
-
-    seed = new LONG8BYTE [4];
-
-    seed_generator(campolett, camponum, seed);
+//
+//    // Parametri per decodifica BCH del marchio
+//    ///////////////////////////////////////////
+//
+//    if (nbit == 64)
+//    {
+//        m_BCH = 7;			// order of the Galois Field GF(2^m)
+//        t_BCH = 10;			// Error correcting capability
+//        length_BCH = 127;	// length of the BCH code
+//    }
+//
+//    if (nbit == 32)
+//    {
+//        m_BCH = 6;			// order of the Galois Field GF(2^m)
+//        t_BCH = 5;			// Error correcting capability
+//        length_BCH = 59;	// length of the BCH code
+//    }
+//
+//    if ((nbit != 64)&&(nbit != 32))
+//    {
+//        return -3;	// Incorrect 'nbit'
+//    }
+//
+////    FILE *flog;
+////    flog = fopen("watdec.log", "wt");
+////
+////    // LOG
+////    fprintf(flog, " - Image dimensions: nr=%d nc=%d\n\n",nr,nc);
+////    fprintf(flog, " - BCH: m=%d t=%d length=%d\n\n",m_BCH,t_BCH,length_BCH);
+//
+//    // Parametri di marchiatura
+//    ////////////////////////////
+//
+//    // NOTA: Se si vuole modificare questi parametri � necessario
+//    //       modificarli pure in WatDec(..), poich� devono essere
+//    //		 identici
+//
+//    // Controllo sulle dimensioni del tile
+//    //////////////////////////////////////
+//
+//
+//
+//    /********************************************************************/
+//
+//
+//
+//
+//
+//
+//
+//
+//    // Allocazione della memoria
+//    ////////////////////////////
+//
+////    imy = AllocImFloat(nr, nc);
+////    imc2 = AllocImFloat(nr, nc);
+////    imc3 = AllocImFloat(nr, nc);
+////    imrisinc = AllocImFloat(nre, nce);
+////    imridim = AllocImFloat(nre, nce);
+////    imdft = AllocImDouble(nre, nce);
+////    imdftfase = AllocImDouble(nre, nce);
+////    imdftout = AllocImDouble(nre, nce);
+////    imdftoutfase = AllocImDouble(nre, nce);
+////    im1dft = AllocImDouble(nre, nce);
+////    im1dftfase = AllocImDouble(nre, nce);
+////    im1dftrisinc = AllocImDouble(nre, nce);
+////    imrisincout = AllocImFloat(nr, nc);
+//
+//
+//
+//
+//
+//
+//    // Codifica delle stringhe-marchio per la generazione dei semi dei 4 lcg
+//    ////////////////////////////////////////////////////////////////////////
+//
+//    seed = new LONG8BYTE [4];
+//
+//    seed_generator(campolett, camponum, seed);
 
 //    // LOG
 //    fprintf(flog, " - Seed: %f %f %f %f\n\n",

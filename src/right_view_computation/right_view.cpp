@@ -40,7 +40,7 @@ using namespace cv;
             for (int i=0;i< left.cols;i++)
             {
                 d = disp.at<uchar>(j,i);
-                //cout<<d<<endl;
+//                cout<<d<<endl;
                 xr = abs(i - d);
                // xr = i - d;
                 // assign new values to reconstructed right view

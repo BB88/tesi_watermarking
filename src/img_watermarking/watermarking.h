@@ -177,11 +177,15 @@ private:
 
 
     void seed_generator(const char *passw_str, const char *passw_num, LONG8BYTE *s );
-    void generate_mark(int *watermark,int wsize, const char *passw_str, const char *passw_num, int coefficient_number,double* mark) ;
+    void generate_mark(int *watermark,int wsize, const char *passw_str, const char *passw_num, int coefficient_number,double* mark,bool detection) ;
     void seed_initialization(LONG8BYTE *s);
     double pseudo_random_generator();
     double* zones_to_watermark(double **imdft, int height, int width, int diag0, int ndiag, int detect, int *coefficient_number);
+
+
     void addmark(double *buff, double *mark, int num_camp, double peso);
+
+
     void antizone(double **imdft,int nr, int nc, int diag0, int ndiag, double *buff);
     void DecimVarfloat(float **imc1, int nr, int nc,
                                      int win, float **img_map_flt);
