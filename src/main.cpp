@@ -19,6 +19,8 @@
 
 //includes watermarking
 #include "./img_watermarking/watermarking.h"
+#include "./img_watermarking/imgwat.h"
+#include "./img_watermarking/allocim.h"
 
 //libconfig
 #include <libconfig.h++>
@@ -100,10 +102,10 @@ int main() {
 
     cv::Mat left = imread("/home/miky/ClionProjects/tesi_watermarking//img/l.png", CV_LOAD_IMAGE_COLOR);
     cv::Mat right = imread("/home/miky/ClionProjects/tesi_watermarking//img/r.png",CV_LOAD_IMAGE_COLOR);
-
-    cv::imshow("left_original", left);
-    cv::imshow("right_original", right);
-    waitKey(0);
+//
+//    cv::imshow("left_original", left);
+//    cv::imshow("right_original", right);
+//    waitKey(0);
 
     // our disp
 //    cv::Mat disp = imread("/home/miky/ClionProjects/tesi_watermarking/img/nkz_disp.png", CV_LOAD_IMAGE_GRAYSCALE);
@@ -280,8 +282,7 @@ int main() {
 
 
 /* splits the image into 3 channels and normalize to see watermark */
-    cv::Mat mark;
-    cv::absdiff(image_to_mark,left,mark);
+
 //    Mat channels[3];
 //    split(mark,channels);
 //    double min, max;
@@ -306,65 +307,250 @@ int main() {
 //        }
 //    cout<<diversi;
 
-
- //////////////////MARCHIATURA VISTA DESTRA///////////////////
-
     cv::Mat disp = imread("/home/miky/ClionProjects/tesi_watermarking/img/nkz_disp.png", CV_LOAD_IMAGE_GRAYSCALE);
-    cv::Mat warped_mark = cv::Mat::zeros(480, 640, CV_8UC3);
+
+ //////////////////MARCHIATURA VISTA DESTRA NEI TRE CANALI///////////////////
+
+//    cv::Mat mark;
+//    cv::absdiff(image_to_mark,left,mark);
+//
+//    cv::Mat warped_mark = cv::Mat::zeros(480, 640, CV_8UC3);
 
 
  //estraggo il marchio dalla vista sinistra e lo modifico in base alla disparità
+//    double min_disp, max_disp;
+//    minMaxLoc(disp, &min_disp, &max_disp);
+//    int d;
+//
+//    for (int j = 0; j < (480); j++)
+//        for (int i = 0; i < 640-max_disp; i++){
+//            d = disp.at<uchar>(j,i);
+//            warped_mark.at<Vec3b>(j,i+d) [0] = mark.at<Vec3b>(j,i)[0];
+//            warped_mark.at<Vec3b>(j,i+d) [1] = mark.at<Vec3b>(j,i)[1];
+//            warped_mark.at<Vec3b>(j,i+d) [2] = mark.at<Vec3b>(j,i)[2];
+//
+//        }
+//
+////    Mat channelsW[3];
+////    split(warped_mark,channelsW);
+////    cv::Mat wat_to_show0 = channelsW[0] *255 / max;
+////    cv::Mat wat_to_show1 = channelsW[1] *255 / max;
+////    cv::Mat wat_to_show2 = channelsW[2] *255 / max;
+////    cv::imshow("warped_mark0", wat_to_show0);
+////    cv::imshow("warped_mark1", wat_to_show1);
+////    cv::imshow("warped_mark2", wat_to_show2);
+////    waitKey(0);
+//
+//    cv::Mat right_watermarked;
+//    right.copyTo(right_watermarked);
+//
+//    for (int j = 0; j < 480; j++)
+//        for (int i = 0; i < 640; i++){
+//            right_watermarked.at<Vec3b>(j,i) [0] = right_watermarked.at<Vec3b>(j,i) [0] + warped_mark.at<Vec3b>(j,i)[0];
+//            right_watermarked.at<Vec3b>(j,i) [1] = right_watermarked.at<Vec3b>(j,i) [1] + warped_mark.at<Vec3b>(j,i)[1];
+//            right_watermarked.at<Vec3b>(j,i) [2] = right_watermarked.at<Vec3b>(j,i) [2] + warped_mark.at<Vec3b>(j,i)[2];
+//        }
+//
+//    cv::imshow("right_watermarked", right_watermarked);
+//    waitKey(0);
+
+    ///////MARCHIATURA VISTA DESTRA NELLA LUMINANZA///////////
+
+    unsigned char *watermarked_image;
+    watermarked_image=image_to_mark.data;
+
+    unsigned char *left_image;
+    left_image=left.data;
+
+    unsigned char *right_image;
+    right_image=right.data;
+
+    unsigned char **imr;	// matrici delle componenti RGB
+    unsigned char **img;
+    unsigned char **imb;
+    float   **imyout;		// immagine
+    float **imc2;			// matrice di crominanza c2
+    float **imc3;
+
+    imyout = AllocIm::AllocImFloat(480, 640);
+    imc2 = AllocIm::AllocImFloat(480, 640);
+    imc3 = AllocIm::AllocImFloat(480, 640);
+    imr = AllocIm::AllocImByte(480, 640);
+    img = AllocIm::AllocImByte(480, 640);
+    imb = AllocIm::AllocImByte(480, 640);
+
+    unsigned char **imrl;	// matrici delle componenti RGB
+    unsigned char **imgl;
+    unsigned char **imbl;
+    float   **imyoutl;			// immagine
+    float **imc2l;			// matrice di crominanza c2
+    float **imc3l;
+
+    imyoutl = AllocIm::AllocImFloat(480, 640);
+    imc2l = AllocIm::AllocImFloat(480, 640);
+    imc3l = AllocIm::AllocImFloat(480, 640);
+    imrl = AllocIm::AllocImByte(480, 640);
+    imgl = AllocIm::AllocImByte(480, 640);
+    imbl = AllocIm::AllocImByte(480, 640);
+
+
+    unsigned char **imrr;	// matrici delle componenti RGB
+    unsigned char **imgr;
+    unsigned char **imbr;
+    float   **imyoutr;			// immagine
+    float **imc2r;			// matrice di crominanza c2
+    float **imc3r;
+
+    imyoutr = AllocIm::AllocImFloat(480, 640);
+    imc2r = AllocIm::AllocImFloat(480, 640);
+    imc3r = AllocIm::AllocImFloat(480, 640);
+    imrr = AllocIm::AllocImByte(480, 640);
+    imgr = AllocIm::AllocImByte(480, 640);
+    imbr = AllocIm::AllocImByte(480, 640);
+
+    int offset = 0;
+    for (int i=0; i<480; i++)
+        for (int j=0; j<640; j++)
+        {
+            imr[i][j] = watermarked_image[offset];offset++;
+            img[i][j] = watermarked_image[offset];offset++;
+            imb[i][j] = watermarked_image[offset];offset++;
+        }
+    offset = 0;
+    for (int i=0; i<480; i++)
+        for (int j=0; j<640; j++)
+        {
+            imrl[i][j] = left_image[offset];offset++;
+            imgl[i][j] = left_image[offset];offset++;
+            imbl[i][j] = left_image[offset];offset++;
+        }
+    offset = 0;
+    for (int i=0; i<480; i++)
+        for (int j=0; j<640; j++)
+        {
+            imrr[i][j] = right_image[offset];offset++;
+            imgr[i][j] = right_image[offset];offset++;
+            imbr[i][j] = right_image[offset];offset++;
+        }
+
+    // Si calcolano le componenti di luminanza e crominanza dell'immagine
+    image_watermarking.rgb_to_crom(imr, img, imb, 480, 640, 1, imyout, imc2, imc3);
+    image_watermarking.rgb_to_crom(imrl, imgl, imbl, 480, 640, 1, imyoutl, imc2l, imc3l);
+    image_watermarking.rgb_to_crom(imrr, imgr, imbr, 480, 640, 1, imyoutr, imc2r, imc3r);
+
+    float   **watermarkY;
+    watermarkY = AllocIm::AllocImFloat(480, 640);
+
     double min_disp, max_disp;
     minMaxLoc(disp, &min_disp, &max_disp);
     int d;
 
-    for (int j = 0; j < (480); j++)
-        for (int i = 0; i < 640-max_disp; i++){
-            d = disp.at<uchar>(j,i);
-            warped_mark.at<Vec3b>(j,i+d) [0] = mark.at<Vec3b>(j,i)[0];
-            warped_mark.at<Vec3b>(j,i+d) [1] = mark.at<Vec3b>(j,i)[1];
-            warped_mark.at<Vec3b>(j,i+d) [2] = mark.at<Vec3b>(j,i)[2];
-
+    for (int i=0;i<480;i++)
+        for (int j=0;j<640-max_disp;j++){
+            d = disp.at<uchar>(i,j);
+            watermarkY[i][j+d] = abs(imyout[i][j]-imyoutl[i][j]);
         }
 
-//    Mat channelsW[3];
-//    split(warped_mark,channelsW);
-//    cv::Mat wat_to_show0 = channelsW[0] *255 / max;
-//    cv::Mat wat_to_show1 = channelsW[1] *255 / max;
-//    cv::Mat wat_to_show2 = channelsW[2] *255 / max;
-//    cv::imshow("warped_mark0", wat_to_show0);
-//    cv::imshow("warped_mark1", wat_to_show1);
-//    cv::imshow("warped_mark2", wat_to_show2);
-//    waitKey(0);
+    for (int i=0;i<480;i++)
+        for (int j=0;j<640;j++)
+            imyoutr[i][j] = imyoutr[i][j]+watermarkY[i][j];
+
+
+    image_watermarking.rgb_to_crom(imrr, imgr, imbr, 480, 640, -1, imyoutr, imc2r, imc3r);
+
+
+    offset = 0;
+    for (int i=0; i<480; i++)
+        for (int j=0; j<640; j++)
+        {
+            right_image[offset] = imrr[i][j]; offset++;
+            right_image[offset] = imgr[i][j]; offset++;
+            right_image[offset] = imbr[i][j]; offset++;
+        }
+
 
     cv::Mat right_watermarked;
     right.copyTo(right_watermarked);
 
+
+    count = 0;
     for (int j = 0; j < 480; j++)
         for (int i = 0; i < 640; i++){
-            right_watermarked.at<Vec3b>(j,i) [0] = right_watermarked.at<Vec3b>(j,i) [0] + warped_mark.at<Vec3b>(j,i)[0];
-            right_watermarked.at<Vec3b>(j,i) [1] = right_watermarked.at<Vec3b>(j,i) [1] + warped_mark.at<Vec3b>(j,i)[1];
-            right_watermarked.at<Vec3b>(j,i) [2] = right_watermarked.at<Vec3b>(j,i) [2] + warped_mark.at<Vec3b>(j,i)[2];
+            right_watermarked.at<Vec3b>(j,i) [0] = right_image[count]; count++;
+            right_watermarked.at<Vec3b>(j,i) [1] = right_image[count]; count++;
+            right_watermarked.at<Vec3b>(j,i) [2] = right_image[count]; count++;
         }
 
 
 
     cv::imshow("right_watermarked", right_watermarked);
     waitKey(0);
+
+    AllocIm::FreeIm(imc2) ;
+    AllocIm::FreeIm(imc3) ;
+    AllocIm::FreeIm(imr);
+    AllocIm::FreeIm(img);
+    AllocIm::FreeIm(imb);
+
+    AllocIm::FreeIm(imyout);
+
+    AllocIm::FreeIm(imc2l) ;
+    AllocIm::FreeIm(imc3l) ;
+    AllocIm::FreeIm(imrl);
+    AllocIm::FreeIm(imgl);
+    AllocIm::FreeIm(imbl);
+
+    AllocIm::FreeIm(imyoutl);
+
+    AllocIm::FreeIm(imc2r) ;
+    AllocIm::FreeIm(imc3r) ;
+    AllocIm::FreeIm(imrr);
+    AllocIm::FreeIm(imgr);
+    AllocIm::FreeIm(imbr);
+
+    AllocIm::FreeIm(imyoutr);
+    AllocIm::FreeIm(watermarkY);
+
+    ////watermark extraction////
+
+//    ImgWat watermarking;
+//    watermarking.setPassword(passwstr,passwnum);
+//    watermarking.setParameters(watermark,wsize,0,power,false,false,NULL,0);
 //
-//    double min, max;
-//    cv::Mat mark2;
-//    Mat channels2[3];
-//    cv::absdiff(right_watermarked,right,mark2);
-//    split(mark2,channels2);
-//    minMaxLoc(channels2[0], &min, &max);
-//    Mat chan0 = channels2[0] *255 / max;
-//    Mat chan1 = channels2[1] *255 / max;
-//    Mat chan2 = channels2[2] *255 / max;
-//    cv::imshow("mark20", chan0);
-//    cv::imshow("mark21", chan1);
-//    cv::imshow("mark22", chan2);
-//    waitKey(0);
+//
+//    cv::Mat new_image_to_dec = cv::Mat::zeros(512, 512, CV_8UC3);
+//    for (int j = 0; j < 480; j++)
+//        for (int i = 0; i < 512; i++){
+//            new_image_to_dec.at<Vec3b>(j,i) [0] = image_to_mark.at<Vec3b>(j,i) [0];
+//            new_image_to_dec.at<Vec3b>(j,i) [1] = image_to_mark.at<Vec3b>(j,i) [1];
+//            new_image_to_dec.at<Vec3b>(j,i) [2] = image_to_mark.at<Vec3b>(j,i) [2];
+//        }
+//
+////    cv::imshow("to dec", new_image_to_dec);
+////    waitKey(0);
+//
+//    unsigned char *squared_image_to_dec = new_image_to_dec.data; //SPERO SIA GIUSTO PER LE COLOUR
+//
+////    bool wat = watermarking.extractWatermark(squared_image_to_dec,512,512);
+////    cout<<wat;
+//
+//    bool wat = image_watermarking.extractWatermark(squared_image_to_dec, 512, 512);
+//    cout<<wat;
+
+
+    double min, max;
+    cv::Mat mark2;
+    Mat channels2[3];
+    cv::absdiff(right_watermarked,right,mark2);
+    split(mark2,channels2);
+    minMaxLoc(channels2[0], &min, &max);
+    Mat chan0 = channels2[0] *255 / max;
+    Mat chan1 = channels2[1] *255 / max;
+    Mat chan2 = channels2[2] *255 / max;
+    cv::imshow("mark20", chan0);
+    cv::imshow("mark21", chan1);
+    cv::imshow("mark22", chan2);
+    waitKey(0);
 
     return 0;
 

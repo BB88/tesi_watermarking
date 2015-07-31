@@ -1188,7 +1188,7 @@ double* Watermarking::zones_to_watermark(double **imdft, int height, int width, 
 
 bool Watermarking::extractWatermark(unsigned char *image, int w, int h)
 {
-    bool flagOk;
+    bool flagOk = false;
 
     const char *passw_str = passwstr.c_str();
     const char *passw_num = passwnum.c_str();
@@ -1283,6 +1283,10 @@ bool Watermarking::extractWatermark(unsigned char *image, int w, int h)
 
     return flagOk;
 }
+
+
+
+
 int Watermarking::WatDec(unsigned char *ImageIn, int nrImageIn, int ncImageIn,
                    const char *campolett, const char *camponum,
                    int *bit, int size, int nbit,
@@ -1298,174 +1302,103 @@ int Watermarking::WatDec(unsigned char *ImageIn, int nrImageIn, int ncImageIn,
     float **imc2;			// matrice crominanza c2
     float **imc3;			// matrice crominanza c3
 
+    unsigned char **imr;	// immagini delle tre componenti RGB
+    unsigned char **img;	//
+    unsigned char **imb;	//
+
+
+
     double **imdft;			// matrice contenente il modulo della DFT
     double **imdftfase;		// matrice contenente la fase della DFT
     double **im1dft;		// matrice contenente il modulo della DFT
     double **im1dftfase;	// matrici contenente la fase della DFT
     LONG8BYTE *seed;		// variabile per generare il marchio
 
-    // Added by CORMAX
-    int BitLetti[200];		// Max 200 bit da leggere
-    int dec=0;
-    long offset;
-
-
-    /******************MODIFICHE BY GIOVANNI FONDELLI********************/
-
-
-
-
     float **imyout;			// Matrice di luminanza del tile
-    double **imdftout;		// Matrice dft del tile ridimensionato
-    double **imdftoutfase;
-
-
-
-
-
-
-
-
-    int nouniforme=0;		// Controllo ver vedere se ho una zona uniforme
-
-
-    /********************************************************************/
-
-
-
-//
-//
-//    // Parametri per decodifica BCH del marchio
-//    ///////////////////////////////////////////
-//
-//    if (nbit == 64)
-//    {
-//        m_BCH = 7;			// order of the Galois Field GF(2^m)
-//        t_BCH = 10;			// Error correcting capability
-//        length_BCH = 127;	// length of the BCH code
-//    }
-//
-//    if (nbit == 32)
-//    {
-//        m_BCH = 6;			// order of the Galois Field GF(2^m)
-//        t_BCH = 5;			// Error correcting capability
-//        length_BCH = 59;	// length of the BCH code
-//    }
-//
-//    if ((nbit != 64)&&(nbit != 32))
-//    {
-//        return -3;	// Incorrect 'nbit'
-//    }
-//
-////    FILE *flog;
-////    flog = fopen("watdec.log", "wt");
-////
-////    // LOG
-////    fprintf(flog, " - Image dimensions: nr=%d nc=%d\n\n",nr,nc);
-////    fprintf(flog, " - BCH: m=%d t=%d length=%d\n\n",m_BCH,t_BCH,length_BCH);
-//
-//    // Parametri di marchiatura
-//    ////////////////////////////
-//
-//    // NOTA: Se si vuole modificare questi parametri � necessario
-//    //       modificarli pure in WatDec(..), poich� devono essere
-//    //		 identici
-//
-//    // Controllo sulle dimensioni del tile
-//    //////////////////////////////////////
-//
-//
-//
-//    /********************************************************************/
-//
-//
-//
-//
-//
-//
-//
-//
-//    // Allocazione della memoria
-//    ////////////////////////////
-//
-////    imy = AllocImFloat(nr, nc);
-////    imc2 = AllocImFloat(nr, nc);
-////    imc3 = AllocImFloat(nr, nc);
-////    imrisinc = AllocImFloat(nre, nce);
-////    imridim = AllocImFloat(nre, nce);
-////    imdft = AllocImDouble(nre, nce);
-////    imdftfase = AllocImDouble(nre, nce);
-////    imdftout = AllocImDouble(nre, nce);
-////    imdftoutfase = AllocImDouble(nre, nce);
-////    im1dft = AllocImDouble(nre, nce);
-////    im1dftfase = AllocImDouble(nre, nce);
-////    im1dftrisinc = AllocImDouble(nre, nce);
-////    imrisincout = AllocImFloat(nr, nc);
-//
-//
-//
-//
-//
-//
-//    // Codifica delle stringhe-marchio per la generazione dei semi dei 4 lcg
-//    ////////////////////////////////////////////////////////////////////////
-//
-//    seed = new LONG8BYTE [4];
-//
-//    seed_generator(campolett, camponum, seed);
-
-//    // LOG
-//    fprintf(flog, " - Seed: %f %f %f %f\n\n",
-//            (double)seed[0], (double)seed[1], (double)seed[2], (double)seed[3]);
-
-    // Inizio ciclo decodifica
-    //////////////////////////
-
-
 
     imyout = AllocImFloat(512, 512);
 
+    double **imdftout;		// Matrice dft del tile ridimensionato
+    double **imdftoutfase;
+
+    imdftout = AllocImDouble(512, 512);
+    imdftoutfase = AllocImDouble(512, 512);
+
+    imr = AllocImByte(512, 512);
+    img = AllocImByte(512, 512);
+    imb = AllocImByte(512, 512);
+    imy = AllocImFloat(512, 512);
+    imc2 = AllocImFloat(512, 512);
+    imc3 = AllocImFloat(512, 512);
+
+    int offset = 0;
+    for (int i=0; i<512; i++)
+        for (int j=0; j<512; j++)
+        {
+            imr[i][j] = ImageIn[offset];offset++;
+            img[i][j] = ImageIn[offset];offset++;
+            imb[i][j] = ImageIn[offset];offset++;
+        }
+
+
+    // Si calcolano le componenti di luminanza e crominanza dell'immagine
+    rgb_to_crom(imr, img, imb, 512, 512, 1, imyout, imc2, imc3);
+
+
+//    int coefficient_number;
+//    double * mark;
+//    mark = new double[coefficient_number];
+//    generate_mark(watermark,wsize,campolett,camponum,coefficient_number, mark, true);
+    seed = new LONG8BYTE [4];
+    seed_generator(campolett,camponum,seed);
+
+    FFT2D::dft2d(imyout, imdftout, imdftoutfase, 512, 512);
+
+    // Added by CORMAX
+    int BitLetti[200];		// Max 200 bit da leggere
+    int dec=0;
+
+//
+//    int nouniforme=0;		// Controllo ver vedere se ho una zona uniforme
 
 
 
-    FFT2D::dft2d(imridim, imdftout, imdftoutfase, 512, 512);
+
+//    double *coefficient_vector = NULL;
+//    coefficient_vector = zones_to_watermark(imdftout, 512, 512, diag0, ndiag, 0, &coefficient_number);
+//
+
+    decoale(imdftout, 512, 512, diag0, ndiag, seed, power ,BitLetti, length_BCH);
+
+//    for (int i=0; i<200; i++)
+//        nouniforme += BitLetti[i];
 
 
 
-    decoale(imdftout, 512, 512, d1, nd, seed, alpha,BitLetti, length_BCH);
-
-    for (int i=0; i<200; i++)
-        nouniforme += BitLetti[i];
-
-
-
-    if ((BCH::decode_bch(m_BCH,length_BCH,t_BCH,BitLetti)) &&
-        (nouniforme>0))
+    if ((BCH::decode_bch(m_BCH,length_BCH,t_BCH,BitLetti)))
     {
         // THE WATERMARK HAS BEEN DETECTED
         FreeIm(imy);
         FreeIm(imc2);
         FreeIm(imc3);
         FreeIm(imyout);
-        FreeIm(imrisinc);
-        FreeIm(imridim);
+
         FreeIm(imdft);
         FreeIm(imdftfase);
         FreeIm(imdftout);
         FreeIm(imdftoutfase);
         FreeIm(im1dft);
         FreeIm(im1dftfase);
-        FreeIm(im1dftrisinc);
 
 
         // NOTA: I bit decodificati vengono salvati alla fine
         //		 di BitLetti, ossia a partire dalla posizione
         //		 (BCH length)-(information message)
 
-        int offs;
-        offs = length_BCH - nbit;
-        for (int i=0; i<nbit; i++)
-            bit[i] = BitLetti[i+offs];
+//        int offs;
+//        offs = length_BCH - nbit;
+//        for (int i=0; i<nbit; i++)
+//            bit[i] = BitLetti[i+offs];
 
 
 //                    // LOG
@@ -1474,10 +1407,9 @@ int Watermarking::WatDec(unsigned char *ImageIn, int nrImageIn, int ncImageIn,
         return 0;	// OK! Marchio rivelato
     }
 
+
     FreeIm(imyout);
-
 }
-
 /*
 	decoale(..)
 	-----------

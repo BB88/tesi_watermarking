@@ -170,6 +170,10 @@ public:
      */
     bool extractWatermark(unsigned char *image, int w, int h);
 
+
+    void rgb_to_crom(unsigned char **imr, unsigned char **img,
+                     unsigned char **imb, int nr, int nc, int flag,
+                     float ** imc1, float **imc2, float ** imc3);
 private:
 
     int WatCod(unsigned char *ImageOut , int width, int height,
@@ -204,8 +208,8 @@ private:
     void mlfunc(double *buff,int nrfile,int niteraz);
     double dgamma(double x);
 
-    void rgb_to_crom(unsigned char **imr, unsigned char **img,
-                                   unsigned char **imb, int nr, int nc, int flag,
-                                   float ** imc1, float **imc2, float ** imc3);
+//    void rgb_to_crom(unsigned char **imr, unsigned char **img,
+//                                   unsigned char **imb, int nr, int nc, int flag,
+//                                   float ** imc1, float **imc2, float ** imc3);
 
 };
