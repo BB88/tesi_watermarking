@@ -296,17 +296,17 @@ int main() {
 //            mark.at<Vec3b>(j,i) [1] = abs(image_to_mark.at<Vec3b>(j,i)[1]-left.at<Vec3b>(j,i)[1]);
 //            mark.at<Vec3b>(j,i) [2] = abs(image_to_mark.at<Vec3b>(j,i)[2]-left.at<Vec3b>(j,i)[2]);
 //        }
-
 //
-///* splits the image into 3 channels and normalize to see watermark */
+////
+/////* splits the image into 3 channels and normalize to see watermark */
 //
 //    Mat channels[3];
 //    split(mark,channels);
-//    double min, max;
-//    minMaxLoc(channels[0], &min, &max);
-//    Mat chan0 = channels[0] *255 / max;
-//    Mat chan1 = channels[1] *255 / max;
-//    Mat chan2 = channels[2] *255 / max;
+//    double mins, maxs;
+//    minMaxLoc(channels[0], &mins, &maxs);
+//    Mat chan0 = channels[0] *255 / maxs;
+//    Mat chan1 = channels[1] *255 / maxs;
+//    Mat chan2 = channels[2] *255 / maxs;
 //    cv::imshow("mark", chan0);
 //    cv::imshow("mark1", chan1);
 //    cv::imshow("mark2", chan2);
@@ -341,17 +341,17 @@ int main() {
 //
 //        }
 //
-////    Mat channelsW[3];
-////    split(mark,channelsW);
-////    double min, max;
-////    minMaxLoc(channelsW[0], &min, &max);
-////    cv::Mat wat_to_show0 = channelsW[0] *255 / max;
-////    cv::Mat wat_to_show1 = channelsW[1] *255 / max;
-////    cv::Mat wat_to_show2 = channelsW[2] *255 / max;
-////    cv::imshow("warped_mark0", wat_to_show0);
-////    cv::imshow("warped_mark1", wat_to_show1);
-////    cv::imshow("warped_mark2", wat_to_show2);
-////    waitKey(0);
+//    Mat channelsW[3];
+//    split(mark,channelsW);
+//    double min, max;
+//    minMaxLoc(channelsW[0], &min, &max);
+//    cv::Mat wat_to_show0 = channelsW[0] *255 / max;
+//    cv::Mat wat_to_show1 = channelsW[1] *255 / max;
+//    cv::Mat wat_to_show2 = channelsW[2] *255 / max;
+//    cv::imshow("warped_mark0", wat_to_show0);
+//    cv::imshow("warped_mark1", wat_to_show1);
+//    cv::imshow("warped_mark2", wat_to_show2);
+//    waitKey(0);
 //
 //    cv::Mat right_watermarked;
 //    right.copyTo(right_watermarked);
@@ -369,9 +369,12 @@ int main() {
 
 
     ///////MARCHIATURA VISTA DESTRA NELLA LUMINANZA///////////
-//
-    unsigned char *watermarked_image;
-    watermarked_image=image_to_mark.data;
+
+    cv::Mat mark;
+    cv::absdiff(image_to_mark,left,mark);
+
+    unsigned char *watermarked;
+    watermarked = mark.data;
 
     unsigned char *left_image;
     left_image=left.data;
@@ -426,10 +429,11 @@ int main() {
     for (int i=0; i<480; i++)
         for (int j=0; j<640; j++)
         {
-            imrw[i][j] = watermarked_image[offset];offset++;
-            imgw[i][j] = watermarked_image[offset];offset++;
-            imbw[i][j] = watermarked_image[offset];offset++;
+            imrw[i][j] = watermarked[offset];offset++;
+            imgw[i][j] = watermarked[offset];offset++;
+            imbw[i][j] = watermarked[offset];offset++;
         }
+
     offset = 0;
     for (int i=0; i<480; i++)
         for (int j=0; j<640; j++)
@@ -453,11 +457,12 @@ int main() {
     image_watermarking.rgb_to_crom(imrl, imgl, imbl, 480, 640, 1, imyoutl, imc2l, imc3l);
     image_watermarking.rgb_to_crom(imrr, imgr, imbr, 480, 640, 1, imyoutr, imc2r, imc3r);
 
+
     float   **watermarkY;
     watermarkY = AllocIm::AllocImFloat(480, 640);
     for (int i=0;i<480;i++)
         for (int j=0;j<640;j++){
-           watermarkY[i][j] = 0;
+           watermarkY[i][j] = 0.0;
         }
 
 
@@ -468,8 +473,10 @@ int main() {
     for (int i=0;i<480;i++)
         for (int j=0;j<512;j++){
             d = disp.at<uchar>(i,j);
-            watermarkY[i][j+d] = abs(imyoutw[i][j]-imyoutl[i][j]);
+            watermarkY[i][j+d] = imyoutw[i][j];
         }
+
+
 
     for (int i=0;i<480;i++)
         for (int j=0;j<640;j++)
@@ -537,19 +544,33 @@ int main() {
 
 
     /*  VEDERE IL MARCHIO NELLA DESTRA */
+//
+//
+    cv::Mat mark2 = cv::Mat::zeros(left.rows, left.cols , CV_8UC3);;
 
-        double min, max;
-    cv::Mat mark2;
+//
+    for (int j = 0; j < 480; j++)
+        for (int i = 0; i < 640; i++){
+            mark2.at<Vec3b>(j,i) [0] = abs(right_watermarked.at<Vec3b>(j,i)[0]-right.at<Vec3b>(j,i)[0]);
+            mark2.at<Vec3b>(j,i) [1] = abs(right_watermarked.at<Vec3b>(j,i)[1]-right.at<Vec3b>(j,i)[1]);
+            mark2.at<Vec3b>(j,i) [2] = abs(right_watermarked.at<Vec3b>(j,i)[2]-right.at<Vec3b>(j,i)[2]);
+        }
+
+
+
+    double min, max;
+
     Mat channels2[3];
-    cv::absdiff(right_watermarked,right,mark2);
+//    cv::absdiff(right_watermarked,right,mark2);
     split(mark2,channels2);
     minMaxLoc(channels2[0], &min, &max);
-    Mat chan0 = channels2[0] *255 / max;
-    Mat chan1 = channels2[1] *255 / max;
-    Mat chan2 = channels2[2] *255 / max;
-    cv::imshow("mark20", chan0);
-    cv::imshow("mark21", chan1);
-    cv::imshow("mark22", chan2);
+
+    Mat chan0d = channels2[0] *255 / max;
+    Mat chan1d = channels2[1] *255 / max;
+    Mat chan2d = channels2[2] *255 / max;
+    cv::imshow("mark20", chan0d);
+    cv::imshow("mark21", chan1d);
+    cv::imshow("mark22", chan2d);
     waitKey(0);
 
  /* FINE VEDERE IL MARCHIO NELLA DESTRA */
