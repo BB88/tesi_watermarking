@@ -20,12 +20,12 @@ void Disp_opt::disparity_filtering(cv::Mat kz_disp) {
     cv::medianBlur(kz_disp, output, 7);
     imshow("Filtered disparity", output);
     //save filtered colored image
-    imwrite("/home/miky/ClionProjects/tesi_watermarking/img/f_disp.png", output);
+    imwrite("/home/bene/ClionProjects/tesi_watermarking/img/f_disp.png", output);
     cv::Mat greyMat;
     //convert filtered colored disparity to greyscale
     cv::cvtColor(output, greyMat, CV_BGR2GRAY);
     //save filtered greyscale image
-    imwrite("/home/miky/ClionProjects/tesi_watermarking/img/fg_disp.png", greyMat);
+    imwrite("/home/bene/ClionProjects/tesi_watermarking/img/fg_disp.png", greyMat);
     imshow("Filtered greyscale disparity", greyMat);
 
 }
@@ -33,7 +33,7 @@ void Disp_opt::disparity_filtering(cv::Mat kz_disp) {
 void Disp_opt::disparity_normalization(cv::Mat kz_disp) {
 
     std::ofstream dispFile;
-    dispFile.open("/home/miky/Scrivania/dispMat2.txt");
+    dispFile.open("/home/bene/Scrivania/dispMat2.txt");
 
 
     int d, c , dMin, dMax, dispSize;
@@ -44,7 +44,7 @@ void Disp_opt::disparity_normalization(cv::Mat kz_disp) {
     imshow("Greyscale disparity", kz_disp);
     cv::Mat nkz_disp = cv::Mat::zeros(kz_disp.rows, kz_disp.cols, CV_8UC1);
     // load ground_truth for comparison
-    Mat gt_disp = imread("/home/miky/ClionProjects/tesi_watermarking/img/gt_disp.png",
+    Mat gt_disp = imread("/home/bene/ClionProjects/tesi_watermarking/img/gt_disp.png",
                     CV_LOAD_IMAGE_GRAYSCALE);
     cv::imshow("Ground Truth",gt_disp);
 //    cout << "channels" << fg_disp.channels() << endl;
@@ -67,7 +67,7 @@ void Disp_opt::disparity_normalization(cv::Mat kz_disp) {
         }
     }
     dispFile.close();
-    imwrite("/home/miky/ClionProjects/tesi_watermarking/img/nkz_right_dim_disp.png", nkz_disp);
+    imwrite("/home/bene/ClionProjects/tesi_watermarking/img/nkz_right_dim_disp.png", nkz_disp);
     imshow("Normalized disparity", nkz_disp);
 }
 
@@ -98,5 +98,5 @@ void Disp_opt::occlusions_enhancing(cv::Mat f_disp) {
     }
     namedWindow("Modified pixel", CV_WINDOW_AUTOSIZE);
     imshow("Modified pixel", f_disp);
-    imwrite("/home/miky/ClionProjects/tesi_watermarking/img/fbw_disp.png", f_disp);
+    imwrite("/home/bene/ClionProjects/tesi_watermarking/img/fbw_disp.png", f_disp);
 }
