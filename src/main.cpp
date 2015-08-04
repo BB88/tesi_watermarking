@@ -302,58 +302,10 @@ int main() {
     cv::imshow("mark2", chan2);
     waitKey(0);
 */
-
-    /* PROCESSO MARCHIATURA IMMAGINE DESTRA */
-
-    cv::Mat disp = imread("/home/bene/ClionProjects/tesi_watermarking/img/nkz_disp.png", CV_LOAD_IMAGE_GRAYSCALE);
-
-   /* THREE CHANNELS WATERMARKING */
-/*
-    cv::Mat mark;
-    cv::absdiff(image_to_mark,left,mark);
-    cv::Mat warped_mark = cv::Mat::zeros(480, 640, CV_8UC3);
- // left view watermark extraction and disparity-based modification
-    double min_disp, max_disp;
-    minMaxLoc(disp, &min_disp, &max_disp);
-    int d;
-    for (int j = 0; j < 480; j++)
-        for (int i = 0; i < 512; i++){
-            d = disp.at<uchar>(j,i);
-            warped_mark.at<Vec3b>(j,i+d) [0] = mark.at<Vec3b>(j,i)[0];
-            warped_mark.at<Vec3b>(j,i+d) [1] = mark.at<Vec3b>(j,i)[1];
-            warped_mark.at<Vec3b>(j,i+d) [2] = mark.at<Vec3b>(j,i)[2];
-        }
-    Mat channelsW[3];
-    split(mark,channelsW);
-    double min, max;
-    minMaxLoc(channelsW[0], &min, &max);
-    cv::Mat wat_to_show0 = channelsW[0] *255 / max;
-    cv::Mat wat_to_show1 = channelsW[1] *255 / max;
-    cv::Mat wat_to_show2 = channelsW[2] *255 / max;
-    cv::imshow("warped_mark0", wat_to_show0);
-    cv::imshow("warped_mark1", wat_to_show1);
-    cv::imshow("warped_mark2", wat_to_show2);
-    waitKey(0);
-    cv::Mat right_watermarked;
-    right.copyTo(right_watermarked);
-    for (int j = 0; j < 480; j++)
-        for (int i = 0; i < 640; i++){
-            right_watermarked.at<Vec3b>(j,i) [0] = right_watermarked.at<Vec3b>(j,i) [0] + warped_mark.at<Vec3b>(j,i)[0];
-            right_watermarked.at<Vec3b>(j,i) [1] = right_watermarked.at<Vec3b>(j,i) [1] + warped_mark.at<Vec3b>(j,i)[1];
-            right_watermarked.at<Vec3b>(j,i) [2] = right_watermarked.at<Vec3b>(j,i) [2] + warped_mark.at<Vec3b>(j,i)[2];
-        }
-    cv::imshow("right_watermarked", righ t_watermarked);
-    waitKey(0);
-    imwrite("/home/miky/Scrivania/right_marked.png", right_watermarked);
-*/
-
-    /* LUMINANCE WATERMARKING */
-
-    cv::Mat mark;
-    cv::absdiff(image_to_mark,left,mark);
-
-    unsigned char *watermarked;
-    watermarked = mark.data;
+    ///////MARCHIATURA VISTA DESTRA NELLA LUMINANZA///////////
+//
+    unsigned char *watermarked_image;
+    watermarked_image=image_to_mark.data;
 
     unsigned char *left_image;
     left_image=left.data;
@@ -408,11 +360,10 @@ int main() {
     for (int i=0; i<480; i++)
         for (int j=0; j<640; j++)
         {
-            imrw[i][j] = watermarked[offset];offset++;
-            imgw[i][j] = watermarked[offset];offset++;
-            imbw[i][j] = watermarked[offset];offset++;
+            imrw[i][j] = watermarked_image[offset];offset++;
+            imgw[i][j] = watermarked_image[offset];offset++;
+            imbw[i][j] = watermarked_image[offset];offset++;
         }
-
     offset = 0;
     for (int i=0; i<480; i++)
         for (int j=0; j<640; j++)
@@ -436,12 +387,11 @@ int main() {
     image_watermarking.rgb_to_crom(imrl, imgl, imbl, 480, 640, 1, imyoutl, imc2l, imc3l);
     image_watermarking.rgb_to_crom(imrr, imgr, imbr, 480, 640, 1, imyoutr, imc2r, imc3r);
 
-
     float   **watermarkY;
     watermarkY = AllocIm::AllocImFloat(480, 640);
     for (int i=0;i<480;i++)
         for (int j=0;j<640;j++){
-           watermarkY[i][j] = 0.0;
+           watermarkY[i][j] = 0;
         }
 
 
@@ -452,14 +402,12 @@ int main() {
     for (int i=0;i<480;i++)
         for (int j=0;j<512;j++){
             d = disp.at<uchar>(i,j);
-            watermarkY[i][j+d] = imyoutw[i][j];
+            watermarkY[i][j+d] = abs(imyoutw[i][j]-imyoutl[i][j]);
         }
-
-
 
     for (int i=0;i<480;i++)
         for (int j=0;j<640;j++)
-            imyoutr[i][j] = imyoutr[i][j] + watermarkY[i][j];
+            imyoutr[i][j] = imyoutr[i][j] + 1*(watermarkY[i][j]);
 
 
     image_watermarking.rgb_to_crom(imrr, imgr, imbr, 480, 640, -1, imyoutr, imc2r, imc3r);
@@ -523,16 +471,16 @@ int main() {
 
 
     /*  VEDERE IL MARCHIO NELLA DESTRA */
-//
-//
-    cv::Mat mark2 = cv::Mat::zeros(left.rows, left.cols , CV_8UC3);;
 
-//
+    cv::Mat right2 = imread("/home/miky/ClionProjects/tesi_watermarking//img/r.png",CV_LOAD_IMAGE_COLOR);
+    cv::Mat mark2 = cv::Mat::zeros(right2.rows, right2.cols , CV_8UC3);;
+    right_watermarked.copyTo(mark2);
+
     for (int j = 0; j < 480; j++)
         for (int i = 0; i < 640; i++){
-            mark2.at<Vec3b>(j,i) [0] = abs(right_watermarked.at<Vec3b>(j,i)[0]-right.at<Vec3b>(j,i)[0]);
-            mark2.at<Vec3b>(j,i) [1] = abs(right_watermarked.at<Vec3b>(j,i)[1]-right.at<Vec3b>(j,i)[1]);
-            mark2.at<Vec3b>(j,i) [2] = abs(right_watermarked.at<Vec3b>(j,i)[2]-right.at<Vec3b>(j,i)[2]);
+            mark2.at<Vec3b>(j,i) [0] = abs(right_watermarked.at<Vec3b>(j,i)[0]-right2.at<Vec3b>(j,i)[0]);
+            mark2.at<Vec3b>(j,i) [1] = abs(right_watermarked.at<Vec3b>(j,i)[1]-right2.at<Vec3b>(j,i)[1]);
+            mark2.at<Vec3b>(j,i) [2] = abs(right_watermarked.at<Vec3b>(j,i)[2]-right2.at<Vec3b>(j,i)[2]);
         }
 
 
