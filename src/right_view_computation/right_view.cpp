@@ -33,7 +33,7 @@ using namespace cv;
         printf("Matrix: %s %dx%d \n", ty.c_str(), o_right.cols, o_right.rows);
         */
         // reconstructed right view
-        cv::Mat n_right = cv::Mat::zeros(o_right.rows, o_right.cols, CV_8UC3);
+        cv::Mat n_right = cv::Mat::zeros(left.rows, left.cols, CV_8UC3);
         // change pixel value
         for(int j=0;j< left.rows;j++)
         {
@@ -50,6 +50,7 @@ using namespace cv;
             }
         }
         imwrite("/home/miky/ClionProjects/tesi_watermarking/img/nkz_right.png", n_right);
+
         //After changing
         cv::imshow("Reconstructed", n_right);
         waitKey(0);
