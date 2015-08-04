@@ -287,27 +287,30 @@ int main() {
 //
 // /* VEDERE IL MARCHIO NELLA SINISTRA */
 //
-////    for (int j = 0; j < 480; j++)
-////        for (int i = 0; i < 640; i++){
-////            image_to_mark.at<Vec3b>(j,i) [0] = abs(image_to_mark.at<Vec3b>(j,i)[0]-left.at<Vec3b>(j,i)[0]);
-////            image_to_mark.at<Vec3b>(j,i) [1] = abs(image_to_mark.at<Vec3b>(j,i)[1]-left.at<Vec3b>(j,i)[1]);
-////            image_to_mark.at<Vec3b>(j,i) [2] = abs(image_to_mark.at<Vec3b>(j,i)[2]-left.at<Vec3b>(j,i)[2]);
-////        }
+//    cv::Mat mark = cv::Mat::zeros(left.rows, left.cols , CV_8UC3);;
+//    image_to_mark.copyTo(mark);
 //
+//    for (int j = 0; j < 480; j++)
+//        for (int i = 0; i < 640; i++){
+//            mark.at<Vec3b>(j,i) [0] = abs(image_to_mark.at<Vec3b>(j,i)[0]-left.at<Vec3b>(j,i)[0]);
+//            mark.at<Vec3b>(j,i) [1] = abs(image_to_mark.at<Vec3b>(j,i)[1]-left.at<Vec3b>(j,i)[1]);
+//            mark.at<Vec3b>(j,i) [2] = abs(image_to_mark.at<Vec3b>(j,i)[2]-left.at<Vec3b>(j,i)[2]);
+//        }
+
 //
 ///* splits the image into 3 channels and normalize to see watermark */
 //
-////    Mat channels[3];
-////    split(mark,channels);
-////    double min, max;
-////    minMaxLoc(channels[0], &min, &max);
-////    Mat chan0 = channels[0] *255 / max;
-////    Mat chan1 = channels[1] *255 / max;
-////    Mat chan2 = channels[2] *255 / max;
-////    cv::imshow("mark", chan0);
-////    cv::imshow("mark1", chan1);
-////    cv::imshow("mark2", chan2);
-////    waitKey(0);
+//    Mat channels[3];
+//    split(mark,channels);
+//    double min, max;
+//    minMaxLoc(channels[0], &min, &max);
+//    Mat chan0 = channels[0] *255 / max;
+//    Mat chan1 = channels[1] *255 / max;
+//    Mat chan2 = channels[2] *255 / max;
+//    cv::imshow("mark", chan0);
+//    cv::imshow("mark1", chan1);
+//    cv::imshow("mark2", chan2);
+//    waitKey(0);
 
     /* FINE VEDERE IL MARCHIO NELLA SINISTRA */
 
@@ -318,55 +321,215 @@ int main() {
 //
 // //////////////////MARCHIATURA VISTA DESTRA NEI TRE CANALI///////////////////
 //
-    cv::Mat mark;
-    cv::absdiff(image_to_mark,left,mark);
+//    cv::Mat mark;
+//    cv::absdiff(image_to_mark,left,mark);
+//
+//    cv::Mat warped_mark = cv::Mat::zeros(480, 640, CV_8UC3);
+//
+//
+//// estraggo il marchio dalla vista sinistra e lo modifico in base alla disparità
+//    double min_disp, max_disp;
+//    minMaxLoc(disp, &min_disp, &max_disp);
+//    int d;
+//
+//    for (int j = 0; j < 480; j++)
+//        for (int i = 0; i < 512; i++){
+//            d = disp.at<uchar>(j,i);
+//            warped_mark.at<Vec3b>(j,i+d) [0] = mark.at<Vec3b>(j,i)[0];
+//            warped_mark.at<Vec3b>(j,i+d) [1] = mark.at<Vec3b>(j,i)[1];
+//            warped_mark.at<Vec3b>(j,i+d) [2] = mark.at<Vec3b>(j,i)[2];
+//
+//        }
+//
+////    Mat channelsW[3];
+////    split(mark,channelsW);
+////    double min, max;
+////    minMaxLoc(channelsW[0], &min, &max);
+////    cv::Mat wat_to_show0 = channelsW[0] *255 / max;
+////    cv::Mat wat_to_show1 = channelsW[1] *255 / max;
+////    cv::Mat wat_to_show2 = channelsW[2] *255 / max;
+////    cv::imshow("warped_mark0", wat_to_show0);
+////    cv::imshow("warped_mark1", wat_to_show1);
+////    cv::imshow("warped_mark2", wat_to_show2);
+////    waitKey(0);
+//
+//    cv::Mat right_watermarked;
+//    right.copyTo(right_watermarked);
+//
+//    for (int j = 0; j < 480; j++)
+//        for (int i = 0; i < 640; i++){
+//            right_watermarked.at<Vec3b>(j,i) [0] = right_watermarked.at<Vec3b>(j,i) [0] + warped_mark.at<Vec3b>(j,i)[0];
+//            right_watermarked.at<Vec3b>(j,i) [1] = right_watermarked.at<Vec3b>(j,i) [1] + warped_mark.at<Vec3b>(j,i)[1];
+//            right_watermarked.at<Vec3b>(j,i) [2] = right_watermarked.at<Vec3b>(j,i) [2] + warped_mark.at<Vec3b>(j,i)[2];
+//        }
+//
+//    cv::imshow("right_watermarked", righ t_watermarked);
+//    waitKey(0);
+//    imwrite("/home/miky/Scrivania/right_marked.png", right_watermarked);
 
-    cv::Mat warped_mark = cv::Mat::zeros(480, 640, CV_8UC3);
+
+    ///////MARCHIATURA VISTA DESTRA NELLA LUMINANZA///////////
+//
+    unsigned char *watermarked_image;
+    watermarked_image=image_to_mark.data;
+
+    unsigned char *left_image;
+    left_image=left.data;
+
+    unsigned char *right_image;
+    right_image=right.data;
+
+    unsigned char **imrw;	// matrici delle componenti RGB
+    unsigned char **imgw;
+    unsigned char **imbw;
+    float   **imyoutw;		// immagine
+    float **imc2w;			// matrice di crominanza c2
+    float **imc3w;
+
+    imyoutw = AllocIm::AllocImFloat(480, 640);
+    imc2w = AllocIm::AllocImFloat(480, 640);
+    imc3w = AllocIm::AllocImFloat(480, 640);
+    imrw = AllocIm::AllocImByte(480, 640);
+    imgw = AllocIm::AllocImByte(480, 640);
+    imbw = AllocIm::AllocImByte(480, 640);
+
+    unsigned char **imrl;	// matrici delle componenti RGB
+    unsigned char **imgl;
+    unsigned char **imbl;
+    float   **imyoutl;			// immagine
+    float **imc2l;			// matrice di crominanza c2
+    float **imc3l;
+
+    imyoutl = AllocIm::AllocImFloat(480, 640);
+    imc2l = AllocIm::AllocImFloat(480, 640);
+    imc3l = AllocIm::AllocImFloat(480, 640);
+    imrl = AllocIm::AllocImByte(480, 640);
+    imgl = AllocIm::AllocImByte(480, 640);
+    imbl = AllocIm::AllocImByte(480, 640);
 
 
-// estraggo il marchio dalla vista sinistra e lo modifico in base alla disparità
+    unsigned char **imrr;	// matrici delle componenti RGB
+    unsigned char **imgr;
+    unsigned char **imbr;
+    float   **imyoutr;			// immagine
+    float **imc2r;			// matrice di crominanza c2
+    float **imc3r;
+
+    imyoutr = AllocIm::AllocImFloat(480, 640);
+    imc2r = AllocIm::AllocImFloat(480, 640);
+    imc3r = AllocIm::AllocImFloat(480, 640);
+    imrr = AllocIm::AllocImByte(480, 640);
+    imgr = AllocIm::AllocImByte(480, 640);
+    imbr = AllocIm::AllocImByte(480, 640);
+
+    int offset = 0;
+    for (int i=0; i<480; i++)
+        for (int j=0; j<640; j++)
+        {
+            imrw[i][j] = watermarked_image[offset];offset++;
+            imgw[i][j] = watermarked_image[offset];offset++;
+            imbw[i][j] = watermarked_image[offset];offset++;
+        }
+    offset = 0;
+    for (int i=0; i<480; i++)
+        for (int j=0; j<640; j++)
+        {
+            imrl[i][j] = left_image[offset];offset++;
+            imgl[i][j] = left_image[offset];offset++;
+            imbl[i][j] = left_image[offset];offset++;
+        }
+    offset = 0;
+    for (int i=0; i<480; i++)
+        for (int j=0; j<640; j++)
+        {
+            imrr[i][j] = right_image[offset];offset++;
+            imgr[i][j] = right_image[offset];offset++;
+            imbr[i][j] = right_image[offset];offset++;
+        }
+
+
+    // Si calcolano le componenti di luminanza e crominanza dell'immagine
+    image_watermarking.rgb_to_crom(imrw, imgw, imbw, 480, 640, 1, imyoutw, imc2w, imc3w);
+    image_watermarking.rgb_to_crom(imrl, imgl, imbl, 480, 640, 1, imyoutl, imc2l, imc3l);
+    image_watermarking.rgb_to_crom(imrr, imgr, imbr, 480, 640, 1, imyoutr, imc2r, imc3r);
+
+    float   **watermarkY;
+    watermarkY = AllocIm::AllocImFloat(480, 640);
+    for (int i=0;i<480;i++)
+        for (int j=0;j<640;j++){
+           watermarkY[i][j] = 0;
+        }
+
+
     double min_disp, max_disp;
     minMaxLoc(disp, &min_disp, &max_disp);
     int d;
 
-    for (int j = 0; j < (480); j++)
-        for (int i = 0; i < 640-max_disp; i++){
-            d = disp.at<uchar>(j,i);
-            warped_mark.at<Vec3b>(j,i+d) [0] = mark.at<Vec3b>(j,i)[0];
-            warped_mark.at<Vec3b>(j,i+d) [1] = mark.at<Vec3b>(j,i)[1];
-            warped_mark.at<Vec3b>(j,i+d) [2] = mark.at<Vec3b>(j,i)[2];
-
+    for (int i=0;i<480;i++)
+        for (int j=0;j<512;j++){
+            d = disp.at<uchar>(i,j);
+            watermarkY[i][j+d] = abs(imyoutw[i][j]-imyoutl[i][j]);
         }
 
-//    Mat channelsW[3];
-//    split(mark,channelsW);
-//    double min, max;
-//    minMaxLoc(channelsW[0], &min, &max);
-//    cv::Mat wat_to_show0 = channelsW[0] *255 / max;
-//    cv::Mat wat_to_show1 = channelsW[1] *255 / max;
-//    cv::Mat wat_to_show2 = channelsW[2] *255 / max;
-//    cv::imshow("warped_mark0", wat_to_show0);
-//    cv::imshow("warped_mark1", wat_to_show1);
-//    cv::imshow("warped_mark2", wat_to_show2);
-//    waitKey(0);
+    for (int i=0;i<480;i++)
+        for (int j=0;j<640;j++)
+            imyoutr[i][j] = imyoutr[i][j] + watermarkY[i][j];
 
-    cv::Mat right_watermarked;
+
+    image_watermarking.rgb_to_crom(imrr, imgr, imbr, 480, 640, -1, imyoutr, imc2r, imc3r);
+
+
+    offset = 0;
+    for (int i=0; i<480; i++)
+        for (int j=0; j<640; j++)
+        {
+            right_image[offset] = imrr[i][j]; offset++;
+            right_image[offset] = imgr[i][j]; offset++;
+            right_image[offset] = imbr[i][j]; offset++;
+        }
+
+
+    cv::Mat right_watermarked=cv::Mat::zeros(480, 640, CV_8UC3);;
     right.copyTo(right_watermarked);
 
+
+    count = 0;
     for (int j = 0; j < 480; j++)
         for (int i = 0; i < 640; i++){
-            right_watermarked.at<Vec3b>(j,i) [0] = right_watermarked.at<Vec3b>(j,i) [0] + warped_mark.at<Vec3b>(j,i)[0];
-            right_watermarked.at<Vec3b>(j,i) [1] = right_watermarked.at<Vec3b>(j,i) [1] + warped_mark.at<Vec3b>(j,i)[1];
-            right_watermarked.at<Vec3b>(j,i) [2] = right_watermarked.at<Vec3b>(j,i) [2] + warped_mark.at<Vec3b>(j,i)[2];
+            right_watermarked.at<Vec3b>(j,i) [0] = right_image[count]; count++;
+            right_watermarked.at<Vec3b>(j,i) [1] = right_image[count]; count++;
+            right_watermarked.at<Vec3b>(j,i) [2] = right_image[count]; count++;
         }
+
+
 
     cv::imshow("right_watermarked", right_watermarked);
     waitKey(0);
-    imwrite("/home/miky/Scrivania/right_marked.png", right_watermarked);
 
+    AllocIm::FreeIm(imc2w) ;
+    AllocIm::FreeIm(imc3w) ;
+    AllocIm::FreeIm(imrw);
+    AllocIm::FreeIm(imgw);
+    AllocIm::FreeIm(imbw);
 
-    ///////MARCHIATURA VISTA DESTRA NELLA LUMINANZA///////////
+    AllocIm::FreeIm(imyoutw);
 
+    AllocIm::FreeIm(imc2l) ;
+    AllocIm::FreeIm(imc3l) ;
+    AllocIm::FreeIm(imrl);
+    AllocIm::FreeIm(imgl);
+    AllocIm::FreeIm(imbl);
+
+    AllocIm::FreeIm(imyoutl);
+
+    AllocIm::FreeIm(imc2r) ;
+    AllocIm::FreeIm(imc3r) ;
+    AllocIm::FreeIm(imrr);
+    AllocIm::FreeIm(imgr);
+    AllocIm::FreeIm(imbr);
+
+    AllocIm::FreeIm(imyoutr);
+    AllocIm::FreeIm(watermarkY);
 
 
 
