@@ -30,35 +30,33 @@ void Disp_opt::disparity_filtering(cv::Mat kz_disp) {
 
 }
 
-void Disp_opt::disparity_normalization(cv::Mat kz_disp) {
+// !! change the name of the normalized image you want to save !!
 
+void Disp_opt::disparity_normalization(cv::Mat kz_disp, cv::Mat &wkz_disp) {
+
+/*
     std::ofstream dispFile;
     dispFile.open("/home/bene/Scrivania/dispMat2.txt");
-
-
+*/
     int d, c , dMin, dMax, dispSize;
     dMin = -77;
     dMax = -19;
     dispSize = dMax - dMin + 1;
-//    Mat disp = imread("/home/bene/Scrivania/disp/filt_grey_disp.png", CV_LOAD_IMAGE_GRAYSCALE);
-    imshow("Greyscale disparity", kz_disp);
-    cv::Mat nkz_disp = cv::Mat::zeros(kz_disp.rows, kz_disp.cols, CV_8UC1);
+    wkz_disp = cv::Mat::zeros(kz_disp.rows, kz_disp.cols, CV_8UC1);
     // load ground_truth for comparison
     Mat gt_disp = imread("/home/bene/ClionProjects/tesi_watermarking/img/gt_disp.png",
                     CV_LOAD_IMAGE_GRAYSCALE);
-    cv::imshow("Ground Truth",gt_disp);
 //    cout << "channels" << fg_disp.channels() << endl;
     for(int j=0;j< kz_disp.rows;j++) {
         for (int i = 0; i < kz_disp.cols; i++) {
-
             c = kz_disp.at<uchar>(j,i);
             if ( c != 178 ) {
                 d = (c - 255) * dispSize / -(255 - 64) + dMin + 1;
-                dispFile << d << "m" << "  " << c << "  " << -d << std::endl;
-                nkz_disp.at<uchar>(j,i) = - d;
+   //             dispFile << d << "m" << "  " << c << "  " << -d << std::endl;
+                wkz_disp.at<uchar>(j,i) = - d;
             } else {
-                nkz_disp.at<uchar>(j,i) = 0;
-                dispFile << "X" << std::endl;
+                wkz_disp.at<uchar>(j,i) = 0;
+   //             dispFile << "X" << std::endl;
             }
 
          //   d = - ((255 - D) * dispSize / (255 - 64) + dMin);
@@ -66,9 +64,15 @@ void Disp_opt::disparity_normalization(cv::Mat kz_disp) {
 
         }
     }
-    dispFile.close();
-    imwrite("/home/bene/ClionProjects/tesi_watermarking/img/nkz_right_dim_disp.png", nkz_disp);
-    imshow("Normalized disparity", nkz_disp);
+//    dispFile.close();
+  //  imwrite("/home/bene/ClionProjects/tesi_watermarking/img/nwm_disp.png", wkz_disp);
+    /*imshow*/
+/*
+      imshow("Greyscale disparity", kz_disp);
+      imshow("Normalized disparity", wkz_disp);
+      imshow("Ground Truth",gt_disp);
+*/
+
 }
 
 

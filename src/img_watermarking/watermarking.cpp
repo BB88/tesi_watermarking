@@ -199,8 +199,8 @@ int Watermarking::WatCod(unsigned char *ImageOut, int width, int height, const c
 
 
 
-
-//    DecimVarfloat(imyout, 512, 512, WINDOW, img_map_flt); //per la maschera
+    //per la maschera
+    DecimVarfloat(imyout, 512, 512, WINDOW, img_map_flt);
 
     FFT2D::dft2d(imyout, imdft, imdftfase, 512, 512);
 
