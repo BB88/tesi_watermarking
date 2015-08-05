@@ -22,6 +22,12 @@
 #include "./img_watermarking/imgwat.h"
 #include "./img_watermarking/allocim.h"
 
+//grapfh cuts
+#include "./graphcuts/image.h"
+#include "./graphcuts/match.h"
+#include "./graphcuts/utils.h"
+#include "./graphcuts/io_png.h"
+
 //libconfig
 #include <libconfig.h++>
 #include "./config/config.hpp"
@@ -30,6 +36,7 @@ using namespace std;
 using namespace cv;
 using namespace cv::datasets;
 using namespace libconfig;
+using namespace graph_cuts_utils;
 
 
 int main() {
@@ -53,8 +60,55 @@ int main() {
     std::string passwstr=generalPars.passwstr;
     std::string passwnum=generalPars.passwnum;
 
-    /*  kz_disp PARAMETERS */
 
+    /* GRAPH CUTS DISPARITY COMPUTATION*/
+//
+//    std::ostringstream ss;
+//
+//    std::string img1_path =  "/home/miky/ClionProjects/tesi_watermarking/img/l.png";
+//    std::string img2_path =  "/home/miky/ClionProjects/tesi_watermarking/img/r.png";
+//    Match::Parameters params = { // Default parameters
+//            Match::Parameters::L2, 1, // dataCost, denominator
+//            8, -1, -1, // edgeThresh, lambda1, lambda2 (smoothness cost)
+//            -1,        // K (occlusion cost)
+//            4, false   // maxIter, bRandomizeEveryIteration
+//    };
+//    float K=-1, lambda=-1, lambda1=-1, lambda2=-1;
+//    params.dataCost = Match::Parameters::L1;
+////      params.dataCost = Match::Parameters::L2;
+//
+//    GeneralImage im1 = (GeneralImage)imLoad(IMAGE_GRAY, img1_path.c_str());
+//    GeneralImage im2 = (GeneralImage)imLoad(IMAGE_GRAY, img2_path.c_str());
+//    bool color = false;
+//    if(graph_cuts_utils::isGray((RGBImage)im1) && graph_cuts_utils::isGray((RGBImage)im2)) {
+//        color=false;
+//        graph_cuts_utils::convert_gray(im1);
+//        graph_cuts_utils::convert_gray(im2);
+//    }
+//
+//    Match m(im1, im2, color);
+////
+////////    // Disparity
+//    int dMin=-77, dMax=-19;
+////
+//    m.SetDispRange(dMin, dMax);
+//
+//    time_t seed = time(NULL);
+//    srand((unsigned int)seed);
+//
+//    graph_cuts_utils::fix_parameters(m, params, K, lambda, lambda1, lambda2);
+//
+//    m.KZ2();
+//
+////        m.SaveXLeft(argv[5]);
+//
+//    m.SaveScaledXLeft("/home/miky/Scrivania/disp.png", false);
+//
+//    cv::Mat disp = imread("/home/miky/Scrivania/disp.png");
+//    imshow("kz disp",disp);
+//    waitKey(0);
+
+ /*  kz_disp PARAMETERS */
 /*
 
      *
@@ -62,12 +116,12 @@ int main() {
      * k = 79.12
      * dispMin dispMax = -77 -19
 
-*/
+
 
     /*STEP 2: FILTER DISPARITY (OUTPUT OF KZ)*/
 
 /*
-    cv::Mat kz_disp = imread("/home/bene/ClionProjects/tesi_watermarking/img/kz_disp.png");
+    cv::Mat kz_disp = imread("/home/miky/ClionProjects/tesi_watermarking/img/kz_disp.png");
     if (kz_disp.rows == 0){
         cout << "Empty image";
     } else {
@@ -76,61 +130,64 @@ int main() {
     }
 */
 
-    // path clion /home/bene/ClionProjects/tesi_watermarking/img/
-    // path Scrivania /home/bene/Scrivania/
+    // path clion /home/miky/ClionProjects/tesi_watermarking/img/
+    // path Scrivania /home/miky/Scrivania/
 
     /*STEP 3: NORMALIZE DISPARITY (OUTPUT OF KZ)*/
 
-    cv::Mat nkz_disp;
-    cv::Mat kz_disp = imread("/home/bene/ClionProjects/tesi_watermarking/img/wm_disp.png", CV_LOAD_IMAGE_GRAYSCALE);
-    if (kz_disp.rows == 0){
-        cout << "Empty image";
-    } else {
-        Disp_opt dp;
-        dp.disparity_normalization(kz_disp, nkz_disp);
-    }
+//    cv::Mat nkz_disp;
+//    cv::Mat kz_disp = imread("/home/miky/ClionProjects/tesi_watermarking/img/wm_disp.png", CV_LOAD_IMAGE_GRAYSCALE);
+//    if (kz_disp.rows == 0){
+//        cout << "Empty image";
+//    } else {
+//        Disp_opt dp;
+//        dp.disparity_normalization(kz_disp, nkz_disp);
+//    }
 
 
     /*DIFFERENCE BETWEEN GROUND TRUTH DISPARITY AND OUR DISPARITY */
-    // ground truth disparity
-    cv::Mat gt = cv::imread("/home/bene/ClionProjects/tesi_watermarking/img/gt_disp.png",
-                            CV_LOAD_IMAGE_GRAYSCALE);
-    // difference matrix
-    cv::Mat diff = cv::Mat::zeros(gt.rows, gt.cols, CV_8UC1);
-    int count = 0;
-    int min = 255, max = 0;
-    for(int j=0;j< gt.rows;j++)
-    {
-        for (int i=0;i< gt.cols;i++)
-        {
-            int new_value;
-            // handle occlusion points
-            if (nkz_disp.at<uchar>(j, i) != 0 ) {
-                new_value = nkz_disp.at<uchar>(j, i) - gt.at<uchar>(j, i);
-                // if the disparity is equal, new_value = 0 -> black pixel
-                diff.at<uchar>(j, i) = abs(new_value);
-                if ( new_value < 0) count ++;
-                if ( abs(new_value) < min ) min =  abs(new_value);
-                if ( abs(new_value) > max ) max =  abs(new_value);
-            } else {
-                new_value = 255;
-                diff.at<uchar>(j, i) = new_value;
-            }
-        }
-    }
-    // cout << "Ground truth values that are bigger than our disparity values: " << count << endl;
-    // cout << "Min difference value: " << min << " Max difference value: " << max << endl;
-    // cv::imshow("Diff disp", diff);
-    imwrite("/home/bene/ClionProjects/tesi_watermarking/img/diff_wmdisp.png", diff);
+//    // ground truth disparity
+//    cv::Mat gt = cv::imread("/home/miky/ClionProjects/tesi_watermarking/img/gt_disp.png",
+//                            CV_LOAD_IMAGE_GRAYSCALE);
+//    // our disparity
+//    cv::Mat nkz = cv::imread("/home/miky/ClionProjects/tesi_watermarking/img/nkz_disp.png",
+//                             CV_LOAD_IMAGE_GRAYSCALE);
+//    // difference matrix
+//    cv::Mat diff = cv::Mat::zeros(gt.rows, gt.cols, CV_8UC1);
+//    int count = 0;
+//    int min = 255, max = 0;
+//    for(int j=0;j< gt.rows;j++)
+//    {
+//        for (int i=0;i< gt.cols;i++)
+//        {
+//            int new_value;
+//            // handle occlusion points
+//            if (nkz_disp.at<uchar>(j, i) != 0 ) {
+//                new_value = nkz_disp.at<uchar>(j, i) - gt.at<uchar>(j, i);
+//                // if the disparity is equal, new_value = 0 -> black pixel
+//                diff.at<uchar>(j, i) = abs(new_value);
+//                if ( new_value < 0) count ++;
+//                if ( abs(new_value) < min ) min =  abs(new_value);
+//                if ( abs(new_value) > max ) max =  abs(new_value);
+//            } else {
+//                new_value = 255;
+//                diff.at<uchar>(j, i) = new_value;
+//            }
+//        }
+//    }
+//    // cout << "Ground truth values that are bigger than our disparity values: " << count << endl;
+//    // cout << "Min difference value: " << min << " Max difference value: " << max << endl;
+//    // cv::imshow("Diff disp", diff);
+//    imwrite("/home/miky/ClionProjects/tesi_watermarking/img/diff_wmdisp.png", diff);
 
     /*comparison between our disparity: the one with the mark and the one without */
 
 /*
 
-    cv::Mat nkz2 = cv::imread("/home/bene/ClionProjects/tesi_watermarking/img/nkz_disp.png",
+    cv::Mat nkz2 = cv::imread("/home/miky/ClionProjects/tesi_watermarking/img/nkz_disp.png",
                             CV_LOAD_IMAGE_GRAYSCALE);
     // our disparity
-    cv::Mat wnkz = cv::imread("/home/bene/Scrivania/nwm_disp.png",
+    cv::Mat wnkz = cv::imread("/home/miky/Scrivania/nwm_disp.png",
                              CV_LOAD_IMAGE_GRAYSCALE);
     // difference matrix
     cv::Mat diff2 = cv::Mat::zeros(gt.rows, gt.cols, CV_8UC1);
@@ -158,7 +215,7 @@ int main() {
     /* Found min and max value of difference disparity map */
 
 /*
-    cv::Mat gt = cv::imread("/home/bene/ClionProjects/tesi_watermarking/img/diff_disp.png",
+    cv::Mat gt = cv::imread("/home/miky/ClionProjects/tesi_watermarking/img/diff_disp.png",
                             CV_LOAD_IMAGE_GRAYSCALE);
     int min,max, d;
     min = 256;
@@ -180,14 +237,14 @@ int main() {
     /*STEP 4: RECONSTRUCT RIGHT VIEW*/
 
 /*
-    cv::Mat left = imread("/home/bene/ClionProjects/tesi_watermarking/img/l.png", CV_LOAD_IMAGE_COLOR);
-    cv::Mat right = imread("/home/bene/ClionProjects/tesi_watermarking//img/r.png",CV_LOAD_IMAGE_COLOR);
+    cv::Mat left = imread("/home/miky/ClionProjects/tesi_watermarking/img/l.png", CV_LOAD_IMAGE_COLOR);
+    cv::Mat right = imread("/home/miky/ClionProjects/tesi_watermarking//img/r.png",CV_LOAD_IMAGE_COLOR);
     // our disp
-    cv::Mat disp = imread("/home/bene/ClionProjects/tesi_watermarking/img/nkz_disp.png", CV_LOAD_IMAGE_GRAYSCALE);
+    cv::Mat disp = imread("/home/miky/ClionProjects/tesi_watermarking/img/nkz_disp.png", CV_LOAD_IMAGE_GRAYSCALE);
     // ground truth
-    // cv::Mat disp = imread("/home/bene/ClionProjects/tesi_watermarking/img/gt_disp", CV_LOAD_IMAGE_GRAYSCALE);
+    // cv::Mat disp = imread("/home/miky/ClionProjects/tesi_watermarking/img/gt_disp", CV_LOAD_IMAGE_GRAYSCALE);
     // watermarked left view
-    // cv::Mat left_marked = imread("/home/bene/Scrivania/l_piccola.png", CV_LOAD_IMAGE_COLOR);
+    // cv::Mat left_marked = imread("/home/miky/Scrivania/l_piccola.png", CV_LOAD_IMAGE_COLOR);
     Right_view rv;
     rv.right_reconstruction(left, disp);
 */
@@ -196,7 +253,7 @@ int main() {
     /*ENHANCING OCCLUSIONS*/
 
 /*
-    cv::Mat f_disp = imread("/home/bene/ClionProjects/tesi_watermarking/img/f_disp.png", CV_LOAD_IMAGE_COLOR);
+    cv::Mat f_disp = imread("/home/miky/ClionProjects/tesi_watermarking/img/f_disp.png", CV_LOAD_IMAGE_COLOR);
     Disp_opt dp;
     dp.occlusions_enhancing(f_disp);
 */
@@ -207,24 +264,24 @@ int main() {
     /* GET SIMILARITY BETWEEN OCCLUDED DISPARITIES (GT AND OURS) */
 
 /*
-    cv::Mat occluded = imread("/home/bene/ClionProjects/tesi_watermarking/img/filtered_bw.png");
-    cv::Mat occluded_gt = imread("/home/bene/Scrivania/tsukuba_occlusion_L_00001.png");
+    cv::Mat occluded = imread("/home/miky/ClionProjects/tesi_watermarking/img/filtered_bw.png");
+    cv::Mat occluded_gt = imread("/home/miky/Scrivania/tsukuba_occlusion_L_00001.png");
     cout << occlusions_handler::getSimilarity(occluded,occluded_gt);
 */
 
     /*  BEGIN LEFT IMAGE WATERMARKING */
-
-    cv::Mat left = imread("/home/bene/ClionProjects/tesi_watermarking/img/l.png", CV_LOAD_IMAGE_COLOR);
-    cv::Mat right = imread("/home/bene/ClionProjects/tesi_watermarking//img/r.png",CV_LOAD_IMAGE_COLOR);
-    // image to mark: disparity
-    // cv::Mat image_to_mark = cv::imread("/home/bene/ClionProjects/tesi_watermarking/img/nkz_disp.png", CV_LOAD_IMAGE_GRAYSCALE );
-    // image to mark: left view
+//
+    cv::Mat left = imread("/home/miky/ClionProjects/tesi_watermarking/img/l.png", CV_LOAD_IMAGE_COLOR);
+    cv::Mat right = imread("/home/miky/ClionProjects/tesi_watermarking//img/r.png",CV_LOAD_IMAGE_COLOR);
+//    // mark disparity
+////  cv::Mat image_to_mark = cv::imread("/home/miky/ClionProjects/tesi_watermarking/img/nkz_disp.png", CV_LOAD_IMAGE_GRAYSCALE );
+//   //  mark left view
     cv::Mat image_to_mark = cv::Mat::zeros(left.rows, left.cols , CV_8UC3);
     left.copyTo(image_to_mark);
 
    /* if greyscale image */
 /*
-    cv::Mat new_image = cv::Mat::zeros(512, 512, CV_8UC1);
+//    cv::Mat new_image = cv::Mat::zeros(512, 512, CV_8UC1);
 
     for (int j = 0; j < 480; j++)
         for (int i = 0; i < 512; i++){
@@ -241,29 +298,29 @@ int main() {
             new_image.at<Vec3b>(j,i) [1] = image_to_mark.at<Vec3b>(j,i) [1];
             new_image.at<Vec3b>(j,i) [2] = image_to_mark.at<Vec3b>(j,i) [2];
         }
-
+//
    unsigned char *squared_image = new_image.data;
 
    /* WATERMARKING ALGORITHM */
 
     unsigned char *output_img = new unsigned char[512 * 512 ];
-    // memcpy(output_img, squared_image,512*512);
-
+//    // memcpy(output_img, squared_image,512*512);
+//
     Watermarking image_watermarking;
-
+//
     //random binary watermark
     int watermark[64];
     for (int i = 0; i < 64; i++){
         int b = rand() % 2;
         watermark[i]=b;
     }
-
+//
     image_watermarking.setParameters(watermark,wsize,tilesize,power,clipping,flagResyncAll,NULL,tilelistsize);
- //   image_watermarking.setParameters(watermark,64,0,0.8,0,0,NULL,0);
+////    image_watermarking.setParameters(watermark,64,0,0.1,0,0,NULL,0);
     image_watermarking.setPassword(passwstr,passwnum);
     output_img = image_watermarking.insertWatermark(squared_image,512,512);
-
-    int count=0;
+//
+  int count=0;
 
     /* if greyscale image (restore the original size of the image) */
 /*
@@ -283,9 +340,10 @@ int main() {
         }
     cv::imshow("left_marked", image_to_mark);
     waitKey(0);
-//    imwrite("/home/bene/Scrivania/left_marked.png", image_to_mark);
 
-//    cv::imwrite("/home/bene/ClionProjects/tesi_watermarking/img/left_marked.png", image_to_mark);
+    imwrite("/home/miky/Scrivania/left_marked.png", image_to_mark);
+
+   // cv::imwrite("home/miky/ClionProjects/tesi_watermarking/img/left_watermarked.png", image_to_mark);
 
     /* END LEFT IMAGE WATERMARKING */
 
@@ -319,9 +377,7 @@ int main() {
 
     /* BEGIN RIGHT IMAGE WATERMARKING */
 
-/*
-    cv::Mat disp = imread("/home/bene/ClionProjects/tesi_watermarking/img/nkz_disp.png", CV_LOAD_IMAGE_GRAYSCALE);
-*/
+//    cv::Mat disp = imread("/home/miky/ClionProjects/tesi_watermarking/img/nkz_disp.png", CV_LOAD_IMAGE_GRAYSCALE);
 
    /* THREE CHANNELS WATERMARKING */
 
@@ -361,7 +417,7 @@ int main() {
         }
     cv::imshow("right_watermarked", righ t_watermarked);
     waitKey(0);
-    imwrite("/home/bene/Scrivania/right_marked.png", right_watermarked);
+    imwrite("/home/miky/Scrivania/right_marked.png", right_watermarked);
 */
 
     /* LUMINANCE WATERMARKING */
@@ -499,7 +555,6 @@ int main() {
         }
 
     cv::imshow("right_watermarked", right_watermarked);
-    cv::imwrite("/home/bene/ClionProjects/tesi_watermarking/img/right_marked.png", right_watermarked);
     waitKey(0);
 
     AllocIm::FreeIm(imc2w) ;
@@ -533,7 +588,8 @@ int main() {
     /*  SHOW RIGHT IMAGE WATERMARK */
 
 /*
-    cv::Mat right2 = imread("/home/bene/ClionProjects/tesi_watermarking/img/r.png",CV_LOAD_IMAGE_COLOR);
+
+    cv::Mat right2 = imread("/home/miky/ClionProjects/tesi_watermarking/img/r.png",CV_LOAD_IMAGE_COLOR);
     cv::Mat mark2 = cv::Mat::zeros(right2.rows, right2.cols , CV_8UC3);
     right_watermarked.copyTo(mark2);
 
@@ -545,7 +601,7 @@ int main() {
         }
     double min, max;
     Mat channels2[3];
-//  cv::absdiff(right_watermarked,right,mark2);
+//    cv::absdiff(right_watermarked,right,mark2);
     split(mark2,channels2);
     minMaxLoc(channels2[0], &min, &max);
 
@@ -586,5 +642,3 @@ int main() {
 }
 
 
-
-//   shortcuts:   https://www.jetbrains.com/clion/documentation/docs/CLion_ReferenceCard.pdf
