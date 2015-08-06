@@ -338,10 +338,10 @@ int main() {
             image_to_mark.at<Vec3b>(j,i) [1] = output_img[count]; count++;
             image_to_mark.at<Vec3b>(j,i) [2] = output_img[count]; count++;
         }
-    cv::imshow("left_marked", image_to_mark);
-    waitKey(0);
-
-    imwrite("/home/miky/Scrivania/left_marked.png", image_to_mark);
+//    cv::imshow("left_marked", image_to_mark);
+//    waitKey(0);
+//
+//    imwrite("/home/miky/Scrivania/left_marked.png", image_to_mark);
 
    // cv::imwrite("home/miky/ClionProjects/tesi_watermarking/img/left_watermarked.png", image_to_mark);
 
@@ -614,28 +614,27 @@ int main() {
     waitKey(0);
 */
 
-    /* WATERMARK EXTRACTION*/
+    /* WATERMARK DETECTION*/
 
-/*
-    ImgWat watermarking;
-    watermarking.setPassword(passwstr,passwnum);
-    watermarking.setParameters(watermark,wsize,0,power,false,false,NULL,0);
-    cv::Mat new_image_to_dec = cv::Mat::zeros(512, 512, CV_8UC3);
-    for (int j = 0; j < 480; j++)
-        for (int i = 0; i < 512; i++){
-            new_image_to_dec.at<Vec3b>(j,i) [0] = image_to_mark.at<Vec3b>(j,i) [0];
-            new_image_to_dec.at<Vec3b>(j,i) [1] = image_to_mark.at<Vec3b>(j,i) [1];
-            new_image_to_dec.at<Vec3b>(j,i) [2] = image_to_mark.at<Vec3b>(j,i) [2];
-        }
+
+
+//    cv::Mat new_image_to_dec = cv::Mat::zeros(512, 512, CV_8UC3);
+//    cv::Mat image_to_dec = imread("/home/miky/Scrivania/left_marked.png");
+//
+//    for (int j = 0; j < 480; j++)
+//        for (int i = 0; i < 512; i++){
+//            new_image_to_dec.at<Vec3b>(j,i) [0] = image_to_dec.at<Vec3b>(j,i) [0];
+//            new_image_to_dec.at<Vec3b>(j,i) [1] = image_to_dec.at<Vec3b>(j,i) [1];
+//            new_image_to_dec.at<Vec3b>(j,i) [2] = image_to_dec.at<Vec3b>(j,i) [2];
+//        }
+
 //    cv::imshow("to dec", new_image_to_dec);
 //     waitKey(0);
-    unsigned char *squared_image_to_dec = new_image_to_dec.data; //SPERO SIA GIUSTO PER LE COLOUR
-//    bool wat = watermarking.extractWatermark(squared_image_to_dec,512,512);
-//    cout<<wat;
-    bool wat = image_watermarking.extractWatermark(squared_image_to_dec, 512, 512);
-    cout<<wat;
 
-*/
+//    unsigned char *squared_image_to_dec = new_image_to_dec.data;
+
+    bool wat = image_watermarking.extractWatermark(output_img, 512, 512);
+    cout<<wat;
 
     return 0;
 

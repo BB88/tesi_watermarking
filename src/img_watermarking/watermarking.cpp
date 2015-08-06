@@ -200,21 +200,21 @@ int Watermarking::WatCod(unsigned char *ImageOut, int width, int height, const c
 
 
     //per la maschera
-    DecimVarfloat(imyout, 512, 512, WINDOW, img_map_flt);
+//    DecimVarfloat(imyout, 512, 512, WINDOW, img_map_flt);
 
     FFT2D::dft2d(imyout, imdft, imdftfase, 512, 512);
 
-    int mmedio = 0;
-
-    for(int i = 0; i < 512; i++)
-        for(int j = 0; j < 512; j++)
-            mmedio += (double)img_map_flt[i][j];
-
-    mmedio = mmedio/(double)(512 * 512);
-    mmedio = 1.0 - mmedio;
-
-//     Si calcola il valore massimo di alfa
-    double alfamax = power/mmedio;
+//    int mmedio = 0;
+//
+//    for(int i = 0; i < 512; i++)
+//        for(int j = 0; j < 512; j++)
+//            mmedio += (double)img_map_flt[i][j];
+//
+//    mmedio = mmedio/(double)(512 * 512);
+//    mmedio = 1.0 - mmedio;
+//
+////     Si calcola il valore massimo di alfa
+//    double alfamax = power/mmedio;
 
     int coefficient_number;
     double *coefficient_vector = NULL;
@@ -234,7 +234,7 @@ int Watermarking::WatCod(unsigned char *ImageOut, int width, int height, const c
     generate_mark(watermark,wsize,passw_str,passw_num,coefficient_number, mark,false);
 
 //    if (view=="left")
-    addmark(coefficient_vector, mark, coefficient_number, alfamax);
+    addmark(coefficient_vector, mark, coefficient_number, power);
 //    else if (view=="right")
 //        addmark_right_view(coefficient_vector, mark, coefficient_number, alfamax);
 
@@ -243,16 +243,16 @@ int Watermarking::WatCod(unsigned char *ImageOut, int width, int height, const c
 
     FFT2D::idft2d(imdft, imdftfase, imidft, 512, 512);
 
-    for(int i=0;i<512;i++)
-        for(int j=0;j<512;j++)
-            img_map_flt[i][j] = 255.0f*img_map_flt[i][j];
+//    for(int i=0;i<512;i++)
+//        for(int j=0;j<512;j++)
+//            img_map_flt[i][j] = 255.0f*img_map_flt[i][j];
 
-    PicRoutfloat(imyout, 512, 512, imidft, img_map_flt, impic);
+//    PicRoutfloat(imyout, 512, 512, imidft, img_map_flt, impic);
 
 
     //reinserimento della luminanza
 
-    rgb_to_crom(imr, img, imb, 512, 512, -1, impic, imc2, imc3);
+    rgb_to_crom(imr, img, imb, 512, 512, -1, imidft, imc2, imc3);
 
 //SE GREY
 //    count=0;
@@ -349,15 +349,15 @@ void Watermarking::generate_mark(int *watermark,int wsize, const char *passw_str
     seed = new LONG8BYTE [4];
     seed_generator(passw_str,passw_num,seed);
 
-    if (!detection){
+
     seed_initialization(seed);
+
+
 
     for(int i = 0; i < marklen; i++)
         mark[i] = 2.0 * ( pseudo_random_generator() - 0.5);
 
-
     // mark modulation
-
 
     int n=0;
     int L=marklen/length_BCH;
@@ -379,7 +379,11 @@ void Watermarking::generate_mark(int *watermark,int wsize, const char *passw_str
             n+=L;
     }
 
-    }
+
+    for (int i=0;i<200;i++)
+        cout<<bch_wm[i]<<" ";
+    cout<<"\n";
+
 }
 
 /*
@@ -557,7 +561,7 @@ void Watermarking::seed_initialization(LONG8BYTE *s)
     for(j = 0; j < 4; j ++)
     {
         init_seed[j] = s[j];
-        current_seed[j] = current_seed[j];
+        current_seed[j] = init_seed[j];
     }
 }
 
@@ -1200,8 +1204,7 @@ bool Watermarking::extractWatermark(unsigned char *image, int w, int h)
     // (see inside WatDec(.) for further details)
     double *datiuscita = new double[32000];
 
-    int result = WatDec(image, h, w, passw_str, passw_num, watermark,
-                        tilesize, wsize, power, datiuscita, imrsinc, tiles, flagResyncAll);
+    int result = WatDec(image, h, w, passw_str, passw_num, watermark, tilesize, wsize, power, datiuscita, imrsinc, tiles, flagResyncAll);
 
 
     if (result == -3)
@@ -1349,8 +1352,27 @@ int Watermarking::WatDec(unsigned char *ImageIn, int nrImageIn, int ncImageIn,
 //    double * mark;
 //    mark = new double[coefficient_number];
 //    generate_mark(watermark,wsize,campolett,camponum,coefficient_number, mark, true);
+
+    if (wsize == 64)
+    {
+        m_BCH = 7;			// order of the Galois Field GF(2^m)
+        t_BCH = 10;			// Error correcting capability
+        length_BCH = 127;	// length of the BCH code
+    }
+
+    if (wsize == 32)
+    {
+        m_BCH = 6;			// order of the Galois Field GF(2^m)
+        t_BCH = 5;			// Error correcting capability
+        length_BCH = 59;	// length of the BCH code
+    }
+
     seed = new LONG8BYTE [4];
     seed_generator(campolett,camponum,seed);
+
+//    for (int i=0; i<512; i++)
+//        for (int j=0; j<512; j++)
+//            imdftout[i][j]=0.0;
 
     FFT2D::dft2d(imyout, imdftout, imdftoutfase, 512, 512);
 
@@ -1370,25 +1392,30 @@ int Watermarking::WatDec(unsigned char *ImageIn, int nrImageIn, int ncImageIn,
 
     decoale(imdftout, 512, 512, diag0, ndiag, seed, power ,BitLetti, length_BCH);
 
+    for (int i=0;i<200;i++)
+        cout<<BitLetti[i]<<" ";
+    cout<<"\n";
+
+
+
 //    for (int i=0; i<200; i++)
 //        nouniforme += BitLetti[i];
+   bool res= BCH::decode_bch(m_BCH,length_BCH,t_BCH,BitLetti);
 
-
-
-    if ((BCH::decode_bch(m_BCH,length_BCH,t_BCH,BitLetti)))
+    if (res)
     {
         // THE WATERMARK HAS BEEN DETECTED
-        FreeIm(imy);
-        FreeIm(imc2);
-        FreeIm(imc3);
-        FreeIm(imyout);
-
-        FreeIm(imdft);
-        FreeIm(imdftfase);
-        FreeIm(imdftout);
-        FreeIm(imdftoutfase);
-        FreeIm(im1dft);
-        FreeIm(im1dftfase);
+//        FreeIm(imy);
+//        FreeIm(imc2);
+//        FreeIm(imc3);
+//        FreeIm(imyout);
+//
+//        FreeIm(imdft);
+//        FreeIm(imdftfase);
+//        FreeIm(imdftout);
+//        FreeIm(imdftoutfase);
+//        FreeIm(im1dft);
+//        FreeIm(im1dftfase);
 
 
         // NOTA: I bit decodificati vengono salvati alla fine
@@ -1409,6 +1436,8 @@ int Watermarking::WatDec(unsigned char *ImageIn, int nrImageIn, int ncImageIn,
 
 
     FreeIm(imyout);
+
+    return -5;
 }
 /*
 	decoale(..)
@@ -1447,7 +1476,7 @@ void Watermarking::decoale(double **imr, int nre, int nce, int d1, int nd,
     // di coefficienti selezionati)
 
     appbuff = zones_to_watermark(imr, nre, nce, d1, nd, 1, &marklen);
-
+//
     // Studio della statistica delle MAX zone (si calcolano i beta
     // e gli alfa dell'immagine con il criterio della Massima Verosimiglianza)
 
@@ -1493,7 +1522,10 @@ void Watermarking::decoale(double **imr, int nre, int nce, int d1, int nd,
     for(i = 0; i < marklen; i++)
         mark[i] = 2.0 * (pseudo_random_generator() - 0.5);
 
-    // Calcolo della soglia del rivelatore
+
+
+
+       // Calcolo della soglia del rivelatore
 
     /*
         ...
