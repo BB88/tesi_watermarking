@@ -1345,10 +1345,12 @@ int Watermarking::WatDec(unsigned char *ImageIn, int nrImageIn, int ncImageIn,
     rgb_to_crom(imr, img, imb, 512, 512, 1, imyout, imc2, imc3);
 
 
-//    int coefficient_number;
-//    double * mark;
-//    mark = new double[coefficient_number];
-//    generate_mark(watermark,wsize,campolett,camponum,coefficient_number, mark, true);
+   /* Parametri per decodifica BCH del marchio*/
+
+    int coefficient_number;
+    double * mark;
+    mark = new double[coefficient_number];
+    generate_mark(watermark,wsize,campolett,camponum,coefficient_number, mark, true);
     seed = new LONG8BYTE [4];
     seed_generator(campolett,camponum,seed);
 
@@ -1364,9 +1366,10 @@ int Watermarking::WatDec(unsigned char *ImageIn, int nrImageIn, int ncImageIn,
 
 
 
-//    double *coefficient_vector = NULL;
-//    coefficient_vector = zones_to_watermark(imdftout, 512, 512, diag0, ndiag, 0, &coefficient_number);
-//
+    double *coefficient_vector = NULL;
+    coefficient_vector = zones_to_watermark(imdftout, 512, 512, diag0, ndiag, 0, &coefficient_number);
+
+    // return the watermark bch enconded bits
 
     decoale(imdftout, 512, 512, diag0, ndiag, seed, power ,BitLetti, length_BCH);
 
