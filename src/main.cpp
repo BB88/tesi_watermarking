@@ -22,6 +22,12 @@
 #include "./img_watermarking/imgwat.h"
 #include "./img_watermarking/allocim.h"
 
+//grapfh cuts
+#include "./graphcuts/image.h"
+#include "./graphcuts/match.h"
+#include "./graphcuts/utils.h"
+#include "./graphcuts/io_png.h"
+
 //libconfig
 #include <libconfig.h++>
 #include "./config/config.hpp"
@@ -30,6 +36,7 @@ using namespace std;
 using namespace cv;
 using namespace cv::datasets;
 using namespace libconfig;
+using namespace graph_cuts_utils;
 
 
 int main() {
@@ -53,8 +60,55 @@ int main() {
     std::string passwstr=generalPars.passwstr;
     std::string passwnum=generalPars.passwnum;
 
-    /*  kz_disp PARAMETERS */
 
+    /* GRAPH CUTS DISPARITY COMPUTATION*/
+//
+//    std::ostringstream ss;
+//
+//    std::string img1_path =  "/home/miky/ClionProjects/tesi_watermarking/img/l.png";
+//    std::string img2_path =  "/home/miky/ClionProjects/tesi_watermarking/img/r.png";
+//    Match::Parameters params = { // Default parameters
+//            Match::Parameters::L2, 1, // dataCost, denominator
+//            8, -1, -1, // edgeThresh, lambda1, lambda2 (smoothness cost)
+//            -1,        // K (occlusion cost)
+//            4, false   // maxIter, bRandomizeEveryIteration
+//    };
+//    float K=-1, lambda=-1, lambda1=-1, lambda2=-1;
+//    params.dataCost = Match::Parameters::L1;
+////      params.dataCost = Match::Parameters::L2;
+//
+//    GeneralImage im1 = (GeneralImage)imLoad(IMAGE_GRAY, img1_path.c_str());
+//    GeneralImage im2 = (GeneralImage)imLoad(IMAGE_GRAY, img2_path.c_str());
+//    bool color = false;
+//    if(graph_cuts_utils::isGray((RGBImage)im1) && graph_cuts_utils::isGray((RGBImage)im2)) {
+//        color=false;
+//        graph_cuts_utils::convert_gray(im1);
+//        graph_cuts_utils::convert_gray(im2);
+//    }
+//
+//    Match m(im1, im2, color);
+////
+////////    // Disparity
+//    int dMin=-77, dMax=-19;
+////
+//    m.SetDispRange(dMin, dMax);
+//
+//    time_t seed = time(NULL);
+//    srand((unsigned int)seed);
+//
+//    graph_cuts_utils::fix_parameters(m, params, K, lambda, lambda1, lambda2);
+//
+//    m.KZ2();
+//
+////        m.SaveXLeft(argv[5]);
+//
+//    m.SaveScaledXLeft("/home/miky/Scrivania/disp.png", false);
+//
+//    cv::Mat disp = imread("/home/miky/Scrivania/disp.png");
+//    imshow("kz disp",disp);
+//    waitKey(0);
+
+ /*  kz_disp PARAMETERS */
 /*
 
      *
@@ -244,18 +298,20 @@ int main() {
             new_image.at<Vec3b>(j,i) [2] = image_to_mark.at<Vec3b>(j,i) [2];
         }
 
-
     unsigned char *squared_image = new_image.data;
     unsigned char *output_img = new unsigned char[512 * 512 ];
     // memcpy(output_img, squared_image,512*512);
     Watermarking image_watermarking;
+
     //random binary watermark
     int watermark[64];
     for (int i = 0; i < 64; i++){
         int b = rand() % 2;
         watermark[i]=b;
     }
+
     image_watermarking.setParameters(watermark,wsize,tilesize,power,clipping,flagResyncAll,NULL,tilelistsize);
+ //   image_watermarking.setParameters(watermark,64,0,0.8,0,0,NULL,0);
     image_watermarking.setPassword(passwstr,passwnum);
     output_img = image_watermarking.insertWatermark(squared_image,512,512);
     int count=0;
@@ -539,7 +595,7 @@ int main() {
         }
     double min, max;
     Mat channels2[3];
-//  cv::absdiff(right_watermarked,right,mark2);
+//    cv::absdiff(right_watermarked,right,mark2);
     split(mark2,channels2);
     minMaxLoc(channels2[0], &min, &max);
 
@@ -552,24 +608,28 @@ int main() {
     waitKey(0);
 */
 
-    /* WATERMARK EXTRACTION*/
-/*
-    cv::Mat left_marked = imread("/home/bene/ClionProjects/tesi_watermarking/img/left_marked.png", CV_LOAD_IMAGE_COLOR);
-    // creating squared image to decode
-    cv::Mat image_to_dec = cv::Mat::zeros(512, 512, CV_8UC3);
-    for (int j = 0; j < 480; j++)
-        for (int i = 0; i < 512; i++){
-            image_to_dec.at<Vec3b>(j,i) [0] = left_marked.at<Vec3b>(j,i) [0];
-            image_to_dec.at<Vec3b>(j,i) [1] = left_marked.at<Vec3b>(j,i) [1];
-            image_to_dec.at<Vec3b>(j,i) [2] = left_marked.at<Vec3b>(j,i) [2];
-        }
-    unsigned char *squared_image_to_dec = image_to_dec.data;
-*/
-/*    cv::imshow("to dec", image_to_dec);
-    waitKey(0);*/
+    /* WATERMARK DETECTION*/
+
+
+
+//    cv::Mat new_image_to_dec = cv::Mat::zeros(512, 512, CV_8UC3);
+//    cv::Mat image_to_dec = imread("/home/miky/Scrivania/left_marked.png");
+//
+//    for (int j = 0; j < 480; j++)
+//        for (int i = 0; i < 512; i++){
+//            new_image_to_dec.at<Vec3b>(j,i) [0] = image_to_dec.at<Vec3b>(j,i) [0];
+//            new_image_to_dec.at<Vec3b>(j,i) [1] = image_to_dec.at<Vec3b>(j,i) [1];
+//            new_image_to_dec.at<Vec3b>(j,i) [2] = image_to_dec.at<Vec3b>(j,i) [2];
+//        }
+
+//    cv::imshow("to dec", new_image_to_dec);
+//     waitKey(0);
+
+//    unsigned char *squared_image_to_dec = new_image_to_dec.data;
 
     bool wat = image_watermarking.extractWatermark(output_img, 512, 512);
-    cout<< "wat "<< wat;
+    cout<<wat;
+
     return 0;
 
 }
