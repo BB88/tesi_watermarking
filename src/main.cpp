@@ -371,7 +371,7 @@ int main() {
 
     /* BEGIN RIGHT IMAGE WATERMARKING */
 
-    cv::Mat disp = imread("/home/bene/ClionProjects/tesi_watermarking/img/nkz_disp.png", CV_LOAD_IMAGE_GRAYSCALE);
+    cv::Mat disp = imread("/home/bene/ClionProjects/tesi_watermarking/img/gt_disp.png", CV_LOAD_IMAGE_GRAYSCALE);
 
    /* THREE CHANNELS WATERMARKING */
 
@@ -512,9 +512,9 @@ int main() {
     int d;
 
     for (int i=0;i<480;i++)
-        for (int j=0;j<512;j++){
+        for (int j=127;j<640;j++){
             d = disp.at<uchar>(i,j);
-            watermarkY[i][j+d] = abs(imyoutw[i][j+ new_index]-imyoutl[i][j+new_index]);
+            watermarkY[i][j-d] = abs(imyoutw[i][j]-imyoutl[i][j]);
         }
 
     for (int i=0;i<480;i++)
@@ -607,7 +607,6 @@ int main() {
     /* WATERMARK DETECTION*/
 
 
-
     cv::Mat new_image_to_dec = cv::Mat::zeros(512, 512, CV_8UC3);
     cv::Mat image_to_dec = imread("/home/bene/ClionProjects/tesi_watermarking/img/left_marked.png");
 
@@ -631,9 +630,9 @@ int main() {
 
     for (int j = 0; j < 480; j++)
         for (int i = 0; i < 512; i++){
-            right_image_to_dec.at<Vec3b>(j,i) [0] = right_to_dec.at<Vec3b>(j,i) [0];
-            right_image_to_dec.at<Vec3b>(j,i) [1] = right_to_dec.at<Vec3b>(j,i) [1];
-            right_image_to_dec.at<Vec3b>(j,i) [2] = right_to_dec.at<Vec3b>(j,i) [2];
+            right_image_to_dec.at<Vec3b>(j,i) [0] = right_to_dec.at<Vec3b>(j,i+103) [0];
+            right_image_to_dec.at<Vec3b>(j,i) [1] = right_to_dec.at<Vec3b>(j,i+103) [1];
+            right_image_to_dec.at<Vec3b>(j,i) [2] = right_to_dec.at<Vec3b>(j,i+103) [2];
         }
 
     cv::imshow("Right to dec", right_image_to_dec);

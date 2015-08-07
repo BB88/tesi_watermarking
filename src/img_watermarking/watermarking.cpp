@@ -225,6 +225,8 @@ int Watermarking::WatCod(unsigned char *ImageOut, int width, int height, const c
     int diag0 = 80;		// Diagonali..
     int ndiag = 74;
 //    }
+/*    int diag0 = 160;		// Diagonali..
+    int ndiag = 144;*/
 
     coefficient_vector = zones_to_watermark(imdft, 512, 512, diag0, ndiag, 0, &coefficient_number);
 
