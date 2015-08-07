@@ -380,10 +380,10 @@ void Watermarking::generate_mark(int *watermark,int wsize, const char *passw_str
     }
 
 
-    for (int i=0;i<200;i++)
+    /*for (int i=0;i<200;i++)
         cout<<bch_wm[i]<<" ";
     cout<<"\n";
-
+*/
 }
 
 /*
@@ -1392,11 +1392,11 @@ int Watermarking::WatDec(unsigned char *ImageIn, int nrImageIn, int ncImageIn,
 
     decoale(imdftout, 512, 512, diag0, ndiag, seed, power ,BitLetti, length_BCH);
 
-    for (int i=0;i<200;i++)
+  /*  for (int i=0;i<200;i++)
         cout<<BitLetti[i]<<" ";
     cout<<"\n";
 
-
+*/
 
 //    for (int i=0; i<200; i++)
 //        nouniforme += BitLetti[i];
