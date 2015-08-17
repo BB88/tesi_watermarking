@@ -54,6 +54,38 @@ using namespace cv;
 */
     }
 
+
+    void Right_view::left_reconstruction(cv::Mat right, cv::Mat disp) {
+
+
+        int d, xl;
+        //create general left image
+        cv::Mat n_left = cv::Mat::zeros(right.rows, right.cols, CV_8UC3);
+        // reconstructed right view
+        // change pixel value
+        for(int j=0;j< right.rows;j++){
+            for (int i=right.cols; i>0;i--){
+                d = disp.at<uchar>(j,i);
+                xl = i + d;
+        // assign new values to reconstructed right view
+                if(xl <= right.cols){
+                    n_left.at<Vec3b>(j, xl) [0] = right.at<Vec3b>(j,i) [0];
+                    n_left.at<Vec3b>(j, xl) [1] = right.at<Vec3b>(j,i) [1];
+                    n_left.at<Vec3b>(j, xl) [2] = right.at<Vec3b>(j,i) [2];
+                }
+            }
+        }
+        imwrite("/home/bene/ClionProjects/tesi_watermarking/img/left_reconstructed.png", n_left);
+        cv::Mat left = cv::imread("/home/bene/ClionProjects/tesi_watermarking/img/l.png", CV_LOAD_IMAGE_COLOR);
+        /*imshow*/
+  /*      cv::imshow("Left",right);
+        cv::imshow("Disp",disp);
+        cv::imshow("Original",left);*/
+        cv::imshow("Reconstructed", n_left);
+        waitKey(0);
+
+    }
+
     string type2str(int type) {
         string r;
 
