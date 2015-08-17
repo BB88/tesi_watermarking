@@ -200,21 +200,21 @@ int Watermarking::WatCod(unsigned char *ImageOut, int width, int height, const c
 
 
     //per la maschera
-//    DecimVarfloat(imyout, 512, 512, WINDOW, img_map_flt);
+    DecimVarfloat(imyout, 512, 512, WINDOW, img_map_flt);
 
     FFT2D::dft2d(imyout, imdft, imdftfase, 512, 512);
 
-//    int mmedio = 0;
-//
-//    for(int i = 0; i < 512; i++)
-//        for(int j = 0; j < 512; j++)
-//            mmedio += (double)img_map_flt[i][j];
-//
-//    mmedio = mmedio/(double)(512 * 512);
-//    mmedio = 1.0 - mmedio;
-//
-////     Si calcola il valore massimo di alfa
-//    double alfamax = power/mmedio;
+    int mmedio = 0;
+
+    for(int i = 0; i < 512; i++)
+        for(int j = 0; j < 512; j++)
+            mmedio += (double)img_map_flt[i][j];
+
+    mmedio = mmedio/(double)(512 * 512);
+    mmedio = 1.0 - mmedio;
+
+//     Si calcola il valore massimo di alfa
+    double alfamax = power/mmedio;
 
     int coefficient_number;
     double *coefficient_vector = NULL;
@@ -236,7 +236,7 @@ int Watermarking::WatCod(unsigned char *ImageOut, int width, int height, const c
     generate_mark(watermark,wsize,passw_str,passw_num,coefficient_number, mark,false);
 
 //    if (view=="left")
-    addmark(coefficient_vector, mark, coefficient_number, power);
+    addmark(coefficient_vector, mark, coefficient_number, alfamax);
 //    else if (view=="right")
 //        addmark_right_view(coefficient_vector, mark, coefficient_number, alfamax);
 
@@ -245,11 +245,11 @@ int Watermarking::WatCod(unsigned char *ImageOut, int width, int height, const c
 
     FFT2D::idft2d(imdft, imdftfase, imidft, 512, 512);
 
-//    for(int i=0;i<512;i++)
-//        for(int j=0;j<512;j++)
-//            img_map_flt[i][j] = 255.0f*img_map_flt[i][j];
+    for(int i=0;i<512;i++)
+        for(int j=0;j<512;j++)
+            img_map_flt[i][j] = 255.0f*img_map_flt[i][j];
 
-//    PicRoutfloat(imyout, 512, 512, imidft, img_map_flt, impic);
+    PicRoutfloat(imyout, 512, 512, imidft, img_map_flt, impic);
 
 
     //reinserimento della luminanza

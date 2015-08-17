@@ -14,46 +14,95 @@ using namespace std;
 using namespace cv;
 
 
-    void Right_view::right_reconstruction(cv::Mat left, cv::Mat disp) {
+    void Right_view::left_reconstruction(cv::Mat right, cv::Mat disp) {
 
 
        /* string ty =  type2str( disp.type() );
         printf("Matrix: %s %dx%d \n", ty.c_str(), disp.cols, disp.rows );*/
-        int d, xr;
+        int d, xl;
         // original right view
-        cv::Mat o_right = cv::imread("/home/bene/ClionProjects/tesi_watermarking/img/r.png", CV_LOAD_IMAGE_COLOR);
+//        cv::Mat o_right = cv::imread("/home/bene/ClionProjects/tesi_watermarking/img/r.png", CV_LOAD_IMAGE_COLOR);
         /*
         string ty =  type2str( o_right.type() );
         printf("Matrix: %s %dx%d \n", ty.c_str(), o_right.cols, o_right.rows);
         */
         //create general right image
-        cv::Mat n_right = cv::Mat::zeros(left.rows, left.cols, CV_8UC3);
+        cv::Mat n_left = cv::Mat::zeros(right.rows, right.cols, CV_8UC3);
         // reconstructed right view
         // change pixel value
-        for(int j=0;j< left.rows;j++)
+
+
+        for(int j=0;j< right.rows;j++)
         {
-            for (int i=0;i< left.cols;i++)
+            for (int i=right.cols; i>0;i--)
             {
                 d = disp.at<uchar>(j,i);
 //                cout<<d<<endl;
-                xr = abs(i - d);
+                xl = i + d;
                // xr = i - d;
                 // assign new values to reconstructed right view
-                n_right.at<Vec3b>(j,xr) [0] = left.at<Vec3b>(j,i) [0];
-                n_right.at<Vec3b>(j,xr) [1] = left.at<Vec3b>(j,i) [1];
-                n_right.at<Vec3b>(j,xr) [2] = left.at<Vec3b>(j,i) [2];
+                if(xl <= right.cols){
+                    n_left.at<Vec3b>(j, xl) [0] = right.at<Vec3b>(j,i) [0];
+                    n_left.at<Vec3b>(j, xl) [1] = right.at<Vec3b>(j,i) [1];
+                    n_left.at<Vec3b>(j, xl) [2] = right.at<Vec3b>(j,i) [2];
+                }
             }
         }
-        imwrite("/home/bene/ClionProjects/tesi_watermarking/img/nkz_right.png", n_right);
+        imwrite("/home/miky/ClionProjects/tesi_watermarking/img/left_reconstructed.png", n_left);
         /*imshow*/
 /*
         cv::imshow("Left",left);
         cv::imshow("Disp",disp);
-        cv::imshow("Original",o_right);
-        cv::imshow("Reconstructed", n_right);
-*/
+        cv::imshow("Original",o_right);*/
+        cv::imshow("Reconstructed", n_left);
+        waitKey(0);
+
     }
 
+void Right_view::right_reconstruction(cv::Mat left, cv::Mat disp) {
+
+
+    /* string ty =  type2str( disp.type() );
+     printf("Matrix: %s %dx%d \n", ty.c_str(), disp.cols, disp.rows );*/
+    int d, xr;
+    // original right view
+//        cv::Mat o_right = cv::imread("/home/bene/ClionProjects/tesi_watermarking/img/r.png", CV_LOAD_IMAGE_COLOR);
+    /*
+    string ty =  type2str( o_right.type() );
+    printf("Matrix: %s %dx%d \n", ty.c_str(), o_right.cols, o_right.rows);
+    */
+    //create general right image
+    cv::Mat n_right = cv::Mat::zeros(left.rows, left.cols, CV_8UC3);
+    // reconstructed right view
+    // change pixel value
+
+
+    for(int j=0;j< left.rows;j++)
+    {
+        for (int i=0; i< left.cols;i++)
+        {
+            d = disp.at<uchar>(j,i);
+//                cout<<d<<endl;
+//            xr = abs(i - d);
+             xr = i - d;
+            // assign new values to reconstructed right view
+            if (xr>0){
+                n_right.at<Vec3b>(j,abs(xr)) [0] = left.at<Vec3b>(j,i) [0];
+                n_right.at<Vec3b>(j,abs(xr)) [1] = left.at<Vec3b>(j,i) [1];
+                n_right.at<Vec3b>(j,abs(xr)) [2] = left.at<Vec3b>(j,i) [2];
+            }
+        }
+    }
+    imwrite("/home/miky/ClionProjects/tesi_watermarking/img/right_reconstructed.png", n_right);
+    /*imshow*/
+/*
+        cv::imshow("Left",left);
+        cv::imshow("Disp",disp);
+        cv::imshow("Original",o_right);*/
+    cv::imshow("Reconstructed", n_right);
+    waitKey(0);
+
+}
     string type2str(int type) {
         string r;
 

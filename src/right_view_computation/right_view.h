@@ -18,6 +18,7 @@ class Right_view{
 
 public:
     void right_reconstruction(cv::Mat left, cv::Mat disp);
+    void left_reconstruction(cv::Mat right, cv::Mat disp);
     string type2str(int type);
 
 };
