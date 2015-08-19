@@ -64,7 +64,7 @@ using namespace cv;
         // reconstructed right view
         // change pixel value
         for(int j=0;j< right.rows;j++){
-            for (int i=right.cols; i>0;i--){
+            for (int i=right.cols-1; i>=0;i--){
                 d = disp.at<uchar>(j,i);
                 xl = i + d;
         // assign new values to reconstructed right view
@@ -85,6 +85,47 @@ using namespace cv;
         waitKey(0);
 
     }
+
+void Right_view::left_uchar_reconstruction(unsigned char *marked_right, unsigned char *disp_uchar, int width, int height) {
+
+
+    int nc = 640 *3;
+    unsigned char d = 0;
+    //create general left image
+    int rect_dim = 480*640*3;
+    unsigned char *left_uchar = new unsigned char[rect_dim];;
+    // reconstructed right view
+    // change pixel value
+    cout<< static_cast<unsigned>(disp_uchar[(479*640)+639])<<endl;
+    cout<< static_cast<unsigned>(marked_right[479*640*3 + (639*3)])<<endl;
+    int z = 639;
+    for(int i = 0; i<480; i++){
+        for (int j = 639; j>=0 ; j-=3){
+            d = disp_uchar[(i*640)+z];
+            z--;
+            // assign new values to reconstructed left view
+                left_uchar[ (i*nc) + (j - 0 + static_cast<unsigned>(d)*3)] = marked_right[ (i*nc) + (j - 0)];
+                left_uchar[ (i*nc) + (j - 1 + static_cast<unsigned>(d)*3)] = marked_right[ (i*nc) + (j - 1)];
+                left_uchar[ (i*nc) + (j - 2 + static_cast<unsigned>(d)*3)] = marked_right[ (i*nc) + (j - 2)];
+             left_uchar[ (i*nc) + (j*3 - 0 + static_cast<unsigned>(d)*3)] = (unsigned char) 127;
+                left_uchar[ (i*nc) + (j*3 - 1 + static_cast<unsigned>(d)*3)] = (unsigned char) 127;
+                left_uchar[ (i*nc) + (j*3 - 2 + static_cast<unsigned>(d)*3)] = (unsigned char) 127;
+
+        }
+        cout<<i<<endl;
+    }
+ /*   cv::Mat left_marked = cv::Mat::zeros(480, 640, CV_8UC3);
+    int count = 0;
+    for (int j = 0; j < 480; j++)
+        for (int i = 0; i < 640; i++){
+            left_marked.at<Vec3b>(j,i) [0] = left_uchar[count]; count++;
+            left_marked.at<Vec3b>(j,i) [1] = left_uchar[count]; count++;
+            left_marked.at<Vec3b>(j,i) [2] = left_uchar[count]; count++;
+        }
+    imshow("left_marked", left_marked);
+    waitKey(0);
+*/
+}
 
     string type2str(int type) {
         string r;
