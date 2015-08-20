@@ -10,7 +10,7 @@
 using namespace std;
 
 
-void stereo_watermarking::show_difference(cv::Mat img1,cv::Mat img2){
+void stereo_watermarking::show_difference(cv::Mat img1,cv::Mat img2,std::string window){
 
     unsigned char *difference =  new unsigned char[img1.rows * img1.cols *3];
     unsigned char *img1_uchar =  img1.data;
@@ -29,7 +29,28 @@ void stereo_watermarking::show_difference(cv::Mat img1,cv::Mat img2){
             difference_cv.at<cv::Vec3b>(j, i) [1] = difference[count]; count++;
             difference_cv.at<cv::Vec3b>(j, i) [2] = difference[count]; count++;
         }
-    cv::imshow("difference", difference_cv);
+    cv::imshow(window.c_str(), difference_cv);
     cv::waitKey(0);
 }
 
+cv::Mat stereo_watermarking::equalizeIntensity(const cv::Mat& inputImage)
+{
+    if(inputImage.channels() >= 3)
+    {
+        cv::Mat ycrcb;
+        cv::cvtColor(inputImage,ycrcb,CV_BGR2YCrCb);
+
+        vector<cv::Mat> channels;
+        split(ycrcb,channels);
+
+        equalizeHist(channels[0], channels[0]);
+
+        cv::Mat result;
+        merge(channels,ycrcb);
+        cvtColor(ycrcb,result,CV_YCrCb2BGR);
+
+        return result;
+    }
+
+    return cv::Mat();
+}
