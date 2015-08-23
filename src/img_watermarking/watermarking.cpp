@@ -16,6 +16,10 @@
 #include <assert.h>
 
 #include "watermarking.h"
+#include <cv.h>
+#include <opencv2/core/core.hpp>
+#include <highgui.h>
+using namespace cv;
 
 ///DA METTERE NEL CONFIG
 // definitions
@@ -227,7 +231,6 @@ int Watermarking::WatCod(unsigned char *ImageOut, int width, int height, const c
 //    }
 /*    int diag0 = 160;		// Diagonali..
     int ndiag = 144;*/
-
     coefficient_vector = zones_to_watermark(imdft, 512, 512, diag0, ndiag, 0, &coefficient_number);
 
     double * mark;
@@ -1205,7 +1208,7 @@ bool Watermarking::extractWatermark(unsigned char *image, int w, int h)
     // resynchronization data for each tile... not used(!!)
     // (see inside WatDec(.) for further details)
     double *datiuscita = new double[32000];
-
+    cout<<fixed<<power<<endl;
     int result = WatDec(image, h, w, passw_str, passw_num, watermark, tilesize, wsize, power, datiuscita, imrsinc, tiles, flagResyncAll);
 
 

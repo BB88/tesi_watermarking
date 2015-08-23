@@ -14,33 +14,60 @@ using namespace std;
 using namespace cv;
 
 
-    void Right_view::left_reconstruction(cv::Mat right, cv::Mat disp) {
+    void Right_view::right_reconstruction(cv::Mat left, cv::Mat disp) {
 
 
        /* string ty =  type2str( disp.type() );
         printf("Matrix: %s %dx%d \n", ty.c_str(), disp.cols, disp.rows );*/
-        int d, xl;
+        int d, xr;
         // original right view
-//        cv::Mat o_right = cv::imread("/home/bene/ClionProjects/tesi_watermarking/img/r.png", CV_LOAD_IMAGE_COLOR);
+        cv::Mat o_right = cv::imread("/home/bene/ClionProjects/tesi_watermarking/img/r.png", CV_LOAD_IMAGE_COLOR);
         /*
         string ty =  type2str( o_right.type() );
         printf("Matrix: %s %dx%d \n", ty.c_str(), o_right.cols, o_right.rows);
         */
         //create general right image
-        cv::Mat n_left = cv::Mat::zeros(right.rows, right.cols, CV_8UC3);
+        cv::Mat n_right = cv::Mat::zeros(left.rows, left.cols, CV_8UC3);
         // reconstructed right view
         // change pixel value
-
-
-        for(int j=0;j< right.rows;j++)
+        for(int j=0;j< left.rows;j++)
         {
-            for (int i=right.cols; i>0;i--)
+            for (int i=0;i< left.cols;i++)
             {
                 d = disp.at<uchar>(j,i);
 //                cout<<d<<endl;
-                xl = i + d;
+                xr = abs(i - d);
                // xr = i - d;
                 // assign new values to reconstructed right view
+                n_right.at<Vec3b>(j,xr) [0] = left.at<Vec3b>(j,i) [0];
+                n_right.at<Vec3b>(j,xr) [1] = left.at<Vec3b>(j,i) [1];
+                n_right.at<Vec3b>(j,xr) [2] = left.at<Vec3b>(j,i) [2];
+            }
+        }
+        imwrite("/home/bene/ClionProjects/tesi_watermarking/img/nkz_right.png", n_right);
+        /*imshow*/
+/*
+        cv::imshow("Left",left);
+        cv::imshow("Disp",disp);
+        cv::imshow("Original",o_right);
+        cv::imshow("Reconstructed", n_right);
+*/
+    }
+
+
+    void Right_view::left_reconstruction(cv::Mat right, cv::Mat disp) {
+
+
+        int d, xl;
+        //create general left image
+        cv::Mat n_left = cv::Mat::zeros(right.rows, right.cols, CV_8UC3);
+        // reconstructed right view
+        // change pixel value
+        for(int j=0;j< right.rows;j++){
+            for (int i=right.cols-1; i>=0;i--){
+                d = disp.at<uchar>(j,i);
+                xl = i + d;
+        // assign new values to reconstructed right view
                 if(xl <= right.cols){
                     n_left.at<Vec3b>(j, xl) [0] = right.at<Vec3b>(j,i) [0];
                     n_left.at<Vec3b>(j, xl) [1] = right.at<Vec3b>(j,i) [1];
@@ -48,61 +75,58 @@ using namespace cv;
                 }
             }
         }
-        imwrite("/home/miky/ClionProjects/tesi_watermarking/img/left_reconstructed.png", n_left);
+        imwrite("/home/bene/ClionProjects/tesi_watermarking/img/left_reconstructed.png", n_left);
+        cv::Mat left = cv::imread("/home/bene/ClionProjects/tesi_watermarking/img/l.png", CV_LOAD_IMAGE_COLOR);
         /*imshow*/
-/*
-        cv::imshow("Left",left);
+  /*      cv::imshow("Left",right);
         cv::imshow("Disp",disp);
-        cv::imshow("Original",o_right);*/
+        cv::imshow("Original",left);*/
         cv::imshow("Reconstructed", n_left);
         waitKey(0);
 
     }
 
-void Right_view::right_reconstruction(cv::Mat left, cv::Mat disp) {
+void Right_view::left_uchar_reconstruction(unsigned char *marked_right, unsigned char *disp_uchar, int width, int height) {
 
 
-    /* string ty =  type2str( disp.type() );
-     printf("Matrix: %s %dx%d \n", ty.c_str(), disp.cols, disp.rows );*/
-    int d, xr;
-    // original right view
-//        cv::Mat o_right = cv::imread("/home/bene/ClionProjects/tesi_watermarking/img/r.png", CV_LOAD_IMAGE_COLOR);
-    /*
-    string ty =  type2str( o_right.type() );
-    printf("Matrix: %s %dx%d \n", ty.c_str(), o_right.cols, o_right.rows);
-    */
-    //create general right image
-    cv::Mat n_right = cv::Mat::zeros(left.rows, left.cols, CV_8UC3);
+    int nc = 640 *3;
+    unsigned char d = 0;
+    //create general left image
+    int rect_dim = 480*640*3;
+    unsigned char *left_uchar = new unsigned char[rect_dim];;
     // reconstructed right view
     // change pixel value
+    cout<< static_cast<unsigned>(disp_uchar[(479*640)+639])<<endl;
+    cout<< static_cast<unsigned>(marked_right[479*640*3 + (639*3)])<<endl;
+    int z = 639;
+    for(int i = 0; i<480; i++){
+        for (int j = 639; j>=0 ; j-=3){
+            d = disp_uchar[(i*640)+z];
+            z--;
+            // assign new values to reconstructed left view
+                left_uchar[ (i*nc) + (j - 0 + static_cast<unsigned>(d)*3)] = marked_right[ (i*nc) + (j - 0)];
+                left_uchar[ (i*nc) + (j - 1 + static_cast<unsigned>(d)*3)] = marked_right[ (i*nc) + (j - 1)];
+                left_uchar[ (i*nc) + (j - 2 + static_cast<unsigned>(d)*3)] = marked_right[ (i*nc) + (j - 2)];
+             left_uchar[ (i*nc) + (j*3 - 0 + static_cast<unsigned>(d)*3)] = (unsigned char) 127;
+                left_uchar[ (i*nc) + (j*3 - 1 + static_cast<unsigned>(d)*3)] = (unsigned char) 127;
+                left_uchar[ (i*nc) + (j*3 - 2 + static_cast<unsigned>(d)*3)] = (unsigned char) 127;
 
-
-    for(int j=0;j< left.rows;j++)
-    {
-        for (int i=0; i< left.cols;i++)
-        {
-            d = disp.at<uchar>(j,i);
-//                cout<<d<<endl;
-//            xr = abs(i - d);
-             xr = i - d;
-            // assign new values to reconstructed right view
-            if (xr>0){
-                n_right.at<Vec3b>(j,abs(xr)) [0] = left.at<Vec3b>(j,i) [0];
-                n_right.at<Vec3b>(j,abs(xr)) [1] = left.at<Vec3b>(j,i) [1];
-                n_right.at<Vec3b>(j,abs(xr)) [2] = left.at<Vec3b>(j,i) [2];
-            }
         }
+        cout<<i<<endl;
     }
-    imwrite("/home/miky/ClionProjects/tesi_watermarking/img/right_reconstructed.png", n_right);
-    /*imshow*/
-/*
-        cv::imshow("Left",left);
-        cv::imshow("Disp",disp);
-        cv::imshow("Original",o_right);*/
-    cv::imshow("Reconstructed", n_right);
+ /*   cv::Mat left_marked = cv::Mat::zeros(480, 640, CV_8UC3);
+    int count = 0;
+    for (int j = 0; j < 480; j++)
+        for (int i = 0; i < 640; i++){
+            left_marked.at<Vec3b>(j,i) [0] = left_uchar[count]; count++;
+            left_marked.at<Vec3b>(j,i) [1] = left_uchar[count]; count++;
+            left_marked.at<Vec3b>(j,i) [2] = left_uchar[count]; count++;
+        }
+    imshow("left_marked", left_marked);
     waitKey(0);
-
+*/
 }
+
     string type2str(int type) {
         string r;
 
