@@ -1208,7 +1208,7 @@ bool Watermarking::extractWatermark(unsigned char *image, int w, int h)
     // resynchronization data for each tile... not used(!!)
     // (see inside WatDec(.) for further details)
     double *datiuscita = new double[32000];
-    cout<<fixed<<power<<endl;
+//    cout<<fixed<<power<<endl;
     int result = WatDec(image, h, w, passw_str, passw_num, watermark, tilesize, wsize, power, datiuscita, imrsinc, tiles, flagResyncAll);
 
 

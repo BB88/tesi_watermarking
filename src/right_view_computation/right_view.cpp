@@ -98,8 +98,8 @@ void Right_view::left_uchar_reconstruction(unsigned char *marked_right, unsigned
         left_uchar[i] = (unsigned char)0;
     // reconstructed right view
 //     change pixel value
-    cout<< static_cast<unsigned>(disp_uchar[(479*640)+639])<<endl;
-    cout<< static_cast<unsigned>(marked_right[479*640*3 + (639*3)])<<endl;
+//    cout<< static_cast<unsigned>(disp_uchar[(479*640)+639])<<endl;
+//    cout<< static_cast<unsigned>(marked_right[479*640*3 + (639*3)])<<endl;
 //    int z = 639;
     for(int i = 0; i<480; i++){
         for (int j = (640-1)*3; j>=0 ; j-=3){

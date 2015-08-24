@@ -155,25 +155,25 @@ int main() {
 
     /*CONFIG SETTINGS*/
 
-//    Watermarking_config::set_parameters_params pars = Watermarking_config::ConfigLoader::get_instance().loadSetParametersConfiguration();
-//
-//    int wsize = pars.wsize;
-//    int tilesize=pars.tilesize;
-//    float power=pars.power;
-//    bool clipping=pars.clipping;
-//    bool flagResyncAll=pars.flagResyncAll;
-//    int tilelistsize=pars.tilelistsize;
-//
-//
-//    Watermarking_config::general_params generalPars = Watermarking_config::ConfigLoader::get_instance().loadGeneralParamsConfiguration();
-//
-//    bool masking=generalPars.masking;
-//    std::string passwstr=generalPars.passwstr;
-//    std::string passwnum=generalPars.passwnum;
+    Watermarking_config::set_parameters_params pars = Watermarking_config::ConfigLoader::get_instance().loadSetParametersConfiguration();
+
+    int wsize = pars.wsize;
+    int tilesize=pars.tilesize;
+    float power=pars.power;
+    bool clipping=pars.clipping;
+    bool flagResyncAll=pars.flagResyncAll;
+    int tilelistsize=pars.tilelistsize;
+
+
+    Watermarking_config::general_params generalPars = Watermarking_config::ConfigLoader::get_instance().loadGeneralParamsConfiguration();
+
+    bool masking=generalPars.masking;
+    std::string passwstr=generalPars.passwstr;
+    std::string passwnum=generalPars.passwnum;
 
 
     /* RUMORE GAUSSIANO  */
-
+//
     Mat left = imread("/home/miky/ClionProjects/tesi_watermarking/img/l.png", CV_LOAD_IMAGE_COLOR);
     cv::Mat right = imread("/home/miky/ClionProjects/tesi_watermarking//img/r.png",CV_LOAD_IMAGE_COLOR);
 
@@ -221,20 +221,20 @@ int main() {
             cout << "correlation btw left watermarked and watermark " << (left_correl.at<float>(i,j));
         } cout << endl; }
 
-    Mat right_correl;
-    right_w.convertTo(m1, CV_32F);
-    noise.convertTo(m2, CV_32F);
-
-    matchTemplate(m1, m2, right_correl, CV_TM_CCOEFF_NORMED);
-
-    for (int i = 0; i < left_correl.rows; i++)
-    {
-//        cout << "row " << i << endl;
-        for (int j = 0; j < right_correl.cols; j++)
-        {
-            cout << "correlation btw right with not warped watermarked and watermark " << (right_correl.at<float>(i,j));
-        } cout << endl; }
-
+//    Mat right_correl;
+//    right_w.convertTo(m1, CV_32F);
+//    noise.convertTo(m2, CV_32F);
+//
+//    matchTemplate(m1, m2, right_correl, CV_TM_CCOEFF_NORMED);
+//
+//    for (int i = 0; i < left_correl.rows; i++)
+//    {
+////        cout << "row " << i << endl;
+//        for (int j = 0; j < right_correl.cols; j++)
+//        {
+//            cout << "correlation btw right with not warped watermarked and watermark " << (right_correl.at<float>(i,j));
+//        } cout << endl; }
+//
 
 
     cv::Mat disp = imread("/home/miky/ClionProjects/tesi_watermarking/img/gt_disp.png", CV_LOAD_IMAGE_GRAYSCALE);
@@ -283,9 +283,10 @@ int main() {
 
     matchTemplate(m1, m2, left_rec_correl, CV_TM_CCOEFF_NORMED);
 
+
+
     for (int i = 0; i < left_rec_correl.rows; i++)
     {
-//        cout << "row " << i << endl;
         for (int j = 0; j < left_rec_correl.cols; j++)
         {
             cout << "correlation btw left reconstructed with watermark and watermark " << (left_rec_correl.at<float>(i,j));
@@ -298,126 +299,135 @@ int main() {
 
 
     // new watermarking
-    cv::Mat left = imread("/home/miky/ClionProjects/tesi_watermarking/img/l.png", CV_LOAD_IMAGE_COLOR);
-    unsigned char *left_uchar = left.data;
-    int squared_dim = 512 * 512 *3;
-    unsigned char *squared_left =  new unsigned char[squared_dim];
-    int nc = 640 *3;
-    int nc_q = 512*3;
-    int index = 127 * 3;
-    for (int i = 0; i < 480; i ++ )
-        for (int j = 0; j < nc_q; j++)
-            squared_left[(i * nc_q)+ j] = left_uchar[(i * nc) + (j + index)];
-    int count = 480 * 512 *3;
-    for (int i = count; i< squared_dim; i ++)
-        squared_left[i] = (unsigned char)0;
-
-/*    cv::Mat left_squared = cv::Mat::zeros(512, 512, CV_8UC3);
-    count = 0;
-    for (int j = 0; j < 512; j++)
-        for (int i = 0; i < 512; i++){
-            left_squared.at<Vec3b>(j,i) [0] = squared_left[count]; count++;
-            left_squared.at<Vec3b>(j,i) [1] = squared_left[count]; count++;
-            left_squared.at<Vec3b>(j,i) [2] = squared_left[count]; count++;
-        }
-
-    imshow("left_squared", left_squared);
-    waitKey(0);*/   /*left riprova: si vede*/
-    Watermarking image_watermarking;
-    //random binary watermark
-    int watermark[64];
-    for (int i = 0; i < 64; i++){
-        int b = rand() % 2;
-        watermark[i]=b;
-    }
-    image_watermarking.setParameters(watermark,wsize,tilesize,power,clipping,flagResyncAll,NULL,tilelistsize);
-    image_watermarking.setPassword(passwstr,passwnum);
-    unsigned char *squared_marked_left = image_watermarking.insertWatermark(squared_left,512,512);
-    cv::Mat left_squared_marked = cv::Mat::zeros(512, 512, CV_8UC3);
-    count = 0;
-/*    for (int j = 0; j < 512; j++)
-        for (int i = 0; i < 512; i++){
-            left_squared_marked.at<Vec3b>(j,i) [0] = squared_marked_left[count]; count++;
-            left_squared_marked.at<Vec3b>(j,i) [1] = squared_marked_left[count]; count++;
-            left_squared_marked.at<Vec3b>(j,i) [2] = squared_marked_left[count]; count++;
-        }
-
-    imshow("left_squared_marked", left_squared_marked);
-    waitKey(0);*/   /*left riprova: si vede*/
-    unsigned char *squared_mark =  new unsigned char[squared_dim];
-    for (int i=0;i<squared_dim;i++){
-        squared_mark[i] = squared_marked_left[i] - squared_left[i];
-    }
-/*    cv::Mat mark_squared = cv::Mat::zeros(512, 512, CV_8UC3);
-    count = 0;
-    for (int j = 0; j < 512; j++)
-        for (int i = 0; i < 512; i++){
-            mark_squared.at<Vec3b>(j,i) [0] = squared_mark[count]; count++;
-            mark_squared.at<Vec3b>(j,i) [1] = squared_mark[count]; count++;
-            mark_squared.at<Vec3b>(j,i) [2] = squared_mark[count]; count++;
-        }
-
-    imshow("mark_squared", mark_squared);
-    waitKey(0);*/  /*marchio riprova: si vede*/
-    cv::Mat disp = imread("/home/miky/ClionProjects/tesi_watermarking/img/gt_disp.png", CV_LOAD_IMAGE_GRAYSCALE);
-    unsigned char *disp_uchar = disp.data;
-    int rect_dim = 480*640*3;
-    unsigned char *warped_mark = new unsigned char[rect_dim];
-    for (int i = 0; i< rect_dim; i ++)
-        warped_mark[i] = (unsigned char)0;
-    unsigned char d = 0;
-    int new_index = 127;
-    for (int i=0; i <480;i ++)
-        for(int j =0; j<512*3; j+=3){
-            d = disp_uchar[(i*640)+((j/3) + new_index)];
-            warped_mark[ (i*nc) + (index + j + 0 - static_cast<unsigned>(d)*3)] = squared_mark[ (i*nc_q) + (j + 0)];
-            warped_mark[ (i*nc) + (index + j + 1 - static_cast<unsigned>(d)*3)] = squared_mark[ (i*nc_q) + (j + 1)];
-            warped_mark[ (i*nc) + (index + j + 2 - static_cast<unsigned>(d)*3)] = squared_mark[ (i*nc_q) + (j + 2)];
-        }
-/*    cv::Mat mark_warped = cv::Mat::zeros(480, 640, CV_8UC3);
-    count = 0;
-    for (int j = 0; j < 480; j++)
-        for (int i = 0; i < 640; i++){
-            mark_warped.at<Vec3b>(j,i) [0] = warped_mark[count]; count++;
-            mark_warped.at<Vec3b>(j,i) [1] = warped_mark[count]; count++;
-            mark_warped.at<Vec3b>(j,i) [2] = warped_mark[count]; count++;
-        }
-    imshow("mark_warped", mark_warped);
-    waitKey(0); */ /*marchio riprova: si vede*/
-    cv::Mat right = imread("/home/miky/ClionProjects/tesi_watermarking//img/r.png",CV_LOAD_IMAGE_COLOR);
-    unsigned char *right_uchar = right.data;
-    unsigned char *marked_right = new unsigned char[rect_dim];
-    for (int i=0;i<rect_dim;i++){
-        marked_right[i] = right_uchar[i] + warped_mark[i];
-    }
-/*    cv::Mat right_marked = cv::Mat::zeros(480, 640, CV_8UC3);
-    count = 0;
-    for (int j = 0; j < 480; j++)
-        for (int i = 0; i < 640; i++){
-            right_marked.at<Vec3b>(j,i) [0] = marked_right[count]; count++;
-            right_marked.at<Vec3b>(j,i) [1] = marked_right[count]; count++;
-            right_marked.at<Vec3b>(j,i) [2] = marked_right[count]; count++;
-        }
-    imshow("right_marked", right_marked);
-    waitKey(0); */ /*marchio shiftato riprova: si vede*/
-    cv::Mat right_disp = imread("/home/miky/ClionProjects/tesi_watermarking/img/disp_right.png", CV_LOAD_IMAGE_GRAYSCALE);
-    unsigned char *right_disp_uchar = right_disp.data;
-    Right_view rv;
-    rv.left_uchar_reconstruction(marked_right, right_disp_uchar,640,480);
-    rv.left_reconstruction(right,right_disp);
-
-
-
-
-
-
-
-
-
-
-
-
-
+//    cv::Mat left = imread("/home/miky/ClionProjects/tesi_watermarking/img/l.png", CV_LOAD_IMAGE_COLOR);
+//    unsigned char *left_uchar = left.data;
+//    int squared_dim = 512 * 512 *3;
+//    unsigned char *squared_left =  new unsigned char[squared_dim];
+//    int nc = 640 *3;
+//    int nc_q = 512*3;
+//    int index = 127 * 3;
+//    for (int i = 0; i < 480; i ++ )
+//        for (int j = 0; j < nc_q; j++)
+//            squared_left[(i * nc_q)+ j] = left_uchar[(i * nc) + (j + index)];
+//    int count = 480 * 512 *3;
+//    for (int i = count; i< squared_dim; i ++)
+//        squared_left[i] = (unsigned char)0;
+//
+///*    cv::Mat left_squared = cv::Mat::zeros(512, 512, CV_8UC3);
+//    count = 0;
+//    for (int j = 0; j < 512; j++)
+//        for (int i = 0; i < 512; i++){
+//            left_squared.at<Vec3b>(j,i) [0] = squared_left[count]; count++;
+//            left_squared.at<Vec3b>(j,i) [1] = squared_left[count]; count++;
+//            left_squared.at<Vec3b>(j,i) [2] = squared_left[count]; count++;
+//        }
+//
+//    imshow("left_squared", left_squared);
+//    waitKey(0);*/   /*left riprova: si vede*/
+//    Watermarking image_watermarking;
+//    //random binary watermark
+//    int watermark[64];
+//    for (int i = 0; i < 64; i++){
+//        int b = rand() % 2;
+//        watermark[i]=b;
+//    }
+//    image_watermarking.setParameters(watermark,wsize,tilesize,power,clipping,flagResyncAll,NULL,tilelistsize);
+//    image_watermarking.setPassword(passwstr,passwnum);
+//    unsigned char *squared_marked_left = image_watermarking.insertWatermark(squared_left,512,512);
+//    cv::Mat left_squared_marked = cv::Mat::zeros(512, 512, CV_8UC3);
+//    count = 0;
+//    for (int j = 0; j < 512; j++)
+//        for (int i = 0; i < 512; i++){
+//            left_squared_marked.at<Vec3b>(j,i) [0] = squared_marked_left[count]; count++;
+//            left_squared_marked.at<Vec3b>(j,i) [1] = squared_marked_left[count]; count++;
+//            left_squared_marked.at<Vec3b>(j,i) [2] = squared_marked_left[count]; count++;
+//        }
+//
+//    imshow("left_squared_marked", left_squared_marked);
+//    waitKey(0);   /*left riprova: si vede*/
+//    unsigned char *squared_mark =  new unsigned char[squared_dim];
+//    for (int i=0;i<squared_dim;i++){
+//        squared_mark[i] = squared_marked_left[i] - squared_left[i];
+//    }
+///*    cv::Mat mark_squared = cv::Mat::zeros(512, 512, CV_8UC3);
+//    count = 0;
+//    for (int j = 0; j < 512; j++)
+//        for (int i = 0; i < 512; i++){
+//            mark_squared.at<Vec3b>(j,i) [0] = squared_mark[count]; count++;
+//            mark_squared.at<Vec3b>(j,i) [1] = squared_mark[count]; count++;
+//            mark_squared.at<Vec3b>(j,i) [2] = squared_mark[count]; count++;
+//        }
+//
+//    imshow("mark_squared", mark_squared);
+//    waitKey(0);*/  /*marchio riprova: si vede*/
+//    cv::Mat disp = imread("/home/miky/ClionProjects/tesi_watermarking/img/gt_disp.png", CV_LOAD_IMAGE_GRAYSCALE);
+//    unsigned char *disp_uchar = disp.data;
+//    int rect_dim = 480*640*3;
+//    unsigned char *warped_mark = new unsigned char[rect_dim];
+//    for (int i = 0; i< rect_dim; i ++)
+//        warped_mark[i] = (unsigned char)0;
+//    unsigned char d = 0;
+//    int new_index = 127;
+//    for (int i=0; i <480;i ++)
+//        for(int j =0; j<512*3; j+=3){
+//            d = disp_uchar[(i*640)+((j/3) + new_index)];
+//            warped_mark[ (i*nc) + (index + j + 0 - static_cast<unsigned>(d)*3)] = squared_mark[ (i*nc_q) + (j + 0)];
+//            warped_mark[ (i*nc) + (index + j + 1 - static_cast<unsigned>(d)*3)] = squared_mark[ (i*nc_q) + (j + 1)];
+//            warped_mark[ (i*nc) + (index + j + 2 - static_cast<unsigned>(d)*3)] = squared_mark[ (i*nc_q) + (j + 2)];
+//        }
+///*    cv::Mat mark_warped = cv::Mat::zeros(480, 640, CV_8UC3);
+//    count = 0;
+//    for (int j = 0; j < 480; j++)
+//        for (int i = 0; i < 640; i++){
+//            mark_warped.at<Vec3b>(j,i) [0] = warped_mark[count]; count++;
+//            mark_warped.at<Vec3b>(j,i) [1] = warped_mark[count]; count++;
+//            mark_warped.at<Vec3b>(j,i) [2] = warped_mark[count]; count++;
+//        }
+//    imshow("mark_warped", mark_warped);
+//    waitKey(0); */ /*marchio riprova: si vede*/
+//    cv::Mat right = imread("/home/miky/ClionProjects/tesi_watermarking//img/r.png",CV_LOAD_IMAGE_COLOR);
+//    unsigned char *right_uchar = right.data;
+//    unsigned char *marked_right = new unsigned char[rect_dim];
+//    for (int i=0;i<rect_dim;i++){
+//        marked_right[i] = right_uchar[i] + warped_mark[i];
+//    }
+///*    cv::Mat right_marked = cv::Mat::zeros(480, 640, CV_8UC3);
+//    count = 0;
+//    for (int j = 0; j < 480; j++)
+//        for (int i = 0; i < 640; i++){
+//            right_marked.at<Vec3b>(j,i) [0] = marked_right[count]; count++;
+//            right_marked.at<Vec3b>(j,i) [1] = marked_right[count]; count++;
+//            right_marked.at<Vec3b>(j,i) [2] = marked_right[count]; count++;
+//        }
+//    imshow("right_marked", right_marked);
+//    waitKey(0); */ /*marchio shiftato riprova: si vede*/
+//    cv::Mat right_disp = imread("/home/miky/ClionProjects/tesi_watermarking/img/disp_right.png", CV_LOAD_IMAGE_GRAYSCALE);
+//    unsigned char *right_disp_uchar = right_disp.data;
+//    Right_view rv;
+//    rv.left_uchar_reconstruction(marked_right, right_disp_uchar,640,480);
+//
+//
+//    cv::Mat left_reconstructed = imread("/home/miky/ClionProjects/tesi_watermarking//img/left_reconstructed_uchar.png",CV_LOAD_IMAGE_COLOR);
+//    cv::Mat new_image_to_dec = cv::Mat::zeros(512, 512, CV_8UC3);
+//
+//    for (int j = 0; j < 480; j++)
+//        for (int i = 0; i < 512; i++){
+//            new_image_to_dec.at<Vec3b>(j,i) [0] = left_reconstructed.at<Vec3b>(j,i+new_index) [0];
+//            new_image_to_dec.at<Vec3b>(j,i) [1] = left_reconstructed.at<Vec3b>(j,i+new_index) [1];
+//            new_image_to_dec.at<Vec3b>(j,i) [2] = left_reconstructed.at<Vec3b>(j,i+new_index) [2];
+//        }
+//
+//    cv::imshow("Left to dec", new_image_to_dec);
+//     waitKey(0);
+//
+////    stereo_watermarking::show_difference(image_to_mark,left,"left marked");
+////    stereo_watermarking::show_difference(right_new,right ,"right marked");
+//    stereo_watermarking::show_difference(left,left_reconstructed,"left rec");
+//
+//    unsigned char *squared_image_to_dec = new_image_to_dec.data;
+//    bool wat = image_watermarking.extractWatermark(squared_image_to_dec, 512, 512);
+//    cout<<wat;
+//
 
 
 
