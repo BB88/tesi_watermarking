@@ -265,10 +265,11 @@ int main() {
 
     /*DFT MAGNITUDE */
 
-//    stereo_watermarking::dft_magnitude(left_squared,"dft sinistra");
-//    stereo_watermarking::dft_magnitude(left_squared_marked,"dft sinistra marchiata");
+    stereo_watermarking::dft_magnitude(left,"dft sinistra");
+    stereo_watermarking::dft_magnitude(left_marked,"dft sinistra marchiata");
 
     /* FINE DFT MAGNITUDE*/
+
     unsigned char *squared_mark =  new unsigned char[squared_dim];
     for (int i=0;i<squared_dim;i++){
         squared_mark[i] = squared_marked_left[i] - squared_left[i];
@@ -329,8 +330,8 @@ int main() {
 
     /*DFT MAGNITUDE */
 
-//    stereo_watermarking::dft_magnitude(right,"dft destra");
-//    stereo_watermarking::dft_magnitude(right_marked,"dft destra marchiata");
+    stereo_watermarking::dft_magnitude(right,"dft destra");
+    stereo_watermarking::dft_magnitude(right_marked,"dft destra marchiata");
 
     /* FINE DFT MAGNITUDE*/
 
@@ -352,12 +353,13 @@ int main() {
 
     /*GENERAZIONE NUVOLA 3D*/
 
-    int frame_num=0; //serve per prendere i parametri dal file di testo ma per ora usiamo sempre il frame 0
-
-    stereo_watermarking::generatePointCloud(disp,left_marked,right_marked,0);
+//    int frame_num=0; //serve per prendere i parametri dal file di testo ma per ora usiamo sempre il frame 0
+//
+//    stereo_watermarking::generatePointCloud(disp,left_marked,right_marked,0);
 
 
     /*FINE GENERAZIONE NUVOLA 3D*/
+
 
 //    cv::Mat new_image_to_dec = cv::Mat::zeros(512, 512, CV_8UC3);
 //

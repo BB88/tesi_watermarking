@@ -260,169 +260,195 @@ void stereo_watermarking::dft_magnitude(cv::Mat img,std::string window_name)
 //    imshow("Input Image"  , img  );    // Show the result
     imshow(window_name, magI);
     waitKey(0);
+
+    std::ostringstream path ;
+    path << "/home/miky/Scrivania/"<< window_name<<".txt";
+    stereo_watermarking::writeMatToFile(magI,path.str());
     return ;
 }
 
 
 
-boost::shared_ptr<pcl::visualization::PCLVisualizer> stereo_watermarking::createVisualizerRGB (pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr cloud, std::string title) {
-
-    boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer (new pcl::visualization::PCLVisualizer(title));
-    viewer->setBackgroundColor (0.3, 0.3, 0.3);
-
-    pcl::visualization::PointCloudColorHandlerRGBField<pcl::PointXYZRGB> rgb(cloud);
-    viewer->addPointCloud<pcl::PointXYZRGB> (cloud, rgb, "reconstruction");
-    //viewer->setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 3, "reconstruction");
-    viewer->addCoordinateSystem ( 1.0 );
-    viewer->initCameraParameters ();
-    //viewer->spin();
-    return (viewer);
-}
-void stereo_watermarking::viewPointCloudRGB(pcl::PointCloud<pcl::PointXYZRGB>::Ptr point_cloud_ptr, std::string title) {
-    //Create visualizer
-    boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer;
-    viewer = createVisualizerRGB( point_cloud_ptr, title);
-    viewer->resetCamera();
-    viewer->resetCameraViewpoint ("reconstruction");
-//        viewer->resetCamera();
-
-    //Main loop
-    while ( !viewer->wasStopped())
-    {
-        viewer->spinOnce(100);
-        boost::this_thread::sleep (boost::posix_time::microseconds (100000));
-    }
-    viewer->close();
-}
-
-void stereo_watermarking::createPointCloudOpenCV (Mat& img1, Mat& img2,  Mat& Q, Mat& disp, Mat& recons3D, pcl::PointCloud<pcl::PointXYZRGB>::Ptr &point_cloud_ptr) {
-
-    cv::reprojectImageTo3D(disp, recons3D, Q, true);
-
-    pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_xyzrgb(new pcl::PointCloud<pcl::PointXYZRGB>);
-    pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_xyz(new pcl::PointCloud<pcl::PointXYZ>);
-    for (int rows = 0; rows < recons3D.rows; ++rows) {
-
-        for (int cols = 0; cols < recons3D.cols; ++cols) {
-
-            cv::Point3f point = recons3D.at<cv::Point3f>(rows, cols);
-
-            pcl::PointXYZ pcl_point(point.x, point.y, point.z); // normal PointCloud
-            pcl::PointXYZRGB pcl_point_rgb;
-            pcl_point_rgb.x = point.x;    // rgb PointCloud
-            pcl_point_rgb.y = point.y;
-            pcl_point_rgb.z = point.z;
-            // image_left is the binocular_dense_stereo rectified image used in stere reconstruction
-            cv::Vec3b intensity = img1.at<cv::Vec3b>(rows, cols); //BGR
-
-            uint32_t rgb = (static_cast<uint32_t>(intensity[2]) << 16 | static_cast<uint32_t>(intensity[1]) << 8 | static_cast<uint32_t>(intensity[0]));
-
-            pcl_point_rgb.rgb = *reinterpret_cast<float *>(&rgb);
-
-            // filter erroneus points
-            if (pcl_point_rgb.z < 0)
-                point_cloud_ptr->push_back(pcl_point_rgb);
-        }
-
-
-    }
-
-    point_cloud_ptr->width = (int) point_cloud_ptr->points.size();
-    point_cloud_ptr->height = 1;
-
-
-}
-cv::datasets::FramePair stereo_watermarking::rectifyImages(Mat& img1, Mat& img2, Mat& M1, Mat& D1, Mat& M2, Mat& D2, Mat& R, Mat& T, Mat& R1, Mat& R2, Mat& P1, Mat& P2, Mat& Q, Rect &roi1, Rect &roi2, float scale){
-
-    Size img_size = img1.size();
-
-    M1 *= scale;
-    M2 *= scale;
-
-
-
-    // dopo Q: 0 o CV_CALIB_ZERO_DISPARITY
-    int flags = 0;
-    stereoRectify( M1, D1, M2, D2, img_size, R, T, R1, R2, P1, P2, Q, flags, -1, img_size, &roi1, &roi2 );
-
-    Mat map11, map12, map21, map22;
-    initUndistortRectifyMap(M1, D1, R1, P1, img_size, CV_16SC2, map11, map12);
-    initUndistortRectifyMap(M2, D2, R2, P2, img_size, CV_16SC2, map21, map22);
-
-    Mat img1r, img2r;
-    remap(img1, img1r, map11, map12, INTER_CUBIC);
-    remap(img2, img2r, map21, map22, INTER_CUBIC); // prima linear
-
-    cv::datasets::FramePair pair;
-
-    pair.frame_left = img1r;
-    pair.frame_right = img2r;
-
-    return pair;
-
-}
-void stereo_watermarking::generatePointCloud(cv::Mat disp, cv::Mat img_left,cv::Mat img_right, int frame_num){
-
-    string path("/home/miky/ClionProjects/tesi_watermarking/dataset/NTSD-200/");
-    Ptr<tsukuba_dataset> dataset = tsukuba_dataset::create();
-    dataset->load(path);
-
-    // load images data
-    Ptr<cv::datasets::tsukuba_datasetObj> data_stereo_img =
-            static_cast< Ptr<cv::datasets::tsukuba_datasetObj> >  (dataset->getTrain()[frame_num]);
-
-    // load images
-
-//    cv::datasets::FramePair tuple_img = dataset->load_stereo_images(frame_num+1);
-//    img_left = tuple_img.frame_left;
-//    img_right = tuple_img.frame_right;
-
-    // init
-    Mat R1,R2,P1,P2,Q;
-    // zero distiorsions
-    Mat D_left = Mat::zeros(1, 5, CV_64F);
-    Mat D_right = Mat::zeros(1, 5, CV_64F);
-
-    // load K and R from dataset info
-    Mat M_left = Mat(data_stereo_img->k);
-    Mat M_right = Mat(data_stereo_img->k);
-
-    // Left image
-    Mat r_left = Mat(data_stereo_img->r);
-    Mat t_left = Mat(3, 1, CV_64FC1, &data_stereo_img->tl);
-
-    // Right image
-    Mat r_right = Mat(data_stereo_img->r);
-    Mat t_right = Mat(3, 1, CV_64FC1, &data_stereo_img->tr);
-
-    // rotation between left and right
-    // use ground truth rotation (img are already rectified
-    cv::Mat R = Mat::eye(3,3, CV_64F); //r_right*r_left.inv();
-    // translation between img2 and img1
-//        cv::Mat T = t_left - (R.inv()*t_right );
-    // use ground truth translation
-    cv::Mat T = Mat::zeros(3, 1, CV_64F);
-    T.at<double>(0,0) = 10.;
-    Rect roi1,roi2;
-
-    cv::datasets::FramePair tuple_img_rect = stereo_watermarking::rectifyImages(img_left, img_right, M_left, D_left, M_right, D_right, R, T, R1, R2, P1, P2, Q, roi1, roi2, 1.f);
-    // get the rectified images
-    // img_left = tuple_img_rect.frame_left;
-    //        img_right = tuple_img_rect.frame_right;
+//boost::shared_ptr<pcl::visualization::PCLVisualizer> stereo_watermarking::createVisualizerRGB (pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr cloud, std::string title) {
 //
-//    Mat disp;
-//    disp = dataset->load_disparity(frame_num+1);
-
-//    float baseline = 10;
-
-    Mat depth_image(disp.size(), CV_32F);
-    Mat recons3D(disp.size(), CV_32FC3);
-    pcl::PointCloud<pcl::PointXYZRGB>::Ptr point_cloud_ptr (new pcl::PointCloud<pcl::PointXYZRGB>);
-    stereo_watermarking::createPointCloudOpenCV(img_left, img_right, Q, disp, recons3D, point_cloud_ptr);
-
-//    stereo_watermarking::depthFromDisparity (disp, M_left.at<double>(0,0), baseline, 0, depth_image, true);
+//    boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer (new pcl::visualization::PCLVisualizer(title));
+//    viewer->setBackgroundColor (0.3, 0.3, 0.3);
+//
+//    pcl::visualization::PointCloudColorHandlerRGBField<pcl::PointXYZRGB> rgb(cloud);
+//    viewer->addPointCloud<pcl::PointXYZRGB> (cloud, rgb, "reconstruction");
+//    //viewer->setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 3, "reconstruction");
+//    viewer->addCoordinateSystem ( 1.0 );
+//    viewer->initCameraParameters ();
+//    //viewer->spin();
+//    return (viewer);
+//}
+//void stereo_watermarking::viewPointCloudRGB(pcl::PointCloud<pcl::PointXYZRGB>::Ptr point_cloud_ptr, std::string title) {
+//    //Create visualizer
+//    boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer;
+//    viewer = createVisualizerRGB( point_cloud_ptr, title);
+//    viewer->resetCamera();
+//    viewer->resetCameraViewpoint ("reconstruction");
+////        viewer->resetCamera();
+//
+//    //Main loop
+//    while ( !viewer->wasStopped())
+//    {
+//        viewer->spinOnce(100);
+//        boost::this_thread::sleep (boost::posix_time::microseconds (100000));
+//    }
+//    viewer->close();
+//}
+//
+//void stereo_watermarking::createPointCloudOpenCV (Mat& img1, Mat& img2,  Mat& Q, Mat& disp, Mat& recons3D, pcl::PointCloud<pcl::PointXYZRGB>::Ptr &point_cloud_ptr) {
+//
+//    cv::reprojectImageTo3D(disp, recons3D, Q, true);
+//
+//    pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_xyzrgb(new pcl::PointCloud<pcl::PointXYZRGB>);
+//    pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_xyz(new pcl::PointCloud<pcl::PointXYZ>);
+//    for (int rows = 0; rows < recons3D.rows; ++rows) {
+//
+//        for (int cols = 0; cols < recons3D.cols; ++cols) {
+//
+//            cv::Point3f point = recons3D.at<cv::Point3f>(rows, cols);
+//
+//            pcl::PointXYZ pcl_point(point.x, point.y, point.z); // normal PointCloud
+//            pcl::PointXYZRGB pcl_point_rgb;
+//            pcl_point_rgb.x = point.x;    // rgb PointCloud
+//            pcl_point_rgb.y = point.y;
+//            pcl_point_rgb.z = point.z;
+//            // image_left is the binocular_dense_stereo rectified image used in stere reconstruction
+//            cv::Vec3b intensity = img1.at<cv::Vec3b>(rows, cols); //BGR
+//
+//            uint32_t rgb = (static_cast<uint32_t>(intensity[2]) << 16 | static_cast<uint32_t>(intensity[1]) << 8 | static_cast<uint32_t>(intensity[0]));
+//
+//            pcl_point_rgb.rgb = *reinterpret_cast<float *>(&rgb);
+//
+//            // filter erroneus points
+//            if (pcl_point_rgb.z < 0)
+//                point_cloud_ptr->push_back(pcl_point_rgb);
+//        }
+//
+//
+//    }
+//
+//    point_cloud_ptr->width = (int) point_cloud_ptr->points.size();
+//    point_cloud_ptr->height = 1;
+//
+//
+//}
+//cv::datasets::FramePair stereo_watermarking::rectifyImages(Mat& img1, Mat& img2, Mat& M1, Mat& D1, Mat& M2, Mat& D2, Mat& R, Mat& T, Mat& R1, Mat& R2, Mat& P1, Mat& P2, Mat& Q, Rect &roi1, Rect &roi2, float scale){
+//
+//    Size img_size = img1.size();
+//
+//    M1 *= scale;
+//    M2 *= scale;
+//
+//
+//
+//    // dopo Q: 0 o CV_CALIB_ZERO_DISPARITY
+//    int flags = 0;
+//    stereoRectify( M1, D1, M2, D2, img_size, R, T, R1, R2, P1, P2, Q, flags, -1, img_size, &roi1, &roi2 );
+//
+//    Mat map11, map12, map21, map22;
+//    initUndistortRectifyMap(M1, D1, R1, P1, img_size, CV_16SC2, map11, map12);
+//    initUndistortRectifyMap(M2, D2, R2, P2, img_size, CV_16SC2, map21, map22);
+//
+//    Mat img1r, img2r;
+//    remap(img1, img1r, map11, map12, INTER_CUBIC);
+//    remap(img2, img2r, map21, map22, INTER_CUBIC); // prima linear
+//
+//    cv::datasets::FramePair pair;
+//
+//    pair.frame_left = img1r;
+//    pair.frame_right = img2r;
+//
+//    return pair;
+//
+//}
+//void stereo_watermarking::generatePointCloud(cv::Mat disp, cv::Mat img_left,cv::Mat img_right, int frame_num){
+//
+//    string path("/home/miky/ClionProjects/tesi_watermarking/dataset/NTSD-200/");
+//    Ptr<tsukuba_dataset> dataset = tsukuba_dataset::create();
+//    dataset->load(path);
+//
+//    // load images data
+//    Ptr<cv::datasets::tsukuba_datasetObj> data_stereo_img =
+//            static_cast< Ptr<cv::datasets::tsukuba_datasetObj> >  (dataset->getTrain()[frame_num]);
+//
+//    // load images
+//
+////    cv::datasets::FramePair tuple_img = dataset->load_stereo_images(frame_num+1);
+////    img_left = tuple_img.frame_left;
+////    img_right = tuple_img.frame_right;
+//
+//    // init
+//    Mat R1,R2,P1,P2,Q;
+//    // zero distiorsions
+//    Mat D_left = Mat::zeros(1, 5, CV_64F);
+//    Mat D_right = Mat::zeros(1, 5, CV_64F);
+//
+//    // load K and R from dataset info
+//    Mat M_left = Mat(data_stereo_img->k);
+//    Mat M_right = Mat(data_stereo_img->k);
+//
+//    // Left image
+//    Mat r_left = Mat(data_stereo_img->r);
+//    Mat t_left = Mat(3, 1, CV_64FC1, &data_stereo_img->tl);
+//
+//    // Right image
+//    Mat r_right = Mat(data_stereo_img->r);
+//    Mat t_right = Mat(3, 1, CV_64FC1, &data_stereo_img->tr);
+//
+//    // rotation between left and right
+//    // use ground truth rotation (img are already rectified
+//    cv::Mat R = Mat::eye(3,3, CV_64F); //r_right*r_left.inv();
+//    // translation between img2 and img1
+////        cv::Mat T = t_left - (R.inv()*t_right );
+//    // use ground truth translation
+//    cv::Mat T = Mat::zeros(3, 1, CV_64F);
+//    T.at<double>(0,0) = 10.;
+//    Rect roi1,roi2;
+//
+//    cv::datasets::FramePair tuple_img_rect = stereo_watermarking::rectifyImages(img_left, img_right, M_left, D_left, M_right, D_right, R, T, R1, R2, P1, P2, Q, roi1, roi2, 1.f);
+//    // get the rectified images
+//    // img_left = tuple_img_rect.frame_left;
+//    //        img_right = tuple_img_rect.frame_right;
+////
+////    Mat disp;
+////    disp = dataset->load_disparity(frame_num+1);
+//
+////    float baseline = 10;
+//
+//    Mat depth_image(disp.size(), CV_32F);
+//    Mat recons3D(disp.size(), CV_32FC3);
 //    pcl::PointCloud<pcl::PointXYZRGB>::Ptr point_cloud_ptr (new pcl::PointCloud<pcl::PointXYZRGB>);
-//    stereo_watermarking::pointcloudFromDepthImage (depth_image, img_left, M_left, point_cloud_ptr);
+//    stereo_watermarking::createPointCloudOpenCV(img_left, img_right, Q, disp, recons3D, point_cloud_ptr);
+//
+////    stereo_watermarking::depthFromDisparity (disp, M_left.at<double>(0,0), baseline, 0, depth_image, true);
+////    pcl::PointCloud<pcl::PointXYZRGB>::Ptr point_cloud_ptr (new pcl::PointCloud<pcl::PointXYZRGB>);
+////    stereo_watermarking::pointcloudFromDepthImage (depth_image, img_left, M_left, point_cloud_ptr);
+//
+//    stereo_watermarking::viewPointCloudRGB(point_cloud_ptr, "cloud ");
+//}
 
-    stereo_watermarking::viewPointCloudRGB(point_cloud_ptr, "cloud ");
+void stereo_watermarking::writeMatToFile(cv::Mat& m, std::string filename)
+{
+    ofstream fout(filename);
+
+    if(!fout)
+    {
+        cout<<"File Not Opened"<<endl;  return;
+    }
+
+    for(int i=0; i<m.rows; i++)
+    {
+        for(int j=0; j<m.cols; j++)
+        {
+            fout<<m.at<float>(i,j)<<"\t";
+        }
+        fout<<endl;
+    }
+
+    fout.close();
 }
+
