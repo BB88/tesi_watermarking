@@ -6,11 +6,14 @@
 #include "utils.h"
 #include <cv.h>
 #include <highgui.h>
-#include <pcl/common/common_headers.h>
-#include <pcl/io/pcd_io.h>
-#include <pcl/visualization/pcl_visualizer.h>
+//#include <pcl/common/common_headers.h>
+//#include <pcl/io/pcd_io.h>
+//#include <pcl/visualization/pcl_visualizer.h>
 #include <boost/thread/thread.hpp>
 #include "dataset/tsukuba_dataset.h"
+#include "./img_watermarking/watermarking.h"
+#include "./img_watermarking/allocim.h"
+#include "./img_watermarking/fft2d.h"
 
 using namespace std;
 using namespace cv;
@@ -59,7 +62,7 @@ void stereo_watermarking::sobel_filtering(cv::Mat src, const char* window_name){
     std::ostringstream path ;
     path << "/home/miky/ClionProjects/tesi_watermarking/img/"<< window_name<<".png";
 //    cout<<path.str();
-    imwrite(path.str(),grad);
+    cv::imwrite(path.str(),grad);
     imshow( window_name, grad );
 
     waitKey(0);
@@ -87,58 +90,7 @@ void stereo_watermarking::show_difference(cv::Mat img1,cv::Mat img2,std::string 
     cv::waitKey(0);
 }
 
-cv::Mat stereo_watermarking::equalizeIntensity(const cv::Mat& inputImage)
-{
-    if(inputImage.channels() >= 3)
-    {
-        cv::Mat ycrcb;
-        cv::cvtColor(inputImage,ycrcb,CV_BGR2YCrCb);
 
-        vector<cv::Mat> channels;
-        split(ycrcb,channels);
-
-        equalizeHist(channels[0], channels[0]);
-
-        cv::Mat result;
-        merge(channels,ycrcb);
-        cvtColor(ycrcb,result,CV_YCrCb2BGR);
-
-        return result;
-    }
-
-    return cv::Mat();
-}
-int stereo_watermarking::equi_histo(cv::Mat image, std::string window_name, cv::Mat &equi_image)
-{
-    Mat src;
-
-
-
-    /// Load image
-    image.copyTo(src);
-
-    if( !src.data )
-    { cout<<"Usage: ./Histogram_Demo <path_to_image>"<<endl;
-        return -1;}
-
-    /// Convert to grayscale
-    cvtColor( src, src, CV_BGR2GRAY );
-
-    /// Apply Histogram Equalization
-    equalizeHist( src, equi_image );
-
-    /// Display results
-    namedWindow( window_name + " original", CV_WINDOW_AUTOSIZE );
-    namedWindow( window_name, CV_WINDOW_AUTOSIZE );
-
-    imshow( window_name+ " original", src );
-    imshow( window_name, equi_image );
-
-    /// Wait until user exits the program
-    waitKey(0);
-
-    return 0;
-}
 
 
 void stereo_watermarking::printRGB (cv::Mat image, int x, int y){
@@ -213,62 +165,150 @@ void stereo_watermarking::histo (cv::Mat image, std::string window_name) {
 }
 
 
-void stereo_watermarking::dft_magnitude(cv::Mat img,std::string window_name)
-{
-    // Read image from file
-    // Make sure that the image is in grayscale
-//    Mat img = imread("lena.JPG",0);
 
-    cvtColor( img, img, CV_BGR2GRAY );
 
-    Mat planes[] = {Mat_<float>(img), Mat::zeros(img.size(), CV_32F)};
-    Mat complexI;    //Complex plane to contain the DFT coefficients {[0]-Real,[1]-Img}
-    merge(planes, 2, complexI);
-    dft(complexI, complexI);  // Applying DFT
-
-    split(complexI, planes);                   // planes[0] = Re(DFT(I), planes[1] = Im(DFT(I))
-    magnitude(planes[0], planes[1], planes[0]);// planes[0] = magnitude
-    Mat magI = planes[0];
-
-    magI += Scalar::all(1);                    // switch to logarithmic scale
-    log(magI, magI);
-
-    // crop the spectrum, if it has an odd number of rows or columns
-    magI = magI(Rect(0, 0, magI.cols & -2, magI.rows & -2));
-
-    // rearrange the quadrants of Fourier image  so that the origin is at the image center
-    int cx = magI.cols/2;
-    int cy = magI.rows/2;
-
-    Mat q0(magI, Rect(0, 0, cx, cy));   // Top-Left - Create a ROI per quadrant
-    Mat q1(magI, Rect(cx, 0, cx, cy));  // Top-Right
-    Mat q2(magI, Rect(0, cy, cx, cy));  // Bottom-Left
-    Mat q3(magI, Rect(cx, cy, cx, cy)); // Bottom-Right
-
-    Mat tmp;                           // swap quadrants (Top-Left with Bottom-Right)
-    q0.copyTo(tmp);
-    q3.copyTo(q0);
-    tmp.copyTo(q3);
-
-    q1.copyTo(tmp);                    // swap quadrant (Top-Right with Bottom-Left)
-    q2.copyTo(q1);
-    tmp.copyTo(q2);
-
-    normalize(magI, magI, 0, 1, CV_MINMAX); // Transform the matrix with float values into a
-    // viewable image form (float between values 0 and 1).
-
-//    imshow("Input Image"  , img  );    // Show the result
-    imshow(window_name, magI);
-    waitKey(0);
-
-    std::ostringstream path ;
-    path << "/home/miky/Scrivania/"<< window_name<<".txt";
-    stereo_watermarking::writeMatToFile(magI,path.str());
-    return ;
+float stereo_watermarking::MSE(int width,int height,double** A,double ** B){
+    float sum = 0.0;
+    double difference;
+    for(int x = 0; x < width;++x){
+         for(int y = 0; y < height; ++y){
+             difference = A[x][y] - B[x][y];
+             sum = sum + difference*difference;
+         }
+    }
+    sum = sum /(width*height);
+return sum;
 }
 
+void stereo_watermarking::dft_comparison(unsigned char* Image1, unsigned char* Image2, int dim, std::string img1_name, std::string img2_name ){
+
+    Watermarking image_watermarking;
+    float   **imyout1;			// immagine
+    double  **imdft1;		// immagine della DFT
+    double  **imdftfase1;	// immagine della fase della DFT
 
 
+
+    imyout1 = AllocIm::AllocImFloat(dim, dim);
+    imdft1 = AllocIm::AllocImDouble(dim, dim);
+    imdftfase1 = AllocIm::AllocImDouble(dim, dim);
+
+
+
+
+// SE COLOUR
+    unsigned char **imr1;	// matrici delle componenti RGB
+    unsigned char **img1;
+    unsigned char **imb1;
+
+    float **imc21;			// matrice di crominanza c2
+    float **imc31;
+
+    imc21 = AllocIm::AllocImFloat(dim, dim);
+    imc31 = AllocIm::AllocImFloat(dim, dim);
+    imr1 = AllocIm::AllocImByte(dim, dim);
+    img1 = AllocIm::AllocImByte(dim, dim);
+    imb1 = AllocIm::AllocImByte(dim, dim);
+
+
+
+    int offset = 0;
+    for (int i=0; i<dim; i++)
+        for (int j=0; j<dim; j++)
+        {
+            imr1[i][j] = Image1[offset];offset++;
+            img1[i][j] = Image1[offset];offset++;
+            imb1[i][j] = Image1[offset];offset++;
+        }
+
+    // Si calcolano le componenti di luminanza e crominanza dell'immagine
+    image_watermarking.rgb_to_crom(imr1, img1, imb1, dim, dim, 1, imyout1, imc21, imc31);
+
+    FFT2D::dft2d(imyout1, imdft1, imdftfase1, dim, dim);
+
+    float   **imyout2;			// immagine
+    double  **imdft2;		// immagine della DFT
+    double  **imdftfase2;	// immagine della fase della DFT
+
+
+
+    imyout2 = AllocIm::AllocImFloat(dim, dim);
+    imdft2 = AllocIm::AllocImDouble(dim, dim);
+    imdftfase2 = AllocIm::AllocImDouble(dim, dim);
+
+
+
+
+// SE COLOUR
+    unsigned char **imr2;	// matrici delle componenti RGB
+    unsigned char **img2;
+    unsigned char **imb2;
+
+    float **imc22;			// matrice di crominanza c2
+    float **imc32;
+
+    imc22 = AllocIm::AllocImFloat(dim, dim);
+    imc32 = AllocIm::AllocImFloat(dim, dim);
+    imr2 = AllocIm::AllocImByte(dim, dim);
+    img2 = AllocIm::AllocImByte(dim, dim);
+    imb2 = AllocIm::AllocImByte(dim, dim);
+
+
+
+     offset = 0;
+    for (int i=0; i<dim; i++)
+        for (int j=0; j<dim; j++)
+        {
+            imr2[i][j] = Image2[offset];offset++;
+            img2[i][j] = Image2[offset];offset++;
+            imb2[i][j] = Image2[offset];offset++;
+        }
+
+    // Si calcolano le componenti di luminanza e crominanza dell'immagine
+    image_watermarking.rgb_to_crom(imr2, img2, imb2, dim, dim, 1, imyout2, imc22, imc32);
+
+    FFT2D::dft2d(imyout2, imdft2, imdftfase2, dim, dim);
+
+    float mse_mag = stereo_watermarking::MSE(dim,dim,imdft1,imdft2);
+    float mse_ph = stereo_watermarking::MSE(dim,dim,imdftfase1,imdftfase2);
+
+
+    std::cout<<std::setprecision (15) <<"immagini "<<img1_name<<" e "<<img2_name<<" : MSE magnitudine: "<< mse_mag << " MSE fase: "<<mse_ph<<endl;
+
+    std::ostringstream filename1 ;
+    filename1 << "magnitudine_"<< img1_name;
+    stereo_watermarking::show_double_mat(dim,dim,imdft1,filename1.str());
+    std::ostringstream filename2 ;
+    filename2 << "magnitudine_"<< img2_name;
+    stereo_watermarking::show_double_mat(dim,dim,imdft2,filename2.str());
+    std::ostringstream filename3 ;
+    filename3 << "fase_"<< img1_name;
+    stereo_watermarking::show_double_mat(dim,dim,imdftfase1,filename3.str());
+    std::ostringstream filename4 ;
+    filename4 << "fase_"<< img2_name;
+    stereo_watermarking::show_double_mat(dim,dim,imdftfase2,filename4.str());
+
+
+
+}
+void stereo_watermarking::show_double_mat(int width,int height,double** A,std::string window_name){
+    cv::Mat mat =  cv::Mat::zeros(width, height, CV_32F);
+    for(int x = 0; x < width;++x){
+        for(int y = 0; y < height; ++y){
+            mat.at<float>(x,y)=A[x][y];
+        }
+    }
+    std::ostringstream path ;
+    path <<"/home/miky/Scrivania/images/dft/"<< window_name<<".png";
+//    cout<<path.str();
+    cv::imwrite(path.str(),mat);
+    imshow(window_name,mat);
+    waitKey(0);
+    return;
+}
+
+//
+//
 //boost::shared_ptr<pcl::visualization::PCLVisualizer> stereo_watermarking::createVisualizerRGB (pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr cloud, std::string title) {
 //
 //    boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer (new pcl::visualization::PCLVisualizer(title));
@@ -430,25 +470,4 @@ void stereo_watermarking::dft_magnitude(cv::Mat img,std::string window_name)
 //
 //    stereo_watermarking::viewPointCloudRGB(point_cloud_ptr, "cloud ");
 //}
-
-void stereo_watermarking::writeMatToFile(cv::Mat& m, std::string filename)
-{
-    ofstream fout(filename);
-
-    if(!fout)
-    {
-        cout<<"File Not Opened"<<endl;  return;
-    }
-
-    for(int i=0; i<m.rows; i++)
-    {
-        for(int j=0; j<m.cols; j++)
-        {
-            fout<<m.at<float>(i,j)<<"\t";
-        }
-        fout<<endl;
-    }
-
-    fout.close();
-}
 

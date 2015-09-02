@@ -95,10 +95,10 @@ unsigned char * Watermarking::insertWatermark(unsigned char *image, int w, int h
     {
         // LOG
         FILE *flog = fopen("watcod.log","wt");;
-        fprintf(flog, " - Invalid size of the tile. Valid size are 256, 512 or 1024.");
+        fprintf(flog, " - Invalid size of the tile. Valid size are 256, 256 or 1024.");
 //        // invalid 'size'
 //        QMessageBox::warning(NULL, tr(MSG_TITLE),
-//                             tr("Invalid size of the tile. Valid size are 256, 512 or 1024."));
+//                             tr("Invalid size of the tile. Valid size are 256, 256 or 1024."));
         flagOk = false;
     }
     else if (result == -1)
@@ -156,17 +156,17 @@ int Watermarking::WatCod(unsigned char *ImageOut, int width, int height, const c
     float   **impic;		// immagine finale marchiata
 
 
-    imyout = AllocImFloat(512, 512);
-    imdft = AllocImDouble(512, 512);
-    imdftfase = AllocImDouble(512, 512);
-    imidft = AllocImFloat(512, 512);
-    img_map_flt = AllocImFloat(512, 512);
-    impic = AllocImFloat(512, 512);
+    imyout = AllocImFloat(256, 256);
+    imdft = AllocImDouble(256, 256);
+    imdftfase = AllocImDouble(256, 256);
+    imidft = AllocImFloat(256, 256);
+    img_map_flt = AllocImFloat(256, 256);
+    impic = AllocImFloat(256, 256);
 
 // SE IMMAGINE GREY
 //    int count=0;
-//    for (int i=0; i<512; i++)
-//        for (int j=0; j<512; j++){
+//    for (int i=0; i<256; i++)
+//        for (int j=0; j<256; j++){
 //            imyout[i][j] =
 //                    static_cast<float>(ImageOut[count]);
 //            count++;
@@ -180,17 +180,17 @@ int Watermarking::WatCod(unsigned char *ImageOut, int width, int height, const c
     float **imc2;			// matrice di crominanza c2
     float **imc3;
 
-    imc2 = AllocImFloat(512, 512);
-    imc3 = AllocImFloat(512, 512);
-    imr = AllocImByte(512, 512);
-    img = AllocImByte(512, 512);
-    imb = AllocImByte(512, 512);
+    imc2 = AllocImFloat(256, 256);
+    imc3 = AllocImFloat(256, 256);
+    imr = AllocImByte(256, 256);
+    img = AllocImByte(256, 256);
+    imb = AllocImByte(256, 256);
 
 
 
     int offset = 0;
-    for (int i=0; i<512; i++)
-        for (int j=0; j<512; j++)
+    for (int i=0; i<256; i++)
+        for (int j=0; j<256; j++)
         {
             imr[i][j] = ImageOut[offset];offset++;
             img[i][j] = ImageOut[offset];offset++;
@@ -199,22 +199,22 @@ int Watermarking::WatCod(unsigned char *ImageOut, int width, int height, const c
 
 
     // Si calcolano le componenti di luminanza e crominanza dell'immagine
-    rgb_to_crom(imr, img, imb, 512, 512, 1, imyout, imc2, imc3);
+    rgb_to_crom(imr, img, imb, 256, 256, 1, imyout, imc2, imc3);
 
 
 
     //per la maschera
-    DecimVarfloat(imyout, 512, 512, WINDOW, img_map_flt);
+    DecimVarfloat(imyout, 256, 256, WINDOW, img_map_flt);
 
-    FFT2D::dft2d(imyout, imdft, imdftfase, 512, 512);
+    FFT2D::dft2d(imyout, imdft, imdftfase, 256, 256);
 
     int mmedio = 0;
 
-    for(int i = 0; i < 512; i++)
-        for(int j = 0; j < 512; j++)
+    for(int i = 0; i < 256; i++)
+        for(int j = 0; j < 256; j++)
             mmedio += (double)img_map_flt[i][j];
 
-    mmedio = mmedio/(double)(512 * 512);
+    mmedio = mmedio/(double)(256 * 256);
     mmedio = 1.0 - mmedio;
 
 //     Si calcola il valore massimo di alfa
@@ -223,15 +223,15 @@ int Watermarking::WatCod(unsigned char *ImageOut, int width, int height, const c
     int coefficient_number;
     double *coefficient_vector = NULL;
 
-//    if ((size>256)&&(size<=512))
+//    if ((size>256)&&(size<=256))
 //    {
-//        dim2 = 512;		// Dimensione 512x512
-    int diag0 = 80;		// Diagonali..
-    int ndiag = 74;
+//        dim2 = 256;		// Dimensione 256x256
+    int diag0 = 40;//80;		// Diagonali..
+    int ndiag = 40;//74;
 //    }
 /*    int diag0 = 160;		// Diagonali..
     int ndiag = 144;*/
-    coefficient_vector = zones_to_watermark(imdft, 512, 512, diag0, ndiag, 0, &coefficient_number);
+    coefficient_vector = zones_to_watermark(imdft, 256, 256, diag0, ndiag, 0, &coefficient_number);
 
     double * mark;
     mark = new double[coefficient_number];
@@ -243,26 +243,26 @@ int Watermarking::WatCod(unsigned char *ImageOut, int width, int height, const c
 //    else if (view=="right")
 //        addmark_right_view(coefficient_vector, mark, coefficient_number, alfamax);
 
-    antizone(imdft, 512, 512, diag0, ndiag, coefficient_vector);
+    antizone(imdft, 256, 256, diag0, ndiag, coefficient_vector);
 
 
-    FFT2D::idft2d(imdft, imdftfase, imidft, 512, 512);
+    FFT2D::idft2d(imdft, imdftfase, imidft, 256, 256);
 
-    for(int i=0;i<512;i++)
-        for(int j=0;j<512;j++)
+    for(int i=0;i<256;i++)
+        for(int j=0;j<256;j++)
             img_map_flt[i][j] = 255.0f*img_map_flt[i][j];
 
-    PicRoutfloat(imyout, 512, 512, imidft, img_map_flt, impic);
+    PicRoutfloat(imyout, 256, 256, imidft, img_map_flt, impic);
 
 
     //reinserimento della luminanza
 
-    rgb_to_crom(imr, img, imb, 512, 512, -1, imidft, imc2, imc3);
+    rgb_to_crom(imr, img, imb, 256, 256, -1, imidft, imc2, imc3);
 
 //SE GREY
 //    count=0;
-//    for (int i=0; i<512; i++)
-//        for (int j=0; j<512; j++){
+//    for (int i=0; i<256; i++)
+//        for (int j=0; j<256; j++){
 //
 //                    ImageOut[count] =  static_cast<unsigned char> (imidft[i][j]); //imidft per quella senza maschera, impic per quella con la maschera
 //
@@ -271,8 +271,8 @@ int Watermarking::WatCod(unsigned char *ImageOut, int width, int height, const c
 
 //SE COLOUR
     offset = 0;
-    for (int i=0; i<512; i++)
-        for (int j=0; j<512; j++)
+    for (int i=0; i<256; i++)
+        for (int j=0; j<256; j++)
         {
             ImageOut[offset] = imr[i][j]; offset++;
             ImageOut[offset] = img[i][j]; offset++;
@@ -1227,11 +1227,11 @@ bool Watermarking::extractWatermark(unsigned char *image, int w, int h)
     {
         // LOG
         FILE *flog = fopen("watcod.log","wt");;
-        fprintf(flog, " - Invalid size of the tile. Valid size are 256, 512 or 1024.");
+        fprintf(flog, " - Invalid size of the tile. Valid size are 256, 256 or 1024.");
 
 //        // invalid 'size'
 //        QMessageBox::warning(NULL, tr(MSG_TITLE),
-//                             tr("Invalid size of the tile. Valid size are 256, 512 or 1024."));
+//                             tr("Invalid size of the tile. Valid size are 256, 256 or 1024."));
         flagOk = false;
     }
     else if (result == -1)
@@ -1302,8 +1302,8 @@ int Watermarking::WatDec(unsigned char *ImageIn, int nrImageIn, int ncImageIn,
                    int *vettoretile, bool flagRisincTotale )
 {
 
-    int diag0 = 80;		// Diagonali..
-    int ndiag = 74;		// numero diagonali marchiate
+    int diag0 = 40;		// Diagonali..
+    int ndiag = 40;		// numero diagonali marchiate
 
 
     float **imy;			// matrice luminanza
@@ -1324,24 +1324,24 @@ int Watermarking::WatDec(unsigned char *ImageIn, int nrImageIn, int ncImageIn,
 
     float **imyout;			// Matrice di luminanza del tile
 
-    imyout = AllocImFloat(512, 512);
+    imyout = AllocImFloat(256, 256);
 
     double **imdftout;		// Matrice dft del tile ridimensionato
     double **imdftoutfase;
 
-    imdftout = AllocImDouble(512, 512);
-    imdftoutfase = AllocImDouble(512, 512);
+    imdftout = AllocImDouble(256, 256);
+    imdftoutfase = AllocImDouble(256, 256);
 
-    imr = AllocImByte(512, 512);
-    img = AllocImByte(512, 512);
-    imb = AllocImByte(512, 512);
-    imy = AllocImFloat(512, 512);
-    imc2 = AllocImFloat(512, 512);
-    imc3 = AllocImFloat(512, 512);
+    imr = AllocImByte(256, 256);
+    img = AllocImByte(256, 256);
+    imb = AllocImByte(256, 256);
+    imy = AllocImFloat(256, 256);
+    imc2 = AllocImFloat(256, 256);
+    imc3 = AllocImFloat(256, 256);
 
     int offset = 0;
-    for (int i=0; i<512; i++)
-        for (int j=0; j<512; j++)
+    for (int i=0; i<256; i++)
+        for (int j=0; j<256; j++)
         {
             imr[i][j] = ImageIn[offset];offset++;
             img[i][j] = ImageIn[offset];offset++;
@@ -1350,7 +1350,7 @@ int Watermarking::WatDec(unsigned char *ImageIn, int nrImageIn, int ncImageIn,
 
 
     // Si calcolano le componenti di luminanza e crominanza dell'immagine
-    rgb_to_crom(imr, img, imb, 512, 512, 1, imyout, imc2, imc3);
+    rgb_to_crom(imr, img, imb, 256, 256, 1, imyout, imc2, imc3);
 
 
 //    int coefficient_number;
@@ -1375,11 +1375,11 @@ int Watermarking::WatDec(unsigned char *ImageIn, int nrImageIn, int ncImageIn,
     seed = new LONG8BYTE [4];
     seed_generator(campolett,camponum,seed);
 
-//    for (int i=0; i<512; i++)
-//        for (int j=0; j<512; j++)
+//    for (int i=0; i<256; i++)
+//        for (int j=0; j<256; j++)
 //            imdftout[i][j]=0.0;
 
-    FFT2D::dft2d(imyout, imdftout, imdftoutfase, 512, 512);
+    FFT2D::dft2d(imyout, imdftout, imdftoutfase, 256, 256);
 
     // Added by CORMAX
     int BitLetti[200];		// Max 200 bit da leggere
@@ -1392,10 +1392,10 @@ int Watermarking::WatDec(unsigned char *ImageIn, int nrImageIn, int ncImageIn,
 
 
 //    double *coefficient_vector = NULL;
-//    coefficient_vector = zones_to_watermark(imdftout, 512, 512, diag0, ndiag, 0, &coefficient_number);
+//    coefficient_vector = zones_to_watermark(imdftout, 256, 256, diag0, ndiag, 0, &coefficient_number);
 //
 
-    decoale(imdftout, 512, 512, diag0, ndiag, seed, power ,BitLetti, length_BCH);
+    decoale(imdftout, 256, 256, diag0, ndiag, seed, power ,BitLetti, length_BCH);
 
   /*  for (int i=0;i<200;i++)
         cout<<BitLetti[i]<<" ";
