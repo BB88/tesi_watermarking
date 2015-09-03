@@ -232,11 +232,18 @@ int Watermarking::WatCod(unsigned char *ImageOut, int width, int height, const c
 /*    int diag0 = 160;		// Diagonali..
     int ndiag = 144;*/
     coefficient_vector = zones_to_watermark(imdft, 256, 256, diag0, ndiag, 0, &coefficient_number);
+    coeff_dft = coefficient_vector;
+    coeff_number = coefficient_number;
+
 
     double * mark;
     mark = new double[coefficient_number];
 
     generate_mark(watermark,wsize,passw_str,passw_num,coefficient_number, mark,false);
+
+    final_mark = mark;
+
+
 
 //    if (view=="left")
     addmark(coefficient_vector, mark, coefficient_number, alfamax);
@@ -257,7 +264,7 @@ int Watermarking::WatCod(unsigned char *ImageOut, int width, int height, const c
 
     //reinserimento della luminanza
 
-    rgb_to_crom(imr, img, imb, 256, 256, -1, imidft, imc2, imc3);
+    rgb_to_crom(imr, img, imb, 256, 256, -1, imidft, imc2, imc3);  // se maschera mettere impic al posto di imidft
 
 //SE GREY
 //    count=0;
@@ -1481,6 +1488,11 @@ void Watermarking::decoale(double **imr, int nre, int nce, int d1, int nd,
     // di coefficienti selezionati)
 
     appbuff = zones_to_watermark(imr, nre, nce, d1, nd, 1, &marklen);
+
+    marked_coeff = appbuff;
+    marked_coeff_number = marklen;
+
+
 //
     // Studio della statistica delle MAX zone (si calcolano i beta
     // e gli alfa dell'immagine con il criterio della Massima Verosimiglianza)
@@ -1586,6 +1598,7 @@ void Watermarking::decoale(double **imr, int nre, int nce, int d1, int nd,
 
     if (appbuff != NULL)
         delete [] appbuff;
+
 }
 
 

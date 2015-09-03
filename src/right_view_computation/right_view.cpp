@@ -21,7 +21,7 @@ using namespace cv;
         printf("Matrix: %s %dx%d \n", ty.c_str(), disp.cols, disp.rows );*/
         int d, xr;
         // original right view
-        cv::Mat o_right = cv::imread("/home/miky/ClionProjects/tesi_watermarking/img/r.png", CV_LOAD_IMAGE_COLOR);
+        cv::Mat o_right = cv::imread("/home/bene/ClionProjects/tesi_watermarking/img/r.png", CV_LOAD_IMAGE_COLOR);
         /*
         string ty =  type2str( o_right.type() );
         printf("Matrix: %s %dx%d \n", ty.c_str(), o_right.cols, o_right.rows);
@@ -44,7 +44,7 @@ using namespace cv;
                 n_right.at<Vec3b>(j,xr) [2] = left.at<Vec3b>(j,i) [2];
             }
         }
-        imwrite("/home/miky/ClionProjects/tesi_watermarking/img/nkz_right.png", n_right);
+        imwrite("/home/bene/ClionProjects/tesi_watermarking/img/nkz_right.png", n_right);
         /*imshow*/
 /*
         cv::imshow("Left",left);
@@ -87,7 +87,7 @@ void Right_view::left_uchar_reconstruction(unsigned char *marked_right, unsigned
             left_marked.at<Vec3b>(j,i) [1] = left_uchar[count]; count++;
             left_marked.at<Vec3b>(j,i) [2] = left_uchar[count]; count++;
         }
-    imwrite("/home/miky/ClionProjects/tesi_watermarking/img/left_reconstructed_uchar.png", left_marked);
+    imwrite("/home/bene/ClionProjects/tesi_watermarking/img/left_reconstructed_uchar.png", left_marked);
 //    imshow("left_marked", left_marked);
 //    waitKey(0);
 

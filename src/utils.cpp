@@ -1,5 +1,5 @@
 //
-// Created by miky on 16/08/15.
+// Created by bene on 16/08/15.
 //
 #include <iostream>
 #include <opencv2/core/core.hpp>
@@ -9,7 +9,7 @@
 //#include <pcl/common/common_headers.h>
 //#include <pcl/io/pcd_io.h>
 //#include <pcl/visualization/pcl_visualizer.h>
-#include <boost/thread/thread.hpp>
+
 #include "dataset/tsukuba_dataset.h"
 #include "./img_watermarking/watermarking.h"
 #include "./img_watermarking/allocim.h"
@@ -60,7 +60,7 @@ void stereo_watermarking::sobel_filtering(cv::Mat src, const char* window_name){
     addWeighted( abs_grad_x, 0.5, abs_grad_y, 0.5, 0, grad );
 
     std::ostringstream path ;
-    path << "/home/miky/ClionProjects/tesi_watermarking/img/"<< window_name<<".png";
+    path << "/home/bene/ClionProjects/tesi_watermarking/img/"<< window_name<<".png";
 //    cout<<path.str();
     cv::imwrite(path.str(),grad);
     imshow( window_name, grad );
@@ -288,9 +288,77 @@ void stereo_watermarking::dft_comparison(unsigned char* Image1, unsigned char* I
     filename4 << "fase_"<< img2_name;
     stereo_watermarking::show_double_mat(dim,dim,imdftfase2,filename4.str());
 
+}
 
+
+
+/*
+       cv::Mat right = imread("/home/bene/ClionProjects/tesi_watermarking/img/r.png", CV_LOAD_IMAGE_COLOR);
+       unsigned char *right_uchar = right.data;
+       unsigned char *squared_right =  new unsigned char[squared_dim];
+       for (int i = 0; i < 256; i ++ )
+           for (int j = 0; j < nc_q; j++)
+               squared_right[(i * nc_q)+ j] = right_uchar[(i * nc) + (j + index - 21*3 )];
+
+      unsigned char *squared_marked_right = image_watermarking.insertWatermark(squared_right,256,256);
+
+       //salvare coefficienti dft
+       double *coeff_right =image_watermarking.getCoeff_dft();
+
+
+       float sum = 0.0;
+       double difference;
+       for (int i=0;i<coeff_num;i++){
+           difference = coeff_left[i] - coeff_right[i];
+           sum = sum + difference*difference;
+       }
+       sum = sum /(coeff_num);
+
+       std::cout<<std::setprecision (15)<< "MSE coefficienti destra sinistra: "<<sum<<endl;
+   */
+
+
+void stereo_watermarking::coefficient_comparison(unsigned char *squared_marked_image) {
+
+/*
+
+    //salvare coefficienti dft
+    double *coeff_left =image_watermarking.getCoeff_dft();
+    int coeff_num = image_watermarking.getCoeff_number();
+    double *wat = new double[coeff_num];
+    wat = image_watermarking.getFinal_mark();
+
+
+    bool detection = image_watermarking.extractWatermark(squared_marked_image, 256, 256);
+    cout<< "detection: "<< detection<< endl;
+
+
+    //salvare coefficienti marchiati dft
+    double *marked_coeff_left = image_watermarking.getMarked_coeff();
+    int marked_coeff_num = image_watermarking.getMarked_coeff_number();
+    double *retrieve_wat = new double[marked_coeff_num];
+
+    for (int offset = 0; offset < marked_coeff_num; offset++) {
+        retrieve_wat[offset] = (marked_coeff_left[offset] - coeff_left[offset]) / (0.8 * coeff_left[offset]);
+    }
+
+    float sum = 0.0;
+    double difference;
+    for (int i = 0; i < marked_coeff_num; i++) {
+        difference = wat[i] - retrieve_wat[i];
+        sum = sum + difference * difference;
+    }
+    sum = sum / (marked_coeff_num);
+    cout << "MSE marchio " << sum << endl;
+*/
 
 }
+
+
+
+
+
+
 void stereo_watermarking::show_double_mat(int width,int height,double** A,std::string window_name){
     cv::Mat mat =  cv::Mat::zeros(width, height, CV_32F);
     for(int x = 0; x < width;++x){
@@ -299,7 +367,7 @@ void stereo_watermarking::show_double_mat(int width,int height,double** A,std::s
         }
     }
     std::ostringstream path ;
-    path <<"/home/miky/Scrivania/images/dft/"<< window_name<<".png";
+    path <<"/home/bene/Scrivania/images/dft/"<< window_name<<".png";
 //    cout<<path.str();
     cv::imwrite(path.str(),mat);
     imshow(window_name,mat);
@@ -407,7 +475,7 @@ void stereo_watermarking::show_double_mat(int width,int height,double** A,std::s
 //}
 //void stereo_watermarking::generatePointCloud(cv::Mat disp, cv::Mat img_left,cv::Mat img_right, int frame_num){
 //
-//    string path("/home/miky/ClionProjects/tesi_watermarking/dataset/NTSD-200/");
+//    string path("/home/bene/ClionProjects/tesi_watermarking/dataset/NTSD-200/");
 //    Ptr<tsukuba_dataset> dataset = tsukuba_dataset::create();
 //    dataset->load(path);
 //
