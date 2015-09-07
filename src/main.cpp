@@ -260,6 +260,200 @@ int main() {
     image_watermarking.setPassword(passwstr,passwnum);
     unsigned char *squared_marked_left = image_watermarking.insertWatermark(squared_left,256,256);
 
+
+
+    //salvare coefficienti dft
+//    double *coeff_left =image_watermarking.getCoeff_dft();
+//    int coeff_num = image_watermarking.getCoeff_number();
+//    double *wat = new double[coeff_num];
+//    wat = image_watermarking.getFinal_mark();
+//
+//
+//    bool detection = image_watermarking.extractWatermark(squared_marked_left, 256, 256);
+//    cout<< "detection: "<< detection<< endl;
+//
+//
+//    //salvare coefficienti marchiati dft
+//    double *marked_coeff_left = image_watermarking.getMarked_coeff();
+//    int marked_coeff_num = image_watermarking.getMarked_coeff_number();
+//
+//    double *retrieve_wat = new double[marked_coeff_num];
+//    for (int offset = 0; offset < marked_coeff_num; offset++) {
+//        retrieve_wat[offset] = (marked_coeff_left[offset] - coeff_left[offset]) / (power * coeff_left[offset]);
+//    }
+//
+////    stereo_watermarking::writeMatToFile(coeff_left,coeff_num,"/home/miky/Scrivania/Tesi/coeff_left.txt");
+////    stereo_watermarking::writeMatToFile(marked_coeff_left,coeff_num,"/home/miky/Scrivania/Tesi/marked_coeff.txt");
+////    stereo_watermarking::writeMatToFile(wat,coeff_num,"/home/miky/Scrivania/Tesi/wat.txt");
+////    stereo_watermarking::writeMatToFile(retrieve_wat,coeff_num,"/home/miky/Scrivania/Tesi/retrieve_wat.txt");
+//
+///*    double min = 3;
+//    double max = -10;
+//    double medio = 0;*/
+//    double sum = 0.0;
+//    double difference;
+//    for (int i = 0; i < marked_coeff_num; i++) {
+//        difference = wat[i] - retrieve_wat[i];
+///*        if (abs(difference) < min){
+//            min = abs(difference);
+//        }
+//        if (abs(difference) > max ){
+//            max = abs(difference);
+//        }
+//        medio += abs(difference);*/
+//        sum = sum + difference * difference;
+//    }
+//    sum = sum / (marked_coeff_num);
+//    cout << "MSE marchio " << sum << endl;
+//
+//    double m_wat;
+//    for (int i = 0; i < marked_coeff_num; i++)
+//        m_wat += wat[i];
+//    m_wat /=marked_coeff_num;
+//
+//    double s_wat;
+//    for (int i = 0; i < marked_coeff_num; i++)
+//        s_wat += (wat[i]- m_wat)*(wat[i]- m_wat);
+//    s_wat /=marked_coeff_num;
+//    s_wat =sqrt(s_wat);
+//
+//    double m_ret_wat;
+//    for (int i = 0; i < marked_coeff_num; i++)
+//        m_ret_wat += retrieve_wat[i];
+//    m_ret_wat /=marked_coeff_num;
+//
+//    double s_ret_wat;
+//    for (int i = 0; i < marked_coeff_num; i++)
+//        s_ret_wat += (retrieve_wat[i]- m_ret_wat)*(retrieve_wat[i]- m_ret_wat);
+//
+//    s_ret_wat /=marked_coeff_num;
+//    s_ret_wat =sqrt(s_ret_wat);
+//
+//    double correlation ;
+//    for (int i = 0; i < marked_coeff_num; i++)
+//        correlation += retrieve_wat[i]*wat[i];
+//
+//    correlation/=marked_coeff_num;
+//    correlation -= m_wat*m_ret_wat;
+//    correlation /= s_ret_wat*s_wat;
+//
+//    cout<<"correlazione: "<<correlation<<endl;
+/*
+    cout << "min " << min << " max " << max<< endl;
+    cout << "medio " << medio/marked_coeff_num << endl;*/
+
+
+  //  stereo_watermarking::coefficient_comparison(squared_marked_left);
+
+
+    /*correlazione*/
+
+//    Mat wat_mat(1, marked_coeff_num, CV_32F);
+// //   cout<< wat_mat.cols<< " righe "<<wat_mat.rows<<endl;
+//    for (int i = 0; i < wat_mat.cols; i++){
+//            wat_mat.at<float>(0,i) = (float)wat[i];
+//    }
+//
+//    Mat retrieve_wat_mat(1, marked_coeff_num, CV_32F);
+//    for (int i = 0; i<retrieve_wat_mat.cols; i++){
+//            retrieve_wat_mat.at<float>(0,i) = (float)retrieve_wat[i];
+//    }
+//    Mat wat_corr;
+//
+//    matchTemplate(retrieve_wat_mat,wat_mat, wat_corr, CV_TM_CCOEFF_NORMED);
+//
+// //   matchTemplate((float*)retrieve_wat,(float*)wat, left_correl, CV_TM_CCOEFF_NORMED);
+//    for (int i = 0; i < wat_corr.rows; i++)
+//    {
+////        cout << "row " << i << endl;
+//        for (int j = 0; j < wat_corr.cols; j++)
+//        {
+//            cout << "correlation btw extracted watermark and watermark " << (wat_corr.at<float>(i,j));
+//        } cout << endl; }
+
+/*
+    double mag1, mag2, corr;
+    for (int j=0; j<marked_coeff_num; j++) {
+        mag1 += wat[j] * wat[j];
+        mag2 += retrieve_wat[j] * retrieve_wat[j];
+        corr += wat[j] * retrieve_wat[j];
+    }
+    corr /= sqrt(mag1*mag2);
+    cout<<"corr "<< corr<<endl;
+*/
+
+
+/*ncc*/
+  /*  double ncc;
+    double somma = 0;
+    double mean_wat;
+    double mean_retrieve_wat;
+    double var_wat;
+    double var_retrieve_wat;
+    for (int j=0; j<marked_coeff_num; j++) {
+      sum += (wat[j] - mean_wat)* (retrieve_wat[j] - mean_retrieve_wat);
+    }
+
+     = 1/N * sum{ [wat(n) - mean(x)]* [retrieve_wat(n) - mean(y)] }/ (sqrt(var(x)*var(y));
+
+*/
+
+    //salvare coefficienti dft
+/*
+    double *coeff_left =image_watermarking.getCoeff_dft();
+    int coeff_num = image_watermarking.getCoeff_number();
+    double *wat = image_watermarking.getFinal_mark();
+*/
+
+/*
+       cv::Mat right = imread("/home/miky/ClionProjects/tesi_watermarking/img/r.png", CV_LOAD_IMAGE_COLOR);
+       unsigned char *right_uchar = right.data;
+       unsigned char *squared_right =  new unsigned char[squared_dim];
+       for (int i = 0; i < 256; i ++ )
+           for (int j = 0; j < nc_q; j++)
+               squared_right[(i * nc_q)+ j] = right_uchar[(i * nc) + (j + index - 21*3 )];
+
+      unsigned char *squared_marked_right = image_watermarking.insertWatermark(squared_right,256,256);
+
+       //salvare coefficienti dft
+       double *coeff_right =image_watermarking.getCoeff_dft();
+
+
+       float sum = 0.0;
+       double difference;
+       for (int i=0;i<coeff_num;i++){
+           difference = coeff_left[i] - coeff_right[i];
+           sum = sum + difference*difference;
+       }
+       sum = sum /(coeff_num);
+
+       std::cout<<std::setprecision (15)<< "MSE coefficienti destra sinistra: "<<sum<<endl;
+   */
+/*
+    bool detection = image_watermarking.extractWatermark(squared_marked_left, 256, 256);
+    cout<< "detection: "<< detection<< endl;
+
+
+    //salvare coefficienti marchiati dft
+    double *marked_coeff_left = image_watermarking.getMarked_coeff();
+    int marked_coeff_num = image_watermarking.getMarked_coeff_number();
+    double *retrieve_wat = new double[marked_coeff_num];
+
+        for (int offset = 0; offset < marked_coeff_num; offset++) {
+            retrieve_wat[offset] = (marked_coeff_left[offset] - coeff_left[offset]) / (0.8 * coeff_left[offset]);
+        }
+
+        float sum = 0.0;
+        double difference;
+        for (int i = 0; i < marked_coeff_num; i++) {
+            difference = wat[i] - retrieve_wat[i];
+            sum = sum + difference * difference;
+        }
+        sum = sum / (marked_coeff_num);
+        cout << "MSE marchio " << sum << endl;*/
+
+
+
     cv::Mat left_squared_marked = cv::Mat::zeros(256, 256, CV_8UC3);
     count = 0;
     for (int j = 0; j < 256; j++)
@@ -283,14 +477,14 @@ int main() {
 
 
     bool wat = image_watermarking.extractWatermark(squared_marked_left, 256, 256);
-    cout<<wat<<endl;
+    cout<< wat <<endl;
 
 
 //
 //
     double *squared_mark =  new double[squared_dim];
     for (int i=0;i<squared_dim;i++){
-        squared_mark[i] = (double)squared_marked_left[i] - (double)squared_left[i];
+        squared_mark[i] = (double)squared_marked_left[i]; // - (double)squared_left[i];
     }
 
 
@@ -346,13 +540,13 @@ int main() {
     unsigned char *marked_right = new unsigned char[rect_dim];
 
     for (int i=0;i<rect_dim;i++){
-        double sum = (double)right_uchar[i] + warped_mark[i];
-        if (sum>255){
-            sum = 255.0;
-        }
-        else if (sum<0){
-            sum = 0.0;
-        }
+        double sum =  warped_mark[i]; //+(double)right_uchar[i] ;
+//        if (sum>255){
+//            sum = 255.0;
+//        }
+//        else if (sum<0){
+//            sum = 0.0;
+//        }
         marked_right[i] = (unsigned char)sum;
 
     }
@@ -425,6 +619,9 @@ int main() {
 
     bool wat2 = image_watermarking.extractWatermark(squared_left_ric, 256, 256);
     cout<<wat2<<endl;
+
+
+
 
     unsigned char *squared_right =  new unsigned char[squared_dim];
     cv::Mat right_squared = cv::Mat::zeros(256, 256, CV_8UC3);
@@ -683,8 +880,8 @@ int main() {
 //            squared_new_left_to_dec[(i * nc_q)+ j] = marked_new_left[(i * nc) + (j + index)];
 //
 //
-//    bool wat2 = image_watermarking.extractWatermark(squared_new_left_to_dec, 512, 512);
-//    cout<<wat2;
+//    bool wat = image_watermarking.extractWatermark(squared_new_left_to_dec, 512, 512);
+//    cout<<wat;
 
 
     /*  kz_disp PARAMETERS */

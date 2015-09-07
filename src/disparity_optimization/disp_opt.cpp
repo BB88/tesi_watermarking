@@ -72,7 +72,8 @@ void Disp_opt::disparity_normalization(cv::Mat kz_disp, cv::Mat &wkz_disp) {
       imshow("Normalized disparity", wkz_disp);
       imshow("Ground Truth",gt_disp);
 */
-
+    imshow("Normalized disparity", wkz_disp);
+    waitKey(0);
 }
 
 

@@ -10,7 +10,6 @@
 //#include <pcl/common/common_headers.h>
 //#include <pcl/io/pcd_io.h>
 //#include <pcl/visualization/pcl_visualizer.h>
-#include <boost/thread/thread.hpp>
 #include "../src/dataset/tsukuba_dataset.h"
 #include "../src/dataset/dataset.hpp"
 
@@ -24,9 +23,11 @@ namespace stereo_watermarking{
     void printRGB (cv::Mat image, int x, int y);
     float MSE (int width,int height,double** A,double ** B);
     void dft_comparison(unsigned char* Image1, unsigned char* Image2, int dim ,  std::string img1_name, std::string img2_name );
+    void coefficient_comparison(unsigned char *squared_marked_image);
     void show_double_mat(int width,int height,double** A,std::string window_name);
     void histo_equalizer(Mat img, std::string window_name);
 
+    void writeMatToFile(double* m,int lenght, std::string filename);
 
 //    void viewPointCloudRGB(pcl::PointCloud<pcl::PointXYZRGB>::Ptr point_cloud_ptr, std::string title);
 //    boost::shared_ptr<pcl::visualization::PCLVisualizer> createVisualizerRGB (pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr cloud, std::string title);

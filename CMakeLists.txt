@@ -119,27 +119,6 @@ include_directories( ${OpenCV_INCLUDE_DIRS} )
 message(${OpenCV_INCLUDE_DIRS})
 set(LIBS ${LIBS} ${OpenCV_LIBS})
 
-#################################### Locate PCL ############################################
-#
-find_package(PCL 1.4 REQUIRED)
-include_directories(${PCL_INCLUDE_DIRS})
-link_directories(${PCL_LIBRARY_DIRS})
-add_definitions(${PCL_DEFINITIONS})
-
-
-#necessary libs
-set(pcl_libs
-    ${PCL_COMMON_LIBRARIES}
-    ${PCL_IO_LIBRARIES}
-    ${PCL_KD_TREE_LIBRARY}
-    ${PCL_REGISTRATION_LIBRARY}
-    ${PCL_SEARCH_LIBRARY}
-    ${PCL_FEATURES_LIBRARY}
-    ${PCL_FILTERS_LIBRARIES}
-    ${PCL_VISUALIZATION_LIBRARY}
-)
-set(LIBS ${LIBS} ${pcl_libs})
-
 
 message(${LIBS})
 add_executable(tesi_watermarking ${SOURCE_FILES} src/disparity_computation/stereo_matching.h src/disparity_computation/stereo_matching.h src/disparity_computation/stereo_matching.cpp src/dataset/tsukuba_dataset.cpp src/dataset/tsukuba_dataset.h src/disparity_computation/sift_computation.h src/disparity_computation/sift_computation.cpp src/disparity_optimization/occlusions_handler.h src/disparity_optimization/occlusions_handler.cpp src/right_view_computation/right_view.cpp src/right_view_computation/right_view.h src/disparity_optimization/disp_opt.cpp src/disparity_optimization/disp_opt.h src/img_watermarking/bch.h src/img_watermarking/bch.cpp src/img_watermarking/fft2d.h src/img_watermarking/fft2d.cpp src/img_watermarking/imgwat.h src/img_watermarking/imgwat.cpp src/img_watermarking/allocim.h src/img_watermarking/allocim.cpp src/img_watermarking/watermarking.h src/img_watermarking/watermarking.cpp src/graphcuts/utils.h src/graphcuts/utils.cpp src/utils.h src/utils.cpp src/quality_metrics/quality_metrics.h src/quality_metrics/quality_metrics.cpp)

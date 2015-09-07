@@ -132,6 +132,24 @@ private:
     //! Watermark (max 64 bits).
     int watermark[64];
 
+    // coefficients vector to watermark
+    double *coeff_dft = NULL;
+
+    // coefficients vector lenght
+    int coeff_number = 0;
+
+    // marked coefficients vector
+    double *marked_coeff = NULL;
+
+    // marked coefficients vector lenght
+    int marked_coeff_number = 0;
+
+// watermark lungo quanto i coefficienti di marchiare
+    double * final_mark = NULL;
+
+
+
+
 // public methods
 public:
 
@@ -180,6 +198,29 @@ public:
 
     void PicRoutfloat(float **img_orig, int nr, int nc,
                       float **img_mark, float **img_map_flt, float **impic);
+
+
+    double *getCoeff_dft() const {
+        return coeff_dft;
+    }
+
+
+    int getCoeff_number() const {
+        return coeff_number;
+    }
+
+    double *getMarked_coeff() const {
+        return marked_coeff;
+    }
+
+    int getMarked_coeff_number() const {
+        return marked_coeff_number;
+    }
+
+
+    double *getFinal_mark() const {
+        return final_mark;
+    }
 
 private:
 
