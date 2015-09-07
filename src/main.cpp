@@ -255,6 +255,7 @@ int main() {
         retrieve_wat[offset] = (marked_coeff_left[offset] - coeff_left[offset]) / (0.8 * coeff_left[offset]);
     }
 
+
 /*    double min = 3;
     double max = -10;
     double medio = 0;*/
