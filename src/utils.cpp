@@ -306,7 +306,36 @@ void stereo_watermarking::show_double_mat(int width,int height,double** A,std::s
     waitKey(0);
     return;
 }
+void stereo_watermarking::histo_equalizer(Mat img, std::string window_name){
 
+    vector<Mat> channels;
+    Mat img_hist_equalized;
+
+    cvtColor(img, img_hist_equalized, CV_BGR2YCrCb); //change the color image from BGR to YCrCb format
+
+    split(img_hist_equalized,channels); //split the image into channels
+
+    equalizeHist(channels[0], channels[0]); //equalize histogram on the 1st channel (Y)
+
+    merge(channels,img_hist_equalized); //merge 3 channels including the modified 1st channel into one image
+
+    cvtColor(img_hist_equalized, img_hist_equalized, CV_YCrCb2BGR); //change the color image from YCrCb to BGR format (to display image properly)
+
+    //create windows
+    namedWindow("Original Image", CV_WINDOW_AUTOSIZE);
+    namedWindow(window_name.c_str(), CV_WINDOW_AUTOSIZE);
+    std::ostringstream path ;
+    path <<"/home/miky/ClionProjects/tesi_watermarking/img/"<< window_name<<".png";
+//    cout<<path.str();
+    cv::imwrite(path.str(),img_hist_equalized);
+    //show the image
+//    imshow("Original Image", img);
+//    imshow(window_name.c_str(), img_hist_equalized);
+//
+//    waitKey(0); //wait for key press
+
+    destroyAllWindows();
+}
 //
 //
 //boost::shared_ptr<pcl::visualization::PCLVisualizer> stereo_watermarking::createVisualizerRGB (pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr cloud, std::string title) {

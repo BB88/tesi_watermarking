@@ -88,8 +88,8 @@ void Right_view::left_uchar_reconstruction(unsigned char *marked_right, unsigned
             left_marked.at<Vec3b>(j,i) [2] = left_uchar[count]; count++;
         }
     imwrite("/home/miky/ClionProjects/tesi_watermarking/img/left_reconstructed_uchar.png", left_marked);
-//    imshow("left_marked", left_marked);
-//    waitKey(0);
+    imshow("left_marked", left_marked);
+    waitKey(0);
 
 }
 

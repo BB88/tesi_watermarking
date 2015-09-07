@@ -18,7 +18,6 @@
 using namespace cv;
 namespace stereo_watermarking{
     void show_difference(cv::Mat img1,cv::Mat img2,std::string window);
-    cv::Mat equalizeIntensity(const cv::Mat& inputImage);
     void sobel_filtering(cv::Mat src,const char* window_name);
 
     void histo (cv::Mat image, std::string window_name);
@@ -26,6 +25,7 @@ namespace stereo_watermarking{
     float MSE (int width,int height,double** A,double ** B);
     void dft_comparison(unsigned char* Image1, unsigned char* Image2, int dim ,  std::string img1_name, std::string img2_name );
     void show_double_mat(int width,int height,double** A,std::string window_name);
+    void histo_equalizer(Mat img, std::string window_name);
 
 
 //    void viewPointCloudRGB(pcl::PointCloud<pcl::PointXYZRGB>::Ptr point_cloud_ptr, std::string title);
