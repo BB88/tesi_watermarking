@@ -223,9 +223,9 @@ int main() {
 //    stereo_watermarking::histo_equalizer(right,"right_equalized");
 
     Right_view rv;
-//    rv.left_uchar_reconstruction(right.data, right_disp.data, occ_map_right.data,640,480);
-//    cv::Mat left_reconstructed1 = imread("/home/miky/ClionProjects/tesi_watermarking//img/left_reconstructed_uchar.png",CV_LOAD_IMAGE_COLOR);
-
+    rv.left_uchar_reconstruction(right.data, right_disp.data, occ_map_right.data,640,480);
+    cv::Mat left_reconstructed1 = imread("/home/miky/ClionProjects/tesi_watermarking//img/left_reconstructed_uchar.png",CV_LOAD_IMAGE_COLOR);
+//
 //    cv::Mat left_equalized = imread("/home/miky/ClionProjects/tesi_watermarking/img/left_equalized.png", CV_LOAD_IMAGE_COLOR);
 //    cv::Mat right_equalized = imread("/home/miky/ClionProjects/tesi_watermarking/img/right_equalized.png", CV_LOAD_IMAGE_COLOR);
 
@@ -235,17 +235,32 @@ int main() {
     int nc = 640 *3;
     int nc_q = 256*3;
     int index = 127 * 3;
+
+    cv::Mat occlusion = imread("/home/miky/ClionProjects/tesi_watermarking/img/occ_map.png", CV_LOAD_IMAGE_GRAYSCALE);
+    unsigned char *occ_uchar = occlusion.data;
+
     for (int i = 0; i < 256; i ++ )
-        for (int j = 0; j < nc_q; j++)
-            squared_left[(i * nc_q)+ j] = left_uchar[(i * nc) + (j + index)];
+        for (int j = 0; j < 256; j++) {
+//            unsigned char oc = occ_uchar[(i * 640) + (j + 127)];
+//
+                for (int k =0; k<3;k++){
+//                    if (static_cast<unsigned>(oc) != 0)
+                        squared_left[(i * 256*3) + j*3 +k] = left_uchar[(i * 640*3) + (j*3+k + 127*3)];
+//                    else squared_left[(i * 256*3) + j*3 +k] = 0;
+                }
+
+
+        }
 
     cv::Mat left_squared = cv::Mat::zeros(256, 256, CV_8UC3);
     int count = 0;
     for (int j = 0; j < 256; j++)
         for (int i = 0; i < 256; i++){
-            left_squared.at<Vec3b>(j,i) [0] = squared_left[count]; count++;
-            left_squared.at<Vec3b>(j,i) [1] = squared_left[count]; count++;
-            left_squared.at<Vec3b>(j,i) [2] = squared_left[count]; count++;
+
+                left_squared.at<Vec3b>(j,i) [0] = squared_left[count]; count++;
+                left_squared.at<Vec3b>(j,i) [1] = squared_left[count]; count++;
+                left_squared.at<Vec3b>(j,i) [2] = squared_left[count]; count++;
+
         }
 
     /*left riprova: si vede*/
@@ -259,53 +274,67 @@ int main() {
     image_watermarking.setParameters(watermark,wsize,tilesize,power,clipping,flagResyncAll,NULL,tilelistsize);
     image_watermarking.setPassword(passwstr,passwnum);
     unsigned char *squared_marked_left = image_watermarking.insertWatermark(squared_left,256,256);
-
+//    for (int i=0;i<256*256*3;i++)
+//        cout<< (static_cast<int>(squared_left[i])- static_cast<int>(squared_marked_left[i]))<<endl;
 
 
     //salvare coefficienti dft
-//    double *coeff_left =image_watermarking.getCoeff_dft();
-//    int coeff_num = image_watermarking.getCoeff_number();
-//    double *wat = new double[coeff_num];
-//    wat = image_watermarking.getFinal_mark();
-//
-//
-//    bool detection = image_watermarking.extractWatermark(squared_marked_left, 256, 256);
-//    cout<< "detection: "<< detection<< endl;
-//
-//
-//    //salvare coefficienti marchiati dft
-//    double *marked_coeff_left = image_watermarking.getMarked_coeff();
-//    int marked_coeff_num = image_watermarking.getMarked_coeff_number();
-//
-//    double *retrieve_wat = new double[marked_coeff_num];
-//    for (int offset = 0; offset < marked_coeff_num; offset++) {
-//        retrieve_wat[offset] = (marked_coeff_left[offset] - coeff_left[offset]) / (power * coeff_left[offset]);
-//    }
-//
-////    stereo_watermarking::writeMatToFile(coeff_left,coeff_num,"/home/miky/Scrivania/Tesi/coeff_left.txt");
-////    stereo_watermarking::writeMatToFile(marked_coeff_left,coeff_num,"/home/miky/Scrivania/Tesi/marked_coeff.txt");
-////    stereo_watermarking::writeMatToFile(wat,coeff_num,"/home/miky/Scrivania/Tesi/wat.txt");
-////    stereo_watermarking::writeMatToFile(retrieve_wat,coeff_num,"/home/miky/Scrivania/Tesi/retrieve_wat.txt");
-//
-///*    double min = 3;
-//    double max = -10;
-//    double medio = 0;*/
-//    double sum = 0.0;
-//    double difference;
-//    for (int i = 0; i < marked_coeff_num; i++) {
-//        difference = wat[i] - retrieve_wat[i];
-///*        if (abs(difference) < min){
-//            min = abs(difference);
-//        }
-//        if (abs(difference) > max ){
-//            max = abs(difference);
-//        }
-//        medio += abs(difference);*/
-//        sum = sum + difference * difference;
-//    }
-//    sum = sum / (marked_coeff_num);
-//    cout << "MSE marchio " << sum << endl;
-//
+    double *coeff_left =image_watermarking.getCoeff_dft();
+    int coeff_num = image_watermarking.getCoeff_number();
+    double *wat = new double[coeff_num];
+    wat = image_watermarking.getFinal_mark();
+    for (int offset = 0; offset < coeff_num; offset++) {
+        wat[offset] = wat[offset]*power;
+    }
+
+    bool detection = image_watermarking.extractWatermark(squared_marked_left, 256, 256);
+    cout<< "detection: "<< detection<< endl;
+
+
+    //salvare coefficienti marchiati dft
+    double *marked_coeff_left = image_watermarking.getMarked_coeff();
+    int marked_coeff_num = image_watermarking.getMarked_coeff_number();
+
+    double *retrieve_wat = new double[marked_coeff_num];
+    for (int offset = 0; offset < marked_coeff_num; offset++) {
+        retrieve_wat[offset] = (marked_coeff_left[offset] - coeff_left[offset]) / (coeff_left[offset]);
+    }
+
+    stereo_watermarking::writeMatToFile(coeff_left,coeff_num,"/home/miky/Scrivania/Tesi/coeff_left.txt");
+    stereo_watermarking::writeMatToFile(marked_coeff_left,coeff_num,"/home/miky/Scrivania/Tesi/marked_coeff.txt");
+    stereo_watermarking::writeMatToFile(wat,coeff_num,"/home/miky/Scrivania/Tesi/wat.txt");
+    stereo_watermarking::writeMatToFile(retrieve_wat,coeff_num,"/home/miky/Scrivania/Tesi/retrieve_wat.txt");
+
+/*    double min = 3;
+    double max = -10;
+    double medio = 0;*/
+    double sum = 0.0;
+    double difference;
+    for (int i = 0; i < marked_coeff_num; i++) {
+        difference =wat[i] - retrieve_wat[i];
+/*        if (abs(difference) < min){
+            min = abs(difference);
+        }
+        if (abs(difference) > max ){
+            max = abs(difference);
+        }
+        medio += abs(difference);*/
+        sum = sum + difference * difference;
+    }
+    sum = sum / (marked_coeff_num);
+    cout << "MSE marchio " << sum << endl;
+
+    double s;
+    double den;
+    for(int i=0;i<coeff_num;i++){
+        s+=wat[i]*retrieve_wat[i];
+        den+=retrieve_wat[i]*retrieve_wat[i];
+    }
+    s/=sqrt(den);
+    cout<<"sim "<<s<<endl;
+
+
+
 //    double m_wat;
 //    for (int i = 0; i < marked_coeff_num; i++)
 //        m_wat += wat[i];
@@ -314,7 +343,7 @@ int main() {
 //    double s_wat;
 //    for (int i = 0; i < marked_coeff_num; i++)
 //        s_wat += (wat[i]- m_wat)*(wat[i]- m_wat);
-//    s_wat /=marked_coeff_num;
+//    s_wat /=marked_coeff_num-1;
 //    s_wat =sqrt(s_wat);
 //
 //    double m_ret_wat;
@@ -326,7 +355,7 @@ int main() {
 //    for (int i = 0; i < marked_coeff_num; i++)
 //        s_ret_wat += (retrieve_wat[i]- m_ret_wat)*(retrieve_wat[i]- m_ret_wat);
 //
-//    s_ret_wat /=marked_coeff_num;
+//    s_ret_wat /=marked_coeff_num-1;
 //    s_ret_wat =sqrt(s_ret_wat);
 //
 //    double correlation ;
@@ -337,7 +366,7 @@ int main() {
 //    correlation -= m_wat*m_ret_wat;
 //    correlation /= s_ret_wat*s_wat;
 //
-//    cout<<"correlazione: "<<correlation<<endl;
+//    cout<<"correlazione: "<<correlation/(power*power)<<endl;
 /*
     cout << "min " << min << " max " << max<< endl;
     cout << "medio " << medio/marked_coeff_num << endl;*/
@@ -472,19 +501,23 @@ int main() {
             left_marked.at<Vec3b>(j,i+127) [2] = left_squared_marked.at<Vec3b>(j,i) [2];
 
         }
-//    imshow("left_marked_or", left_marked);
-//    waitKey(0);   /*left riprova: si vede*/
+    imshow("left_squared", left_squared);
+    waitKey(0);   /*left riprova: si vede*/
 
-
-    bool wat = image_watermarking.extractWatermark(squared_marked_left, 256, 256);
-    cout<< wat <<endl;
+//
+//    bool wat = image_watermarking.extractWatermark(squared_marked_left, 256, 256);
+//    cout<< wat <<endl;
 
 
 //
 //
     double *squared_mark =  new double[squared_dim];
     for (int i=0;i<squared_dim;i++){
-        squared_mark[i] = (double)squared_marked_left[i]; // - (double)squared_left[i];
+        squared_mark[i] = 0.0;
+    }
+
+    for (int i=0;i<squared_dim;i++){
+        squared_mark[i] = (double)squared_marked_left[i] - (double)squared_left[i];
     }
 
 
@@ -501,9 +534,8 @@ int main() {
     waitKey(0);
     /*marchio riprova: si vede*/
     cv::Mat disp = imread("/home/miky/ClionProjects/tesi_watermarking/img/gt_disp.png", CV_LOAD_IMAGE_GRAYSCALE);
-    cv::Mat occlusion = imread("/home/miky/ClionProjects/tesi_watermarking/img/occ_map.png", CV_LOAD_IMAGE_GRAYSCALE);
+
     unsigned char *disp_uchar = disp.data;
-    unsigned char *occ_uchar = occlusion.data;
     int rect_dim = 480*640*3;
     double *warped_mark = new double[rect_dim];
     for (int i = 0; i< rect_dim; i ++)
@@ -533,24 +565,27 @@ int main() {
             mark_warped.at<Vec3b>(j,i) [1] = warped_mark[count]; count++;
             mark_warped.at<Vec3b>(j,i) [2] = warped_mark[count]; count++;
         }
-//     imshow("mark_warped", mark_warped);
-//     waitKey(0);    /*marchio riprova: si vede*/
+     imshow("mark_warped", mark_warped);
+     waitKey(0);    /*marchio riprova: si vede*/
 //    cv::Mat right = imread("/home/miky/ClionProjects/tesi_watermarking//img/r.png",CV_LOAD_IMAGE_COLOR);
     unsigned char *right_uchar = right.data;
     unsigned char *marked_right = new unsigned char[rect_dim];
 
     for (int i=0;i<rect_dim;i++){
-        double sum =  warped_mark[i]; //+(double)right_uchar[i] ;
-//        if (sum>255){
-//            sum = 255.0;
-//        }
-//        else if (sum<0){
-//            sum = 0.0;
-//        }
+        double sum =  warped_mark[i] + (double)right_uchar[i] ;
+        if (sum>255){
+            sum = 255.0;
+        }
+        else if (sum<0){
+            sum = 0.0;
+        }
         marked_right[i] = (unsigned char)sum;
-
     }
 
+//    for (int i=0;i<rect_dim;i++){
+//        if(marked_right[i]==0)
+//            marked_right[i] = right_uchar[i];
+//    }
     cv::Mat right_marked = cv::Mat::zeros(480, 640, CV_8UC3);
     count = 0;
     for (int j = 0; j < 480; j++)
@@ -574,12 +609,31 @@ int main() {
 
     cv::Mat left_reconstructed = imread("/home/miky/ClionProjects/tesi_watermarking//img/left_reconstructed_uchar.png",CV_LOAD_IMAGE_COLOR);
     unsigned char *left_reconstructed_uchar = left_reconstructed.data;
+
     unsigned char *squared_left_ric =  new unsigned char[squared_dim];
+    for (int i=0;i<squared_dim;i++){
+        squared_left_ric[i] = 0;
+    }
     cv::Mat left_squared_reconstructed = cv::Mat::zeros(256, 256, CV_8UC3);
 
     for (int i = 0; i < 256; i ++ )
         for (int j = 0; j < nc_q; j++)
             squared_left_ric[(i * nc_q)+ j] = left_reconstructed_uchar[(i * nc) + (j + index)];
+
+
+    //ritaglio un pezzo di right
+
+//    unsigned char *right_slice =  new unsigned char[squared_dim];
+//    for (int i = 0; i < 256; i ++ )
+//        for (int j = 0; j < nc_q; j++)
+//            right_slice[(i * nc_q)+ j] = right_uchar[(i * nc) + (j)];
+//
+//    for (int i=0;i<squared_dim;i++){
+//        if(squared_left_ric[i] == 0){
+//            squared_left_ric[i] = squared_left[i];
+//            cout<< static_cast<int>(squared_left[i])<<endl;
+//        }
+//    }
 
     count = 0;
     for (int j = 0; j < 256; j++)
@@ -590,10 +644,12 @@ int main() {
         }
 
 
+
     double *squared_mark_from_reconstructed =  new double[squared_dim];
     for (int i=0;i<squared_dim;i++){
         squared_mark_from_reconstructed[i] = (double)squared_left[i]- (double)squared_left_ric[i] ;
     }
+
 
   cv::Mat mark_squared_from_reconstructed = cv::Mat::zeros(256, 256, CV_8UC3);
     count = 0;
@@ -603,6 +659,7 @@ int main() {
             mark_squared_from_reconstructed.at<Vec3b>(j,i) [1] = squared_mark_from_reconstructed[count]; count++;
             mark_squared_from_reconstructed.at<Vec3b>(j,i) [2] = squared_mark_from_reconstructed[count]; count++;
         }
+
 
     imshow("mark_squared_from_reconstructed", mark_squared_from_reconstructed);
     waitKey(0);
