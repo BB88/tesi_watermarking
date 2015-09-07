@@ -249,26 +249,92 @@ int main() {
     //salvare coefficienti marchiati dft
     double *marked_coeff_left = image_watermarking.getMarked_coeff();
     int marked_coeff_num = image_watermarking.getMarked_coeff_number();
-    double *retrieve_wat = new double[marked_coeff_num];
 
+    double *retrieve_wat = new double[marked_coeff_num];
     for (int offset = 0; offset < marked_coeff_num; offset++) {
         retrieve_wat[offset] = (marked_coeff_left[offset] - coeff_left[offset]) / (0.8 * coeff_left[offset]);
     }
 
+/*    double min = 3;
+    double max = -10;
+    double medio = 0;*/
     float sum = 0.0;
     double difference;
     for (int i = 0; i < marked_coeff_num; i++) {
         difference = wat[i] - retrieve_wat[i];
+/*        if (abs(difference) < min){
+            min = abs(difference);
+        }
+        if (abs(difference) > max ){
+            max = abs(difference);
+        }
+        medio += abs(difference);*/
         sum = sum + difference * difference;
     }
     sum = sum / (marked_coeff_num);
     cout << "MSE marchio " << sum << endl;
+/*
+    cout << "min " << min << " max " << max<< endl;
+    cout << "medio " << medio/marked_coeff_num << endl;*/
+
+
   //  stereo_watermarking::coefficient_comparison(squared_marked_left);
 
 
+    /*correlazione*/
+
+    Mat wat_mat(1, marked_coeff_num, CV_32F);
+ //   cout<< wat_mat.cols<< " righe "<<wat_mat.rows<<endl;
+    for (int i = 0; i < wat_mat.cols; i++){
+            wat_mat.at<float>(0,i) = (float)wat[i];
+    }
+
+    Mat retrieve_wat_mat(1, marked_coeff_num, CV_32F);
+    for (int i = 0; i<retrieve_wat_mat.cols; i++){
+            retrieve_wat_mat.at<float>(0,i) = (float)retrieve_wat[i];
+    }
+    Mat wat_corr;
+
+    matchTemplate(retrieve_wat_mat,wat_mat, wat_corr, CV_TM_CCOEFF_NORMED);
+
+ //   matchTemplate((float*)retrieve_wat,(float*)wat, left_correl, CV_TM_CCOEFF_NORMED);
+    for (int i = 0; i < wat_corr.rows; i++)
+    {
+//        cout << "row " << i << endl;
+        for (int j = 0; j < wat_corr.cols; j++)
+        {
+            cout << "correlation btw extracted watermark and watermark " << (wat_corr.at<float>(i,j));
+        } cout << endl; }
+
 /*
+    double mag1, mag2, corr;
+    for (int j=0; j<marked_coeff_num; j++) {
+        mag1 += wat[j] * wat[j];
+        mag2 += retrieve_wat[j] * retrieve_wat[j];
+        corr += wat[j] * retrieve_wat[j];
+    }
+    corr /= sqrt(mag1*mag2);
+    cout<<"corr "<< corr<<endl;
+*/
+
+
+/*ncc*/
+  /*  double ncc;
+    double somma = 0;
+    double mean_wat;
+    double mean_retrieve_wat;
+    double var_wat;
+    double var_retrieve_wat;
+    for (int j=0; j<marked_coeff_num; j++) {
+      sum += (wat[j] - mean_wat)* (retrieve_wat[j] - mean_retrieve_wat);
+    }
+
+     = 1/N * sum{ [wat(n) - mean(x)]* [retrieve_wat(n) - mean(y)] }/ (sqrt(var(x)*var(y));
+
+*/
 
     //salvare coefficienti dft
+/*
     double *coeff_left =image_watermarking.getCoeff_dft();
     int coeff_num = image_watermarking.getCoeff_number();
     double *wat = image_watermarking.getFinal_mark();
