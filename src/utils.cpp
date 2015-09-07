@@ -319,41 +319,6 @@ void stereo_watermarking::dft_comparison(unsigned char* Image1, unsigned char* I
    */
 
 
-void stereo_watermarking::coefficient_comparison(unsigned char *squared_marked_image) {
-
-/*
-
-    //salvare coefficienti dft
-    double *coeff_left =image_watermarking.getCoeff_dft();
-    int coeff_num = image_watermarking.getCoeff_number();
-    double *wat = new double[coeff_num];
-    wat = image_watermarking.getFinal_mark();
-
-
-    bool detection = image_watermarking.extractWatermark(squared_marked_image, 256, 256);
-    cout<< "detection: "<< detection<< endl;
-
-
-    //salvare coefficienti marchiati dft
-    double *marked_coeff_left = image_watermarking.getMarked_coeff();
-    int marked_coeff_num = image_watermarking.getMarked_coeff_number();
-    double *retrieve_wat = new double[marked_coeff_num];
-
-    for (int offset = 0; offset < marked_coeff_num; offset++) {
-        retrieve_wat[offset] = (marked_coeff_left[offset] - coeff_left[offset]) / (0.8 * coeff_left[offset]);
-    }
-
-    float sum = 0.0;
-    double difference;
-    for (int i = 0; i < marked_coeff_num; i++) {
-        difference = wat[i] - retrieve_wat[i];
-        sum = sum + difference * difference;
-    }
-    sum = sum / (marked_coeff_num);
-    cout << "MSE marchio " << sum << endl;
-*/
-
-}
 
 
 
@@ -394,7 +359,7 @@ void stereo_watermarking::histo_equalizer(Mat img, std::string window_name){
     namedWindow("Original Image", CV_WINDOW_AUTOSIZE);
     namedWindow(window_name.c_str(), CV_WINDOW_AUTOSIZE);
     std::ostringstream path ;
-    path <<"/home/miky/ClionProjects/tesi_watermarking/img/"<< window_name<<".png";
+    path <<"/home/bene/ClionProjects/tesi_watermarking/img/"<< window_name<<".png";
 //    cout<<path.str();
     cv::imwrite(path.str(),img_hist_equalized);
     //show the image
