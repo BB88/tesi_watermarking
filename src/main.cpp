@@ -435,6 +435,7 @@ int main() {
         }
         marked_right[i] = (unsigned char)sum;
     }
+    // MICKY PUZZI
     //show marked right
 /*    cv::Mat right_marked = cv::Mat::zeros(480, 640, CV_8UC3);
     count = 0;
