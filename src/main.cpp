@@ -71,61 +71,75 @@ int main() {
 
 
     /* RUMORE GAUSSIANO  */
-/*
 
-    Mat left = imread("/home/bene/ClionProjects/tesi_watermarking/img/l.png", CV_LOAD_IMAGE_COLOR);
-    cv::Mat right = imread("/home/bene/ClionProjects/tesi_watermarking//img/r.png",CV_LOAD_IMAGE_COLOR);
-
-    double m_NoiseStdDev=5;
-//    double m_NoiseStdDev2=100;
-
-    Mat left_w = left.clone();
-    Mat right_w = right.clone();
-
-//    Mat sqr_noise = cv::Mat::zeros(512 ,512 , CV_8UC3);
-//    randn(sqr_noise,0,m_NoiseStdDev);
-    Mat noise = cv::Mat::zeros(left.rows, left.cols , CV_8UC3);
-    randn(noise,0,m_NoiseStdDev);
-
-//    for (int j = 0; j < 480; j++) // 640 - 512 - 1
-//        for (int i = 0; i < 512; i++){
-//            noise.at<Vec3b>(j, i+127) [0] = sqr_noise.at<Vec3b>(j,i) [0] ;
-//            noise.at<Vec3b>(j, i+127) [1] = sqr_noise.at<Vec3b>(j,i) [1] ;
-//            noise.at<Vec3b>(j, i+127) [2] = sqr_noise.at<Vec3b>(j,i) [2] ;
 //
-//        }
-
-//    noise*=0.5; //watermark power
-
-    left_w += noise;
-    right_w += noise;
-
-
-    normalize(left_w, left_w,0, 255, CV_MINMAX, CV_8UC3);
-    normalize(right_w, right_w,0, 255, CV_MINMAX, CV_8UC3);
-
-    cv::imshow("left marked", left_w);
-    cv::imwrite("/home/bene/ClionProjects/tesi_watermarking/img/left_marked.png", left_w);
-//    cv::imshow("right marked", right_w);
-    cv::waitKey(0);
-
-//    stereo_watermarking::show_difference(left_w,left,"left sub noise");
-
-
-    Mat left_correl;
-    Mat m1, m2;
-    left_w.convertTo(m1, CV_32F);
-    noise.convertTo(m2, CV_32F);
-
-    matchTemplate(m1, m2, left_correl, CV_TM_CCOEFF_NORMED);
-
-    for (int i = 0; i < left_correl.rows; i++)
-    {
-//        cout << "row " << i << endl;
-        for (int j = 0; j < left_correl.cols; j++)
-        {
-            cout << "correlation btw left watermarked and watermark " << (left_correl.at<float>(i,j));
-        } cout << endl; }
+//    Mat left = imread("/home/bene/ClionProjects/tesi_watermarking/img/l.png", CV_LOAD_IMAGE_COLOR);
+//    cv::Mat right = imread("/home/bene/ClionProjects/tesi_watermarking//img/r.png",CV_LOAD_IMAGE_COLOR);
+//
+//    double m_NoiseStdDev=5;
+////    double m_NoiseStdDev2=100;
+//
+//    Mat left_w = left.clone();
+//    Mat right_w = right.clone();
+//
+////    Mat sqr_noise = cv::Mat::zeros(512 ,512 , CV_8UC3);
+////    randn(sqr_noise,0,m_NoiseStdDev);
+//    Mat noise = cv::Mat::zeros(left.rows, left.cols , CV_8UC3);
+//    randn(noise,0,m_NoiseStdDev);
+//
+////    for (int j = 0; j < 480; j++) // 640 - 512 - 1
+////        for (int i = 0; i < 512; i++){
+////            noise.at<Vec3b>(j, i+127) [0] = sqr_noise.at<Vec3b>(j,i) [0] ;
+////            noise.at<Vec3b>(j, i+127) [1] = sqr_noise.at<Vec3b>(j,i) [1] ;
+////            noise.at<Vec3b>(j, i+127) [2] = sqr_noise.at<Vec3b>(j,i) [2] ;
+////
+////        }
+//
+////    noise*=0.5; //watermark power
+//
+//    left_w += noise;
+//    right_w += noise;
+//
+//
+//    normalize(left_w, left_w,0, 255, CV_MINMAX, CV_8UC3);
+//    normalize(right_w, right_w,0, 255, CV_MINMAX, CV_8UC3);
+//
+//    cv::imshow("left marked", left_w);
+//    cv::imwrite("/home/bene/ClionProjects/tesi_watermarking/img/left_marked.png", left_w);
+////    cv::imshow("right marked", right_w);
+//    cv::waitKey(0);
+//
+////    stereo_watermarking::show_difference(left_w,left,"left sub noise");
+//
+//
+//    Mat left_correl;
+//    Mat m1, m2;
+//    left_w.convertTo(m1, CV_32F);
+//    noise.convertTo(m2, CV_32F);
+//
+//    matchTemplate(m1, m2, left_correl, CV_TM_CCOEFF_NORMED);
+//
+//    for (int i = 0; i < left_correl.rows; i++)
+//    {
+////        cout << "row " << i << endl;
+//        for (int j = 0; j < left_correl.cols; j++)
+//        {
+//            cout << "correlation btw left watermarked and watermark " << (left_correl.at<float>(i,j));
+//        } cout << endl; }
+//
+//    Mat right_correl;
+//    right_w.convertTo(m1, CV_32F);
+//    noise.convertTo(m2, CV_32F);
+//
+//    matchTemplate(m1, m2, right_correl, CV_TM_CCOEFF_NORMED);
+//
+//    for (int i = 0; i < left_correl.rows; i++)
+//    {
+////        cout << "row " << i << endl;
+//        for (int j = 0; j < right_correl.cols; j++)
+//        {
+//            cout << "correlation btw right with not warped watermarked and watermark " << (right_correl.at<float>(i,j));
+//        } cout << endl; }
 
 //    Mat right_correl;
 //    right_w.convertTo(m1, CV_32F);
@@ -141,23 +155,9 @@ int main() {
 //            cout << "correlation btw right with not warped watermarked and watermark " << (right_correl.at<float>(i,j));
 //        } cout << endl; }
 //
-////    Mat right_correl;
-////    right_w.convertTo(m1, CV_32F);
-////    noise.convertTo(m2, CV_32F);
-////
-////    matchTemplate(m1, m2, right_correl, CV_TM_CCOEFF_NORMED);
-////
-////    for (int i = 0; i < left_correl.rows; i++)
-////    {
-//////        cout << "row " << i << endl;
-////        for (int j = 0; j < right_correl.cols; j++)
-////        {
-////            cout << "correlation btw right with not warped watermarked and watermark " << (right_correl.at<float>(i,j));
-////        } cout << endl; }
-////
 //
 //
-//    cv::Mat disp = imread("/home/miky/ClionProjects/tesi_watermarking/img/gt_disp.png", CV_LOAD_IMAGE_GRAYSCALE);
+//    cv::Mat disp = imread("/home/bene/ClionProjects/tesi_watermarking/img/gt_disp.png", CV_LOAD_IMAGE_GRAYSCALE);
 //    cv::Mat warped_mark = cv::Mat::zeros(left.rows, left.cols , CV_8UC3);
 //    int d;
 //    for (int j = 0; j < 480; j++)
@@ -174,7 +174,7 @@ int main() {
 //    cv::Mat right_warp_w;
 //    right.copyTo(right_warp_w);
 //    right_warp_w += warped_mark;
-//    cv::imwrite("/home/miky/ClionProjects/tesi_watermarking/img/right_warped_marked.png", right_warp_w);
+//    cv::imwrite("/home/bene/ClionProjects/tesi_watermarking/img/right_warped_marked.png", right_warp_w);
 //    cv::imshow("right warped marked", right_warp_w);
 //
 //    cv::waitKey(0);
@@ -197,7 +197,7 @@ int main() {
 //    cv::Mat rdisp= imread("/home/bene/Scrivania/Tesi/frame_1.png",CV_LOAD_IMAGE_GRAYSCALE);
 //    Right_view rv;
 //    rv.left_uchar_reconstruction(right_warp_w.data,rdisp.data,480,640);
-//    cv::Mat left_reconstructed = imread("/home/miky/ClionProjects/tesi_watermarking/img/left_reconstructed.png");
+//    cv::Mat left_reconstructed = imread("/home/bene/ClionProjects/tesi_watermarking/img/left_reconstructed.png");
 //
 //    Mat left_rec_correl;
 //    left_reconstructed.convertTo(m1, CV_32F);
@@ -212,43 +212,33 @@ int main() {
 //            cout << "correlation btw left reconstructed with watermark and watermark " << (left_rec_correl.at<float>(i,j));
 //        } cout << endl; }
 
-
-
-//    //FINE RUMORE GAUSSIANO
+    //FINE RUMORE GAUSSIANO
 
 
     /*watermarking dft 256*256 + MSE    -> controllare watermarking.cpp : 256 e diag */
 
-    cv::Mat left = imread("/home/miky/ClionProjects/tesi_watermarking/img/l.png", CV_LOAD_IMAGE_COLOR);
-    cv::Mat right = imread("/home/miky/ClionProjects/tesi_watermarking//img/r.png",CV_LOAD_IMAGE_COLOR);
-    cv::Mat right_disp = imread("/home/miky/ClionProjects/tesi_watermarking/img/disp_right.png", CV_LOAD_IMAGE_GRAYSCALE);
-    cv::Mat occ_map_right = imread("/home/miky/ClionProjects/tesi_watermarking/img/occ_right.png", CV_LOAD_IMAGE_GRAYSCALE);
-
+    cv::Mat left = imread("/home/bene/ClionProjects/tesi_watermarking/img/l.png", CV_LOAD_IMAGE_COLOR);
+    cv::Mat right = imread("/home/bene/ClionProjects/tesi_watermarking//img/r.png",CV_LOAD_IMAGE_COLOR);
+    cv::Mat right_disp = imread("/home/bene/ClionProjects/tesi_watermarking/img/disp_right.png", CV_LOAD_IMAGE_GRAYSCALE);
+    cv::Mat occ_map_right = imread("/home/bene/ClionProjects/tesi_watermarking/img/occ_right.png", CV_LOAD_IMAGE_GRAYSCALE);
     Right_view rv;
-
     unsigned char *left_uchar = left.data;
     int squared_dim = 256 * 256 *3;
     unsigned char *squared_left =  new unsigned char[squared_dim];
     int nc = 640 *3;
     int nc_q = 256*3;
     int index = 127 * 3;
-
-    cv::Mat occlusion = imread("/home/miky/ClionProjects/tesi_watermarking/img/occ_map.png", CV_LOAD_IMAGE_GRAYSCALE);
+    cv::Mat occlusion = imread("/home/bene/ClionProjects/tesi_watermarking/img/occ_left.png", CV_LOAD_IMAGE_GRAYSCALE);
     unsigned char *occ_uchar = occlusion.data;
-
     for (int i = 0; i < 256; i ++ )
         for (int j = 0; j < 256; j++) {
 //            unsigned char oc = occ_uchar[(i * 640) + (j + 127)];
-//
             for (int k =0; k<3;k++){
 //                    if (static_cast<unsigned>(oc) != 0)
                 squared_left[(i * 256*3) + j*3 +k] = left_uchar[(i * 640*3) + (j*3+k + 127*3)];
 //                    else squared_left[(i * 256*3) + j*3 +k] = 0;
             }
-
-
         }
-
     cv::Mat left_squared = cv::Mat::zeros(256, 256, CV_8UC3);
     int count = 0;
     for (int j = 0; j < 256; j++)
@@ -259,7 +249,8 @@ int main() {
             left_squared.at<Vec3b>(j,i) [2] = squared_left[count]; count++;
 
         }
-
+//    imshow("left_squared", left_squared);
+//    waitKey(0);
     /*left riprova: si vede*/
     Watermarking image_watermarking;
 //    //random binary watermark
@@ -275,212 +266,46 @@ int main() {
 //        cout<< (static_cast<int>(squared_left[i])- static_cast<int>(squared_marked_left[i]))<<endl;
 
 
+
+
+
+
     //salvare coefficienti dft
     double *coeff_left =image_watermarking.getCoeff_dft();
     int coeff_num = image_watermarking.getCoeff_number();
     double *wat = new double[coeff_num];
     wat = image_watermarking.getFinal_mark();
+    stereo_watermarking::writeMatToFile(wat,coeff_num,"/home/bene/Scrivania/Tesi/wat.txt");
+    // power * wat
     for (int offset = 0; offset < coeff_num; offset++) {
         wat[offset] = wat[offset]*power;
     }
+    stereo_watermarking::writeMatToFile(wat,coeff_num,"/home/bene/Scrivania/Tesi/alpha_wat.txt");
 
+    // decoding
     bool detection = image_watermarking.extractWatermark(squared_marked_left, 256, 256);
     cout<< "detection: "<< detection<< endl;
 
 
     //salvare coefficienti marchiati dft
     double *marked_coeff_left = image_watermarking.getMarked_coeff();
+    stereo_watermarking::writeMatToFile(marked_coeff_left,coeff_num,"/home/bene/Scrivania/Tesi/marked_coeff.txt");
     int marked_coeff_num = image_watermarking.getMarked_coeff_number();
 
     double *retrieve_wat = new double[marked_coeff_num];
     for (int offset = 0; offset < marked_coeff_num; offset++) {
-        retrieve_wat[offset] = (marked_coeff_left[offset] - coeff_left[offset]) / (coeff_left[offset]);
+     //   retrieve_wat[offset] = (marked_coeff_left[offset] - coeff_left[offset]) / (coeff_left[offset]);
+        retrieve_wat[offset] = (marked_coeff_left[offset]/ coeff_left[offset]) -1;
     }
-
-    stereo_watermarking::writeMatToFile(coeff_left,coeff_num,"/home/miky/Scrivania/Tesi/coeff_left.txt");
-    stereo_watermarking::writeMatToFile(marked_coeff_left,coeff_num,"/home/miky/Scrivania/Tesi/marked_coeff.txt");
-    stereo_watermarking::writeMatToFile(wat,coeff_num,"/home/miky/Scrivania/Tesi/wat.txt");
-    stereo_watermarking::writeMatToFile(retrieve_wat,coeff_num,"/home/miky/Scrivania/Tesi/retrieve_wat.txt");
-
-/*    double min = 3;
-    double max = -10;
-    double medio = 0;*/
-    double sum = 0.0;
-    double difference;
-    for (int i = 0; i < marked_coeff_num; i++) {
-        difference =wat[i] - retrieve_wat[i];
-/*        if (abs(difference) < min){
-            min = abs(difference);
-        }
-        if (abs(difference) > max ){
-            max = abs(difference);
-        }
-        medio += abs(difference);*/
-        sum = sum + difference * difference;
-    }
-    sum = sum / (marked_coeff_num);
-    cout << "MSE marchio " << sum << endl;
-
-    double s;
-    double den;
-    for(int i=0;i<coeff_num;i++){
-        s+=wat[i]*retrieve_wat[i];
-        den+=retrieve_wat[i]*retrieve_wat[i];
-    }
-    s/=sqrt(den);
-    cout<<"sim "<<s<<endl;
-
-    double m_wat;
-    for (int i = 0; i < marked_coeff_num; i++)
-        m_wat += wat[i];
-    m_wat /=marked_coeff_num;
-
-    double s_wat;
-    for (int i = 0; i < marked_coeff_num; i++)
-        s_wat += (wat[i]- m_wat)*(wat[i]- m_wat);
-    s_wat /=marked_coeff_num;
-    s_wat =sqrt(s_wat);
-
-    double m_ret_wat;
-    for (int i = 0; i < marked_coeff_num; i++)
-        m_ret_wat += retrieve_wat[i];
-    m_ret_wat /=marked_coeff_num;
-
-    double s_ret_wat;
-    for (int i = 0; i < marked_coeff_num; i++)
-        s_ret_wat += (retrieve_wat[i]- m_ret_wat)*(retrieve_wat[i]- m_ret_wat);
-
-    s_ret_wat /=marked_coeff_num;
-    s_ret_wat =sqrt(s_ret_wat);
-
-    double correlation ;
-    for (int i = 0; i < marked_coeff_num; i++)
-        correlation += retrieve_wat[i]*wat[i];
-
-    correlation/=marked_coeff_num;
-    correlation -= m_wat*m_ret_wat;
-    correlation /= s_ret_wat*s_wat;
-
-    cout<<"correlazione: "<<correlation<<endl;
-
- 
-//    cout << "min " << min << " max " << max<< endl;
-//    cout << "medio " << medio/marked_coeff_num << endl;
-
-
-    // MSE watermark-retrieved watermark
-
-//    double min = 3;
-//    double max = -10;
-//    double medio = 0;
-//    double sum = 0.0;
-//    double difference;
-//    for (int i = 0; i < marked_coeff_num; i++) {
-//        difference = wat[i] - retrieve_wat[i];
-//        sum = sum + difference * difference;
-//        if (abs(difference) < min){
-//            min = abs(difference);
-//        }
-//        if (abs(difference) > max ){
-//            max = abs(difference);
-//        }
-//        medio += abs(difference);
-//    }
-//    sum = sum / (marked_coeff_num);
-//    cout << "MSE marchio " << sum << endl;
-    
-    
-    
-    // Correlation watermark-retrieved watermark
-
-    //watermark mean
-    double m_wat;
-    for (int i = 0; i < marked_coeff_num; i++)
-        m_wat += wat[i];
-    m_wat /=marked_coeff_num;
-
-    //watermark variance
-    double s_wat;
-    for (int i = 0; i < marked_coeff_num; i++)
-        s_wat += (wat[i]- m_wat)*(wat[i]- m_wat);
-    s_wat /=marked_coeff_num;
-    s_wat =sqrt(s_wat);
-
-
-    // retrieve watermark mean
-    double m_ret_wat;
-    for (int i = 0; i < marked_coeff_num; i++)
-        m_ret_wat += retrieve_wat[i];
-    m_ret_wat /=marked_coeff_num;
-
-    // retrieve watermark variance
-    double s_ret_wat;
-    for (int i = 0; i < marked_coeff_num; i++)
-        s_ret_wat += (retrieve_wat[i]- m_ret_wat)*(retrieve_wat[i]- m_ret_wat);
-
-    s_ret_wat /=marked_coeff_num;
-    s_ret_wat =sqrt(s_ret_wat);
-
-    double correlation ;
-    for (int i = 0; i < marked_coeff_num; i++)
-        correlation += retrieve_wat[i]*wat[i];
-
-    correlation/=marked_coeff_num;
-    correlation -= m_wat*m_ret_wat;
-    correlation /= s_ret_wat*s_wat;
-
-    cout<<"correlazione marchio e marchio ricalcolato: "<<correlation<<endl;*/
-
-    // Correlation watermark-retrieved watermark with opencv function matchTemplate
 /*
 
-    Mat wat_mat(1, marked_coeff_num, CV_32F);
- //   cout<< wat_mat.cols<< " righe "<<wat_mat.rows<<endl;
-    for (int i = 0; i < wat_mat.cols; i++){
-            wat_mat.at<float>(0,i) = (float)wat[i];
+    for (int offset = 0; offset < marked_coeff_num; offset++) {
+        retrieve_wat[offset] = - retrieve_wat[offset];
     }
-
-    Mat retrieve_wat_mat(1, marked_coeff_num, CV_32F);
-    for (int i = 0; i<retrieve_wat_mat.cols; i++){
-            retrieve_wat_mat.at<float>(0,i) = (float)retrieve_wat[i];
-    }
-    Mat wat_corr;
-
-    matchTemplate(retrieve_wat_mat,wat_mat, wat_corr, CV_TM_CCOEFF_NORMED);
-
- //   matchTemplate((float*)retrieve_wat,(float*)wat, left_correl, CV_TM_CCOEFF_NORMED);
-    for (int i = 0; i < wat_corr.rows; i++)
-    {
-//        cout << "row " << i << endl;
-        for (int j = 0; j < wat_corr.cols; j++)
-        {
-            cout << "correlation btw extracted watermark and watermark " << (wat_corr.at<float>(i,j));
-        } cout << endl; }
 */
 
-    //da cancellare
-/*
-    bool detection = image_watermarking.extractWatermark(squared_marked_left, 256, 256);
-    cout<< "detection: "<< detection<< endl;
-
-
-    //salvare coefficienti marchiati dft
-    double *marked_coeff_left = image_watermarking.getMarked_coeff();
-    int marked_coeff_num = image_watermarking.getMarked_coeff_number();
-    double *retrieve_wat = new double[marked_coeff_num];
-
-        for (int offset = 0; offset < marked_coeff_num; offset++) {
-            retrieve_wat[offset] = (marked_coeff_left[offset] - coeff_left[offset]) / (0.8 * coeff_left[offset]);
-        }
-
-        float sum = 0.0;
-        double difference;
-        for (int i = 0; i < marked_coeff_num; i++) {
-            difference = wat[i] - retrieve_wat[i];
-            sum = sum + difference * difference;
-        }
-        sum = sum / (marked_coeff_num);
-        cout << "MSE marchio " << sum << endl;*/
+    stereo_watermarking::writeMatToFile(coeff_left,coeff_num,"/home/bene/Scrivania/Tesi/coeff_left.txt");
+    stereo_watermarking::writeMatToFile(retrieve_wat,coeff_num,"/home/bene/Scrivania/Tesi/retrieve_wat.txt");
 
 
 
@@ -571,7 +396,7 @@ int main() {
     unsigned char *marked_right = new unsigned char[rect_dim];
 
     for (int i=0;i<rect_dim;i++){
-        double sum =  warped_mark[i];*/ //+(double)right_uchar[i] ;
+        double sum =  warped_mark[i];*/ //(double)right_uchar[i] ;
 //        if (sum>255){
 //            sum = 255.0;
 //        }
@@ -603,7 +428,7 @@ int main() {
 //    Right_view rv;
  //   rv.left_uchar_reconstruction(marked_right, right_disp_uchar, occ_map_right.data,640,480);
 
- //   cv::Mat left_reconstructed = imread("/home/miky/ClionProjects/tesi_watermarking//img/left_reconstructed_uchar.png",CV_LOAD_IMAGE_COLOR);
+ //   cv::Mat left_reconstructed = imread("/home/bene/ClionProjects/tesi_watermarking//img/left_reconstructed_uchar.png",CV_LOAD_IMAGE_COLOR);
 //    unsigned char *left_reconstructed_uchar = left_reconstructed.data;
  //   unsigned char *squared_left_ric =  new unsigned char[squared_dim];
   //  cv::Mat left_squared_reconstructed = cv::Mat::zeros(256, 256, CV_8UC3);

@@ -5,7 +5,6 @@
 #include <string.h>
 #include <iostream>
 
-
 // Local headers
 #include "imgwat.h"
 #include "bch.h"
@@ -19,6 +18,10 @@
 #include <cv.h>
 #include <opencv2/core/core.hpp>
 #include <highgui.h>
+
+#include </home/bene/ClionProjects/tesi_watermarking/src/utils.h>
+
+
 using namespace cv;
 
 ///DA METTERE NEL CONFIG
@@ -218,7 +221,8 @@ int Watermarking::WatCod(unsigned char *ImageOut, int width, int height, const c
     mmedio = 1.0 - mmedio;
 
 //     Si calcola il valore massimo di alfa
-    double alfamax = power/mmedio;
+ //   double alfamax = power/mmedio;
+    double alfamax = power;
 
     int coefficient_number;
     double *coefficient_vector = NULL;
@@ -232,7 +236,10 @@ int Watermarking::WatCod(unsigned char *ImageOut, int width, int height, const c
 /*    int diag0 = 160;		// Diagonali..
     int ndiag = 144;*/
     coefficient_vector = zones_to_watermark(imdft, 256, 256, diag0, ndiag, 0, &coefficient_number);
-    coeff_dft = coefficient_vector;
+    coeff_dft = new double [coefficient_number];
+    for (int k = 0; k < coefficient_number; k++ )
+        coeff_dft[k] = coefficient_vector[k];
+  //  coeff_dft = coefficient_vector;
     coeff_number = coefficient_number;
 
 
@@ -240,26 +247,29 @@ int Watermarking::WatCod(unsigned char *ImageOut, int width, int height, const c
     mark = new double[coefficient_number];
 
     generate_mark(watermark,wsize,passw_str,passw_num,coefficient_number, mark,false);
-
-    final_mark = mark;
-
+    final_mark = new double [coefficient_number];
+    for (int k = 0; k < coefficient_number; k++ )
+        final_mark[k] = mark[k];
 
 
 //    if (view=="left")
     addmark(coefficient_vector, mark, coefficient_number, alfamax);
 //    else if (view=="right")
 //        addmark_right_view(coefficient_vector, mark, coefficient_number, alfamax);
+    stereo_watermarking::writeMatToFile(coefficient_vector,coefficient_number,"/home/bene/Scrivania/Tesi/watermarking_marked_coeff.txt");
+
+
 
     antizone(imdft, 256, 256, diag0, ndiag, coefficient_vector);
 
 
     FFT2D::idft2d(imdft, imdftfase, imidft, 256, 256);
 
-    for(int i=0;i<256;i++)
+/*    for(int i=0;i<256;i++)
         for(int j=0;j<256;j++)
-            img_map_flt[i][j] = 255.0f*img_map_flt[i][j];
+            img_map_flt[i][j] = 255.0f*img_map_flt[i][j];*/
 
-    PicRoutfloat(imyout, 256, 256, imidft, img_map_flt, impic);
+//    PicRoutfloat(imyout, 256, 256, imidft, img_map_flt, impic);
 
 
     //reinserimento della luminanza
@@ -369,6 +379,7 @@ void Watermarking::generate_mark(int *watermark,int wsize, const char *passw_str
     for(int i = 0; i < marklen; i++)
         mark[i] = 2.0 * ( pseudo_random_generator() - 0.5);
 
+
     // mark modulation
 
     int n=0;
@@ -421,10 +432,16 @@ void Watermarking::addmark(double *buff, double *mark, int num_camp, double peso
     alfa = peso;	// peso con cui sommo il marchio
 
     // aggiorna il valore di dft
-    for(i=0; i<n; i++)
-        buff[i] = buff[i]*(1.0 + alfa*mark[i]);
+    for(i=0; i<n; i++) {
+  /*      if (i < 20) {
+            cout <<"coeff "<< buff[i] << endl;
+        }*/
+        buff[i] = buff[i] * (1.0 + alfa * mark[i]);
+/*        if (i < 20) {
+            cout <<"marked "<< buff[i] << endl;
+        }*/
+    }
 }
-
 
 
 /*
@@ -1016,7 +1033,6 @@ double* Watermarking::zones_to_watermark(double **imdft, int height, int width, 
 
     d1=diag0;
     nd=ndiag;
-
     // Calcolo dell' ordine dell' ultima diagonale
 
     max=d1+(nd-1);
@@ -1192,7 +1208,6 @@ double* Watermarking::zones_to_watermark(double **imdft, int height, int width, 
 
 
     *coefficient_number = elementi;
-
     return buff;
 }
 
@@ -1387,6 +1402,11 @@ int Watermarking::WatDec(unsigned char *ImageIn, int nrImageIn, int ncImageIn,
 //            imdftout[i][j]=0.0;
 
     FFT2D::dft2d(imyout, imdftout, imdftoutfase, 256, 256);
+/*    for (int i = 0; i<256 ; i++)
+        for (int j = 0; j <256 ; j++)
+              if (imdftout[i][j]<0.0){
+                  cout<< "valore negativo"<<endl;
+              }*/
 
     // Added by CORMAX
     int BitLetti[200];		// Max 200 bit da leggere
@@ -1488,8 +1508,10 @@ void Watermarking::decoale(double **imr, int nre, int nce, int d1, int nd,
     // di coefficienti selezionati)
 
     appbuff = zones_to_watermark(imr, nre, nce, d1, nd, 1, &marklen);
-
-    marked_coeff = appbuff;
+    marked_coeff = new double [marklen];
+    for (int k = 0; k < marklen; k++ )
+        marked_coeff[k] = appbuff[k];
+ //   stereo_watermarking::writeMatToFile(marked_coeff,marklen,"/home/bene/Scrivania/Tesi/watermarking_marked_coeff.txt");
     marked_coeff_number = marklen;
 
 
