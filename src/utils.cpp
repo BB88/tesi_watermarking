@@ -15,6 +15,7 @@
 #include "./img_watermarking/watermarking.h"
 #include "./img_watermarking/allocim.h"
 #include "./img_watermarking/fft2d.h"
+#include "./graphUtils/GraphUtils.h"
 
 using namespace std;
 using namespace cv;
@@ -370,6 +371,11 @@ void stereo_watermarking::histo_equalizer(Mat img, std::string window_name){
 
     destroyAllWindows();
 }
+
+
+
+
+
 //
 //
 //boost::shared_ptr<pcl::visualization::PCLVisualizer> stereo_watermarking::createVisualizerRGB (pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr cloud, std::string title) {
@@ -550,4 +556,112 @@ void stereo_watermarking::writeMatToFile(double* m,int lenght, std::string filen
     }
 
     fout.close();
+}
+
+double stereo_watermarking::similarity_measures(double* wat, double* retrieve_wat, int coeff_num, std::string filename){
+
+    Mat wat_mat(1, coeff_num, CV_32F);
+    //   cout<< wat_mat.cols<< " righe "<<wat_mat.rows<<endl;
+    for (int i = 0; i < wat_mat.cols; i++){
+        wat_mat.at<float>(0,i) = (float)wat[i];
+    }
+    Scalar     mean;
+    Scalar     stddev;
+    meanStdDev(wat_mat, mean, stddev);
+    float myMAtMean = mean.val[0];
+    float myMAtSvd = stddev.val[0];
+    // cout <<"before :"<< setprecision(15)<<myMAtMean<<endl;
+    // cout <<"before :" << setprecision(15)<<myMAtSvd<<endl;
+    for (int i = 0; i < wat_mat.cols; i++){
+        wat_mat.at<float>(0,i) = (wat_mat.at<float>(0,i) - myMAtMean)/myMAtSvd;
+    }
+    meanStdDev(wat_mat, mean, stddev);
+    myMAtMean = mean.val[0];
+    myMAtSvd = stddev.val[0];
+    // cout <<"after :" << setprecision(15)<<myMAtMean<<endl;
+    // cout  <<"after :"<< setprecision(15)<<myMAtSvd<<endl;
+
+    Mat ret_wat_mat(1, coeff_num, CV_32F);
+    //   cout<< wat_mat.cols<< " righe "<<wat_mat.rows<<endl;
+    for (int i = 0; i < ret_wat_mat.cols; i++){
+        ret_wat_mat.at<float>(0,i) = (float)retrieve_wat[i];
+    }
+    Scalar     ret_mean;
+    Scalar     ret_stddev;
+    meanStdDev(ret_wat_mat, ret_mean, ret_stddev);
+    float ret_myMAtMean = ret_mean.val[0];
+    float ret_myMAtSvd = ret_stddev.val[0];
+    // cout <<"ret_before :"<< setprecision(15)<<ret_myMAtMean<<endl;
+    // cout <<"ret_before :" << setprecision(15)<<ret_myMAtSvd<<endl;
+    for (int i = 0; i < wat_mat.cols; i++){
+        ret_wat_mat.at<float>(0,i) = (ret_wat_mat.at<float>(0,i) - ret_myMAtMean)/ret_myMAtSvd;
+    }
+    meanStdDev(ret_wat_mat, ret_mean, ret_stddev);
+    ret_myMAtMean = ret_mean.val[0];
+    ret_myMAtSvd = ret_stddev.val[0];
+    // cout <<"ret_after :"<< setprecision(15)<<ret_myMAtMean<<endl;
+    // cout <<"ret_after :" << setprecision(15)<<ret_myMAtSvd<<endl;
+    Mat wat_corr;
+    matchTemplate(ret_wat_mat,wat_mat, wat_corr, CV_TM_CCOEFF_NORMED);
+    cout << "correlation btw extracted watermark and watermark " << (wat_corr.at<float>(0,0))<<endl;
+
+    double sim = 0.0;
+    double den = 0.0;
+    for (int i = 0; i < ret_wat_mat.cols; i++){
+        sim += wat_mat.at<float>(0,i)*ret_wat_mat.at<float>(0,i);
+        den += ret_wat_mat.at<float>(0,i)*ret_wat_mat.at<float>(0,i);
+    }
+    sim /= sqrt(den);
+    cout <<"sim :" << setprecision(15)<<sim<<endl; // max value 68
+    return sim;
+
+}
+
+void stereo_watermarking::similarity_graph(int number_of_marks,int coeff_num,double* wat){
+
+    static const char alpha_char[] = "abcdefghijklmnopqrstuvwxyz";
+    static const char num_char [] =  "0123456789";
+    Watermarking image_watermarking;
+   // Point points[number_of_marks];
+    float* sim_values = new float [number_of_marks+1];
+    for (int k = 0; k < number_of_marks; k++) {
+        double *retrieve_wat = new double[coeff_num];
+        int mark[64];
+        // generate another 64random bit watermark
+        for (int i = 0; i < 64; i++) {
+            int b = rand() % 2;
+            mark[i] = b;
+        }
+        char *string_pswd = new char[16];
+        char *num_pswd = new char[8];
+        for (int i = 0; i < 16; i++) {
+            string_pswd[i] = alpha_char[rand() % (sizeof(alpha_char) - 1)];
+        }
+        for (int i = 0; i < 8; i++) {
+            num_pswd[i] = num_char[rand() % (sizeof(num_char) - 1)];
+        }
+        retrieve_wat = image_watermarking.marks_generator(mark, 64, string_pswd, num_pswd, coeff_num);
+        // correlation and sim
+        double sim = stereo_watermarking::similarity_measures(wat, retrieve_wat, coeff_num, "ciao");
+        sim_values[k] = (float)sim;
+      //  points[k]=  Point(k,sim);
+    }
+    sim_values[number_of_marks] = 67.09347205363;
+    float tmp = 0.0;
+    tmp = sim_values[27];
+    sim_values[27] = sim_values[number_of_marks];
+    sim_values[number_of_marks] = tmp;
+    //drawFloatGraph(sim_values, number_of_marks, NULL, 0, 300,);
+    //(floatArray, numFloats, bgImg, -25,25, w, h, "Yaw (in degrees)");
+    showFloatGraph("Rotation Angle", sim_values, number_of_marks+1, 0);
+    // Create black empty images
+   /* Mat simImage(number_of_marks, 1, CV_8UC3, Scalar(255, 255, 255));
+    for (int i=1;i<number_of_marks;i++){
+        line(simImage,points[i-1],points[i],Scalar(0,0,0),2,8,0);
+    }
+    namedWindow("similarity image",CV_WINDOW_AUTOSIZE);
+    imshow("similarity image",simImage);
+    waitKey(0);
+    return;
+*/
 }

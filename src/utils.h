@@ -25,9 +25,9 @@ namespace stereo_watermarking{
     void dft_comparison(unsigned char* Image1, unsigned char* Image2, int dim ,  std::string img1_name, std::string img2_name );
     void show_double_mat(int width,int height,double** A,std::string window_name);
     void histo_equalizer(Mat img, std::string window_name);
-
+    double similarity_measures(double* wat, double* retrieve_wat, int coeff_num, std::string filename);
     void writeMatToFile(double* m,int lenght, std::string filename);
-
+    void similarity_graph(int number_of_marks,int coeff_num,double* wat);
 //    void viewPointCloudRGB(pcl::PointCloud<pcl::PointXYZRGB>::Ptr point_cloud_ptr, std::string title);
 //    boost::shared_ptr<pcl::visualization::PCLVisualizer> createVisualizerRGB (pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr cloud, std::string title);
 //    void createPointCloudOpenCV (cv::Mat& img1, cv::Mat& img2,  cv::Mat& Q, cv::Mat& disp, cv::Mat& recons3D, pcl::PointCloud<pcl::PointXYZRGB>::Ptr &point_cloud_ptr);

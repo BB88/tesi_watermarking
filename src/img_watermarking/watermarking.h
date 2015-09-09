@@ -222,6 +222,9 @@ public:
         return final_mark;
     }
 
+    double* marks_generator(int *watermark,int wsize, const char *passw_str, const char *passw_num, int coefficient_number) ;
+
+
 private:
 
     int WatCod(unsigned char *ImageOut , int width, int height,

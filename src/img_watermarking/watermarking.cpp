@@ -314,6 +314,13 @@ int Watermarking::WatCod(unsigned char *ImageOut, int width, int height, const c
 
 }
 
+double* Watermarking::marks_generator(int *watermark,int wsize, const char *passw_str, const char *passw_num, int coefficient_number){
+
+    double * mark = new double[coefficient_number];
+    Watermarking::generate_mark(watermark,wsize,passw_str,passw_num,coefficient_number, mark,false);
+    return mark;
+}
+
 
 
 void Watermarking::generate_mark(int *watermark,int wsize, const char *passw_str, const char *passw_num, int marklen, double* mark, bool detection)

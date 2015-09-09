@@ -240,8 +240,8 @@ int main() {
             left_squared.at<Vec3b>(j,i) [2] = squared_left[count]; count++;
 
         }
-    imshow("left_squared", left_squared);
-    waitKey(0);
+   // imshow("left_squared", left_squared);
+   // waitKey(0);
     /*left riprova: si vede*/
     Watermarking image_watermarking;
 //    //random binary watermark
@@ -284,95 +284,44 @@ int main() {
     int coeff_num = image_watermarking.getCoeff_number();
     double *wat = new double[coeff_num];
     wat = image_watermarking.getFinal_mark();
-    stereo_watermarking::writeMatToFile(wat,coeff_num,"/home/bene/Scrivania/Tesi/wat.txt");
-    stereo_watermarking::writeMatToFile(coeff_left,coeff_num,"/home/bene/Scrivania/Tesi/coeff_left.txt");
+//    stereo_watermarking::writeMatToFile(wat,coeff_num,"/home/bene/Scrivania/Tesi/wat.txt");
+//    stereo_watermarking::writeMatToFile(coeff_left,coeff_num,"/home/bene/Scrivania/Tesi/coeff_left.txt");
+
+    stereo_watermarking::similarity_graph(100,coeff_num,wat);
 
 
     // decoding
-//    bool detection = image_watermarking.extractWatermark(squared_marked_left, 256, 256);
-//    cout<< "detection: "<< detection<< endl;
+/*    bool detection = image_watermarking.extractWatermark(squared_marked_left, 256, 256);
+    cout<< "detection: "<< detection<< endl;*/
 
     // START COEFFICIENT ANALYSIS
 
- /*
-    //salvare coefficienti marchiati dft
+/*    //salvare coefficienti marchiati dft
     double *marked_coeff_left = image_watermarking.getMarked_coeff();
     stereo_watermarking::writeMatToFile(marked_coeff_left,coeff_num,"/home/bene/Scrivania/Tesi/marked_coeff.txt");
-    int marked_coeff_num = image_watermarking.getMarked_coeff_number();
+  //  int marked_coeff_num = image_watermarking.getMarked_coeff_number();
 
-    double *retrieve_wat = new double[marked_coeff_num];
-    for (int offset = 0; offset < marked_coeff_num; offset++) {
+    double *retrieve_wat = new double[coeff_num];
+    for (int offset = 0; offset < coeff_num; offset++) {
      //   retrieve_wat[offset] = (marked_coeff_left[offset] - coeff_left[offset]) / (coeff_left[offset]);
         retrieve_wat[offset] = (marked_coeff_left[offset] - coeff_left[offset])/ coeff_left[offset];
     }
-    for (int offset = 0; offset < marked_coeff_num; offset++) {
+    for (int offset = 0; offset < coeff_num; offset++) {
         retrieve_wat[offset] = retrieve_wat[offset]/power;
     }
-    stereo_watermarking::writeMatToFile(retrieve_wat,coeff_num,"/home/bene/Scrivania/Tesi/retrieve_wat.txt");
+    stereo_watermarking::writeMatToFile(retrieve_wat,coeff_num,"/home/bene/Scrivania/Tesi/retrieve_wat.txt");*/
+
     // correlation and sim
-
-    Mat wat_mat(1, marked_coeff_num, CV_32F);
-    //   cout<< wat_mat.cols<< " righe "<<wat_mat.rows<<endl;
-    for (int i = 0; i < wat_mat.cols; i++){
-        wat_mat.at<float>(0,i) = (float)wat[i];
-    }
-    Scalar     mean;
-    Scalar     stddev;
-    meanStdDev(wat_mat, mean, stddev);
-    float myMAtMean = mean.val[0];
-    float myMAtSvd = stddev.val[0];
-    // cout <<"before :"<< setprecision(15)<<myMAtMean<<endl;
-    // cout <<"before :" << setprecision(15)<<myMAtSvd<<endl;
-    for (int i = 0; i < wat_mat.cols; i++){
-        wat_mat.at<float>(0,i) = (wat_mat.at<float>(0,i) - myMAtMean)/myMAtSvd;
-    }
-    meanStdDev(wat_mat, mean, stddev);
-    myMAtMean = mean.val[0];
-    myMAtSvd = stddev.val[0];
-    // cout <<"after :" << setprecision(15)<<myMAtMean<<endl;
-    // cout  <<"after :"<< setprecision(15)<<myMAtSvd<<endl;
-
-    Mat ret_wat_mat(1, marked_coeff_num, CV_32F);
-    //   cout<< wat_mat.cols<< " righe "<<wat_mat.rows<<endl;
-    for (int i = 0; i < ret_wat_mat.cols; i++){
-        ret_wat_mat.at<float>(0,i) = (float)retrieve_wat[i];
-    }
-    Scalar     ret_mean;
-    Scalar     ret_stddev;
-    meanStdDev(ret_wat_mat, ret_mean, ret_stddev);
-    float ret_myMAtMean = ret_mean.val[0];
-    float ret_myMAtSvd = ret_stddev.val[0];
-    // cout <<"ret_before :"<< setprecision(15)<<ret_myMAtMean<<endl;
-    // cout <<"ret_before :" << setprecision(15)<<ret_myMAtSvd<<endl;
-    for (int i = 0; i < wat_mat.cols; i++){
-        ret_wat_mat.at<float>(0,i) = (ret_wat_mat.at<float>(0,i) - ret_myMAtMean)/ret_myMAtSvd;
-    }
-    meanStdDev(ret_wat_mat, ret_mean, ret_stddev);
-    ret_myMAtMean = ret_mean.val[0];
-    ret_myMAtSvd = ret_stddev.val[0];
-    // cout <<"ret_after :"<< setprecision(15)<<ret_myMAtMean<<endl;
-    // cout <<"ret_after :" << setprecision(15)<<ret_myMAtSvd<<endl;
-    Mat wat_corr;
-    matchTemplate(ret_wat_mat,wat_mat, wat_corr, CV_TM_CCOEFF_NORMED);
-    cout << "correlation btw extracted watermark and watermark " << (wat_corr.at<float>(0,0))<<endl;
-
-    double sim = 0.0;
-    double den = 0.0;
-    for (int i = 0; i < ret_wat_mat.cols; i++){
-        sim += wat_mat.at<float>(0,i)*ret_wat_mat.at<float>(0,i);
-        den += ret_wat_mat.at<float>(0,i)*ret_wat_mat.at<float>(0,i);
-    }
-    sim /= sqrt(den);
-    cout <<"sim :" << setprecision(15)<<sim<<endl; // max value 68*/
+ //   stereo_watermarking::similarity_measures(wat, retrieve_wat, coeff_num,"ciao");
 
     // END COEFFICIENT ANALYSIS
 
 
     // spatial extraction of the watermark
-    double *squared_mark =  new double[squared_dim];
+/*    double *squared_mark =  new double[squared_dim];
     for (int i=0;i<squared_dim;i++){
         squared_mark[i] = (double)squared_marked_left[i] - (double)squared_left[i];
-    }
+    }*/
    // show extracted marked
 /*
   cv::Mat mark_squared = cv::Mat::zeros(256, 256, CV_8UC3);
@@ -389,7 +338,7 @@ int main() {
 */
 
     // computing warped watermark
-    cv::Mat disp = imread("/home/bene/ClionProjects/tesi_watermarking/img/gt_disp.png", CV_LOAD_IMAGE_GRAYSCALE);
+/*    cv::Mat disp = imread("/home/bene/ClionProjects/tesi_watermarking/img/gt_disp.png", CV_LOAD_IMAGE_GRAYSCALE);
     cv::Mat occlusion = imread("/home/bene/ClionProjects/tesi_watermarking/img/occ_left.png", CV_LOAD_IMAGE_GRAYSCALE);
     unsigned char *disp_uchar = disp.data;
     unsigned char *occ_uchar = occlusion.data;
@@ -409,7 +358,7 @@ int main() {
                 warped_mark[ (i*nc) + (index + j + 1 - static_cast<unsigned>(d)*3)] = squared_mark[ (i*nc_q) + (j + 1)];
                 warped_mark[ (i*nc) + (index + j + 2 - static_cast<unsigned>(d)*3)] = squared_mark[ (i*nc_q) + (j + 2)];
             }
-        }
+        }*/
     // show warped watermark
 /*    cv::Mat mark_warped = cv::Mat::zeros(480, 640, CV_8UC3);
     count = 0;
@@ -421,7 +370,9 @@ int main() {
         }
      imshow("mark_warped", mark_warped);
      waitKey(0);*/
-    cv::Mat right = imread("/home/bene/ClionProjects/tesi_watermarking//img/r.png",CV_LOAD_IMAGE_COLOR);
+
+    //marking right view
+/*    cv::Mat right = imread("/home/bene/ClionProjects/tesi_watermarking//img/r.png",CV_LOAD_IMAGE_COLOR);
     // insert warped mark in right view
     unsigned char *right_uchar = right.data;
     unsigned char *marked_right = new unsigned char[rect_dim];
@@ -434,8 +385,7 @@ int main() {
             sum = 0.0;
         }
         marked_right[i] = (unsigned char)sum;
-    }
-    // MICKY PUZZI
+    }*/
     //show marked right
 /*    cv::Mat right_marked = cv::Mat::zeros(480, 640, CV_8UC3);
     count = 0;
@@ -449,7 +399,7 @@ int main() {
     waitKey(0);*/
 
     // reconstructing marked left
-    cv::Mat right_disp = imread("/home/bene/ClionProjects/tesi_watermarking/img/disp_right.png", CV_LOAD_IMAGE_GRAYSCALE);
+ /*   cv::Mat right_disp = imread("/home/bene/ClionProjects/tesi_watermarking/img/disp_right.png", CV_LOAD_IMAGE_GRAYSCALE);
     unsigned char *right_disp_uchar = right_disp.data;
     cv::Mat occ_map_right = imread("/home/bene/ClionProjects/tesi_watermarking/img/occ_right.png", CV_LOAD_IMAGE_GRAYSCALE);
     Right_view rv;
@@ -474,7 +424,7 @@ int main() {
         }
     imshow("left_squared_reconstructed", left_squared_reconstructed);
     waitKey(0);
-
+*/
     // show squared mark from reconstructed left
 /*    double *squared_mark_from_reconstructed =  new double[squared_dim];
     for (int i=0;i<squared_dim;i++){
@@ -495,8 +445,8 @@ int main() {
 
 
     // extraction of the watermark from reconstructed left
-    bool wat2 = image_watermarking.extractWatermark(squared_left_ric, 256, 256);
-    cout<<wat2<<endl;
+  /*  bool wat2 = image_watermarking.extractWatermark(squared_left_ric, 256, 256);
+    cout<<wat2<<endl;*/
 
 
     // START COEFFICIENT ANALYSIS
@@ -573,6 +523,8 @@ int main() {
     cout <<"sim :" << setprecision(15)<<sim<<endl; // max value 68*/
 
     // END COEFFICIENT ANALYSIS
+
+
 
     // constructing squared right and squared marked right to compute dft analysis
 /*

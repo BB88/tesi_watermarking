@@ -64,6 +64,10 @@ set(SRC_QM
     src/quality_metrics/quality_metrics.cpp
     src/quality_metrics/quality_metrics.h
   )
+set(SRC_GU
+      src/graphUtils/GraphUtils.cpp
+      src/graphUtils/GraphUtils.h
+    )
 
 
  FIND_PACKAGE(PNG)
@@ -98,6 +102,7 @@ set(SOURCE_FILES ${SOURCE_FILES} ${SRC_MAXFLOW})
 set(SOURCE_FILES ${SOURCE_FILES} ${SRC_C})
 set(SOURCE_FILES ${SOURCE_FILES} ${SRC})
 set(SOURCE_FILES ${SOURCE_FILES} ${SRC_QM})
+set(SOURCE_FILES ${SOURCE_FILES} ${SRC_GU})
 
 set(LIBS ${LIBS} ${TIFF_LIBRARIES})
 set(LIBS ${LIBS} ${PNG_LIBRARIES})
@@ -121,6 +126,6 @@ set(LIBS ${LIBS} ${OpenCV_LIBS})
 
 
 message(${LIBS})
-add_executable(tesi_watermarking ${SOURCE_FILES} src/disparity_computation/stereo_matching.h src/disparity_computation/stereo_matching.h src/disparity_computation/stereo_matching.cpp src/dataset/tsukuba_dataset.cpp src/dataset/tsukuba_dataset.h src/disparity_computation/sift_computation.h src/disparity_computation/sift_computation.cpp src/disparity_optimization/occlusions_handler.h src/disparity_optimization/occlusions_handler.cpp src/right_view_computation/right_view.cpp src/right_view_computation/right_view.h src/disparity_optimization/disp_opt.cpp src/disparity_optimization/disp_opt.h src/img_watermarking/bch.h src/img_watermarking/bch.cpp src/img_watermarking/fft2d.h src/img_watermarking/fft2d.cpp src/img_watermarking/imgwat.h src/img_watermarking/imgwat.cpp src/img_watermarking/allocim.h src/img_watermarking/allocim.cpp src/img_watermarking/watermarking.h src/img_watermarking/watermarking.cpp src/graphcuts/utils.h src/graphcuts/utils.cpp src/utils.h src/utils.cpp src/quality_metrics/quality_metrics.h src/quality_metrics/quality_metrics.cpp)
+add_executable(tesi_watermarking ${SOURCE_FILES} src/disparity_computation/stereo_matching.h src/disparity_computation/stereo_matching.h src/disparity_computation/stereo_matching.cpp src/dataset/tsukuba_dataset.cpp src/dataset/tsukuba_dataset.h src/disparity_computation/sift_computation.h src/disparity_computation/sift_computation.cpp src/disparity_optimization/occlusions_handler.h src/disparity_optimization/occlusions_handler.cpp src/right_view_computation/right_view.cpp src/right_view_computation/right_view.h src/disparity_optimization/disp_opt.cpp src/disparity_optimization/disp_opt.h src/img_watermarking/bch.h src/img_watermarking/bch.cpp src/img_watermarking/fft2d.h src/img_watermarking/fft2d.cpp src/img_watermarking/imgwat.h src/img_watermarking/imgwat.cpp src/img_watermarking/allocim.h src/img_watermarking/allocim.cpp src/img_watermarking/watermarking.h src/img_watermarking/watermarking.cpp src/graphcuts/utils.h src/graphcuts/utils.cpp src/utils.h src/utils.cpp src/quality_metrics/quality_metrics.h src/quality_metrics/quality_metrics.cpp src/graphUtils/GraphUtils.h src/graphUtils/GraphUtils.cpp)
 target_link_libraries(tesi_watermarking ${LIBS})
 
