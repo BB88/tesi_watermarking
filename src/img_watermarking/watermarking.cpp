@@ -248,17 +248,15 @@ int Watermarking::WatCod(unsigned char *ImageOut, int width, int height, const c
 
     generate_mark(watermark,wsize,passw_str,passw_num,coefficient_number, mark,false);
     final_mark = new double [coefficient_number];
-    for (int k = 0; k < coefficient_number; k++ )
+    for (int k = 0; k < coefficient_number; k++ ) {
         final_mark[k] = mark[k];
+    }
 
 
 //    if (view=="left")
     addmark(coefficient_vector, mark, coefficient_number, alfamax);
 //    else if (view=="right")
 //        addmark_right_view(coefficient_vector, mark, coefficient_number, alfamax);
-    stereo_watermarking::writeMatToFile(coefficient_vector,coefficient_number,"/home/bene/Scrivania/Tesi/watermarking_marked_coeff.txt");
-
-
 
     antizone(imdft, 256, 256, diag0, ndiag, coefficient_vector);
 
@@ -443,7 +441,8 @@ void Watermarking::addmark(double *buff, double *mark, int num_camp, double peso
   /*      if (i < 20) {
             cout <<"coeff "<< buff[i] << endl;
         }*/
-        buff[i] = buff[i] * (1.0 + alfa * mark[i]);
+        buff[i] = buff[i] + alfa * mark[i];
+       // buff[i] = buff[i] * (1.0 + alfa * mark[i]);  // additivo moltiplicativo
 /*        if (i < 20) {
             cout <<"marked "<< buff[i] << endl;
         }*/

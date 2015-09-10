@@ -558,10 +558,9 @@ void stereo_watermarking::writeMatToFile(double* m,int lenght, std::string filen
     fout.close();
 }
 
-double stereo_watermarking::similarity_measures(double* wat, double* retrieve_wat, int coeff_num, std::string filename){
+double stereo_watermarking::similarity_measures(double* wat, double* retrieve_wat, int coeff_num, std::string first_element, std::string second_element){
 
-    Mat wat_mat(1, coeff_num, CV_32F);
-    //   cout<< wat_mat.cols<< " righe "<<wat_mat.rows<<endl;
+    Mat wat_mat(1, coeff_num, CV_32F); // 1 è la riga
     for (int i = 0; i < wat_mat.cols; i++){
         wat_mat.at<float>(0,i) = (float)wat[i];
     }
@@ -603,7 +602,7 @@ double stereo_watermarking::similarity_measures(double* wat, double* retrieve_wa
     // cout <<"ret_after :" << setprecision(15)<<ret_myMAtSvd<<endl;
     Mat wat_corr;
     matchTemplate(ret_wat_mat,wat_mat, wat_corr, CV_TM_CCOEFF_NORMED);
-    cout << "correlation btw extracted watermark and watermark " << (wat_corr.at<float>(0,0))<<endl;
+    cout << "correlation btw " << first_element << " and "<< second_element << ":   " << (wat_corr.at<float>(0,0))<<endl;
 
     double sim = 0.0;
     double den = 0.0;
@@ -612,8 +611,9 @@ double stereo_watermarking::similarity_measures(double* wat, double* retrieve_wa
         den += ret_wat_mat.at<float>(0,i)*ret_wat_mat.at<float>(0,i);
     }
     sim /= sqrt(den);
-    cout <<"sim :" << setprecision(15)<<sim<<endl; // max value 68
+    cout <<"sim :   " << setprecision(15)<<sim<<endl; // max value 68
     return sim;
+
 
 }
 
@@ -642,18 +642,18 @@ void stereo_watermarking::similarity_graph(int number_of_marks,int coeff_num,dou
         }
         retrieve_wat = image_watermarking.marks_generator(mark, 64, string_pswd, num_pswd, coeff_num);
         // correlation and sim
-        double sim = stereo_watermarking::similarity_measures(wat, retrieve_wat, coeff_num, "ciao");
+        double sim = stereo_watermarking::similarity_measures(wat, retrieve_wat, coeff_num, "wat", "retrieve_wat");
         sim_values[k] = (float)sim;
       //  points[k]=  Point(k,sim);
     }
-    sim_values[number_of_marks] = 67.09347205363;
+    sim_values[number_of_marks] = 67.517831195934;
     float tmp = 0.0;
     tmp = sim_values[27];
     sim_values[27] = sim_values[number_of_marks];
     sim_values[number_of_marks] = tmp;
     //drawFloatGraph(sim_values, number_of_marks, NULL, 0, 300,);
     //(floatArray, numFloats, bgImg, -25,25, w, h, "Yaw (in degrees)");
-    showFloatGraph("Rotation Angle", sim_values, number_of_marks+1, 0);
+    showFloatGraph("Watermarks similarity", sim_values, number_of_marks+1, 0);
     // Create black empty images
    /* Mat simImage(number_of_marks, 1, CV_8UC3, Scalar(255, 255, 255));
     for (int i=1;i<number_of_marks;i++){
@@ -664,4 +664,50 @@ void stereo_watermarking::similarity_graph(int number_of_marks,int coeff_num,dou
     waitKey(0);
     return;
 */
+}
+
+void stereo_watermarking::show_ucharImage(unsigned char * image, int width, int height, string nameImage){
+
+    int count = 0;
+    cv::Mat mat_image = cv::Mat::zeros(height, width, CV_8UC3);
+    for (int j = 0; j < height; j++)
+        for (int i = 0; i < width; i++){
+
+            mat_image.at<Vec3b>(j,i) [0] = image[count]; count++;
+            mat_image.at<Vec3b>(j,i) [1] = image[count]; count++;
+            mat_image.at<Vec3b>(j,i) [2] = image[count]; count++;
+
+        }
+    imshow(nameImage, mat_image);
+    waitKey(0);
+}
+
+void stereo_watermarking::show_doubleImage(double * image, int width, int height, string nameImage){
+
+    int count = 0;
+    cv::Mat mat_image = cv::Mat::zeros(height, width, CV_8UC3);
+    for (int j = 0; j < height; j++)
+        for (int i = 0; i < width; i++){
+
+            mat_image.at<Vec3b>(j,i) [0] = image[count]; count++;
+            mat_image.at<Vec3b>(j,i) [1] = image[count]; count++;
+            mat_image.at<Vec3b>(j,i) [2] = image[count]; count++;
+
+        }
+    imshow(nameImage, mat_image);
+    waitKey(0);
+}
+
+double* stereo_watermarking::not_blind_extraction(double* original_coeff, double* marked_coeff, int coeff_num, double power){
+
+    double *retrieve_wat = new double[coeff_num];
+    for (int offset = 0; offset < coeff_num; offset++) {
+        //   retrieve_wat[offset] = (marked_coeff_left[offset] - coeff_left[offset]) / (coeff_left[offset]); // additiva-moltiplicativa
+        retrieve_wat[offset] = (marked_coeff[offset] - original_coeff[offset]); //additiva
+    }
+    for (int offset = 0; offset < coeff_num; offset++) {
+        retrieve_wat[offset] = retrieve_wat[offset]/power;
+    }
+    stereo_watermarking::writeMatToFile(retrieve_wat,coeff_num,"/home/bene/Scrivania/Tesi/retrieve_wat.txt");
+    return retrieve_wat;
 }

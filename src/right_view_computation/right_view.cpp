@@ -54,7 +54,7 @@ using namespace cv;
 */
     }
 
-void Right_view::left_uchar_reconstruction(unsigned char *marked_right, unsigned char *disp_uchar, unsigned char* occ_map, int width, int height) {
+unsigned char* Right_view::left_uchar_reconstruction(unsigned char *marked_right, unsigned char *disp_uchar, unsigned char* occ_map, int width, int height) {
 
     int nc = 640 *3;
     unsigned char d = 0;
@@ -88,8 +88,7 @@ void Right_view::left_uchar_reconstruction(unsigned char *marked_right, unsigned
             left_marked.at<Vec3b>(j,i) [2] = left_uchar[count]; count++;
         }
     imwrite("/home/bene/ClionProjects/tesi_watermarking/img/left_reconstructed_uchar.png", left_marked);
-//    imshow("left_marked", left_marked);
-//    waitKey(0);
+    return left_uchar;
 
 }
 
