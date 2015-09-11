@@ -611,7 +611,7 @@ double stereo_watermarking::similarity_measures(double* wat, double* retrieve_wa
         den += ret_wat_mat.at<float>(0,i)*ret_wat_mat.at<float>(0,i);
     }
     sim /= sqrt(den);
-    cout <<"sim :   " << setprecision(15)<<sim<<endl; // max value 68
+  //  cout <<"sim :   " << setprecision(15)<<sim<<endl; // max value 68
     return sim;
 
 
@@ -708,6 +708,5 @@ double* stereo_watermarking::not_blind_extraction(double* original_coeff, double
     for (int offset = 0; offset < coeff_num; offset++) {
         retrieve_wat[offset] = retrieve_wat[offset]/power;
     }
-    stereo_watermarking::writeMatToFile(retrieve_wat,coeff_num,"/home/bene/Scrivania/Tesi/retrieve_wat.txt");
     return retrieve_wat;
 }

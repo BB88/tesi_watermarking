@@ -230,7 +230,7 @@ int Watermarking::WatCod(unsigned char *ImageOut, int width, int height, const c
 //    if ((size>256)&&(size<=256))
 //    {
 //        dim2 = 256;		// Dimensione 256x256
-    int diag0 = 40;//80;		// Diagonali..
+    int diag0 = 30;//80;		// Diagonali..
     int ndiag = 40;//74;
 //    }
 /*    int diag0 = 160;		// Diagonali..
@@ -241,6 +241,7 @@ int Watermarking::WatCod(unsigned char *ImageOut, int width, int height, const c
         coeff_dft[k] = coefficient_vector[k];
   //  coeff_dft = coefficient_vector;
     coeff_number = coefficient_number;
+
 
 
     double * mark;
@@ -258,6 +259,8 @@ int Watermarking::WatCod(unsigned char *ImageOut, int width, int height, const c
 //    else if (view=="right")
 //        addmark_right_view(coefficient_vector, mark, coefficient_number, alfamax);
 
+
+  //  stereo_watermarking::writeMatToFile(coeff_dft,coefficient_number,"/home/bene/Scrivania/Tesi/wat_coeff_left.txt");
     antizone(imdft, 256, 256, diag0, ndiag, coefficient_vector);
 
 
@@ -295,8 +298,6 @@ int Watermarking::WatCod(unsigned char *ImageOut, int width, int height, const c
         }
 
 
-
-
     AllocIm::FreeIm(imc2) ;
     AllocIm::FreeIm(imc3) ;
     AllocIm::FreeIm(imr);
@@ -311,6 +312,8 @@ int Watermarking::WatCod(unsigned char *ImageOut, int width, int height, const c
 //    return 0;
 
 }
+
+
 
 double* Watermarking::marks_generator(int *watermark,int wsize, const char *passw_str, const char *passw_num, int coefficient_number){
 
@@ -435,18 +438,25 @@ void Watermarking::addmark(double *buff, double *mark, int num_camp, double peso
 
     n = num_camp;	// lunghezza del vettore
     alfa = peso;	// peso con cui sommo il marchio
-
+//    stereo_watermarking::writeMatToFile(buff,num_camp,"/home/bene/Scrivania/Tesi/wat_coeff_left.txt");
+//    stereo_watermarking::writeMatToFile(mark,num_camp,"/home/bene/Scrivania/Tesi/wat_mark.txt");
+    int count = 0;
     // aggiorna il valore di dft
     for(i=0; i<n; i++) {
-  /*      if (i < 20) {
-            cout <<"coeff "<< buff[i] << endl;
-        }*/
-        buff[i] = buff[i] + alfa * mark[i];
-       // buff[i] = buff[i] * (1.0 + alfa * mark[i]);  // additivo moltiplicativo
-/*        if (i < 20) {
-            cout <<"marked "<< buff[i] << endl;
-        }*/
+        buff[i] = buff[i] * (1.0 + alfa * mark[i]);  // additivo moltiplicativo
+/*
+        if ( (buff[i] + alfa * mark[i]) >= 0)
+            buff[i] = buff[i] + alfa * mark[i];
+        else {
+            buff[i] = buff[i];
+            count++;
+        }
+*/  // additivo
     }
+//    cout << "valori negativi:   "<< count<<endl;
+ //   stereo_watermarking::writeMatToFile(buff,num_camp,"/home/bene/Scrivania/Tesi/wat_marked_coeff_left.txt");
+
+
 }
 
 
@@ -1323,6 +1333,8 @@ bool Watermarking::extractWatermark(unsigned char *image, int w, int h)
 
 
 
+
+
 int Watermarking::WatDec(unsigned char *ImageIn, int nrImageIn, int ncImageIn,
                    const char *campolett, const char *camponum,
                    int *bit, int size, int nbit,
@@ -1330,7 +1342,7 @@ int Watermarking::WatDec(unsigned char *ImageIn, int nrImageIn, int ncImageIn,
                    int *vettoretile, bool flagRisincTotale )
 {
 
-    int diag0 = 40;		// Diagonali..
+    int diag0 = 30;		// Diagonali..
     int ndiag = 40;		// numero diagonali marchiate
 
 
@@ -1418,6 +1430,7 @@ int Watermarking::WatDec(unsigned char *ImageIn, int nrImageIn, int ncImageIn,
     int BitLetti[200];		// Max 200 bit da leggere
     int dec=0;
 
+/*
 //
 //    int nouniforme=0;		// Controllo ver vedere se ho una zona uniforme
 
@@ -1427,6 +1440,7 @@ int Watermarking::WatDec(unsigned char *ImageIn, int nrImageIn, int ncImageIn,
 //    double *coefficient_vector = NULL;
 //    coefficient_vector = zones_to_watermark(imdftout, 256, 256, diag0, ndiag, 0, &coefficient_number);
 //
+*/
 
     decoale(imdftout, 256, 256, diag0, ndiag, seed, power ,BitLetti, length_BCH);
 
@@ -1442,7 +1456,7 @@ int Watermarking::WatDec(unsigned char *ImageIn, int nrImageIn, int ncImageIn,
 
     if (res)
     {
-        // THE WATERMARK HAS BEEN DETECTED
+ /*       // THE WATERMARK HAS BEEN DETECTED
 //        FreeIm(imy);
 //        FreeIm(imc2);
 //        FreeIm(imc3);
@@ -1467,7 +1481,7 @@ int Watermarking::WatDec(unsigned char *ImageIn, int nrImageIn, int ncImageIn,
 
 
 //                    // LOG
-//                    fclose(flog);
+//                    fclose(flog);*/
 
         return 0;	// OK! Marchio rivelato
     }
@@ -1477,6 +1491,8 @@ int Watermarking::WatDec(unsigned char *ImageIn, int nrImageIn, int ncImageIn,
 
     return -5;
 }
+
+
 /*
 	decoale(..)
 	-----------
@@ -1517,7 +1533,7 @@ void Watermarking::decoale(double **imr, int nre, int nce, int d1, int nd,
     marked_coeff = new double [marklen];
     for (int k = 0; k < marklen; k++ )
         marked_coeff[k] = appbuff[k];
- //   stereo_watermarking::writeMatToFile(marked_coeff,marklen,"/home/bene/Scrivania/Tesi/watermarking_marked_coeff.txt");
+//    stereo_watermarking::writeMatToFile(marked_coeff,marklen,"/home/bene/Scrivania/Tesi/dec_marked_coeff.txt");
     marked_coeff_number = marklen;
 
 
@@ -1881,4 +1897,5 @@ void Watermarking::rgb_to_crom(unsigned char **imr, unsigned char **img,
     }
 
 }
+
 

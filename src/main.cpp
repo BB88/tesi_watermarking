@@ -254,7 +254,11 @@ int main() {
     cout<< "left_detection:    " << left_detection <<endl;
 //    saving marked dft left coefficient   ********************
     double *marked_coeff_left = image_watermarking.getMarked_coeff();
-    double *retrieve_left_wat = stereo_watermarking::not_blind_extraction(coeff_left,marked_coeff_left,coeff_num,power);
+    for (int i = 0; i < coeff_num; i++) {
+        marked_coeff_left[i] = marked_coeff_left[i]/coeff_left[i];
+    }
+//    double *retrieve_left_wat = stereo_watermarking::not_blind_extraction(coeff_left,marked_coeff_left,coeff_num,power);
+//    stereo_watermarking::writeMatToFile(retrieve_left_wat,coeff_num,"/home/bene/Scrivania/Tesi/retrieve_left_wat.txt");
 //    stereo_watermarking::writeMatToFile(marked_coeff_left,coeff_num,"/home/bene/Scrivania/Tesi/marked_coeff_left.txt");
 //    stereo_watermarking::similarity_graph(100,coeff_num,wat);
 //    constructing squared right to compute dft analysis   ********************
@@ -270,9 +274,9 @@ int main() {
                 squared_right[(i * nc_s + j)*3 + k] = right_uchar[(i *nc + j + offset - d_val)*3 + k];
             }
         }
-    unsigned char *squared_dft_marked_right = image_watermarking.insertWatermark(squared_right,256,256);
+//    unsigned char *squared_dft_marked_right = image_watermarking.insertWatermark(squared_right,256,256);
 //    saving dft right coefficient   ********************
-    double *coeff_right = image_watermarking.getCoeff_dft();
+ //   double *coeff_right = image_watermarking.getCoeff_dft();
 //    stereo_watermarking::writeMatToFile(coeff_right,coeff_num_right,"/home/bene/Scrivania/Tesi/coeff_right.txt");
 //    spatial extraction of the watermark   ********************
     double *squared_mark =  new double[squared_dim];
@@ -297,8 +301,18 @@ int main() {
                 for (int k = 0; k<3; k++)
                     warped_mark[ (i * nc + j + offset - static_cast<unsigned>(d))*3 + k] = squared_mark[ (i*nc_s + j)*3 + k];
         }
+    unsigned char *squared_warped_mark =  new unsigned char[squared_dim];
+    for (int i = 0; i < nc_s; i ++ )
+        for (int j = 0; j < nc_s; j++)
+            for (int k = 0; k<3; k++)
+                squared_warped_mark[(i*nc_s + j )*3 + k] = warped_mark[(i*nc + j + offset - d_val)*3 + k];
+
+    bool mark_detection = image_watermarking.extractWatermark(squared_warped_mark, 256, 256);
+    double *warp_mark_coeff = image_watermarking.getMarked_coeff();
+    for (int i=0;i<coeff_num;i++){
+        warp_mark_coeff[i] /= power;
+    }
 //    marking right view with warped mark   ********************
-    // insert warped mark in right view   ********************
     unsigned char *marked_right = new unsigned char[rect_dim];
     for (int i=0; i<rect_dim; i++){
         double sum =  warped_mark[i] + (double)right_uchar[i];
@@ -318,7 +332,6 @@ int main() {
 //    saving marked dft left coefficient   ********************
     double *marked_coeff_right = image_watermarking.getMarked_coeff();
 //    double *retrieve_right_wat = stereo_watermarking::not_blind_extraction(coeff_left,marked_coeff_left,coeff_num,power);  // da modificare gli input
-
 //    stereo_watermarking::writeMatToFile(marked_coeff_right,coeff_num,"/home/bene/Scrivania/Tesi/marked_coeff_right.txt");
 //    reconstructing marked left   ********************
     cv::Mat right_disp = imread("/home/bene/ClionProjects/tesi_watermarking/img/disp_right.png", CV_LOAD_IMAGE_GRAYSCALE);
@@ -336,19 +349,19 @@ int main() {
     bool rec_left_detection = image_watermarking.extractWatermark(squared_left_ric, 256, 256);
     cout<< "rec_left_detection:    " << rec_left_detection <<endl;
     double *marked_coeff_rec_left = image_watermarking.getMarked_coeff();
+    for (int i = 0; i < coeff_num; i++) {
+        marked_coeff_rec_left[i] = marked_coeff_rec_left[i]/coeff_left[i];
+    }
 //    double *retrieve_right_wat = stereo_watermarking::not_blind_extraction(coeff_left,marked_coeff_left,coeff_num,power);  // da modificare gli input
 //    stereo_watermarking::writeMatToFile(marked_coeff_rec_left,coeff_num,"/home/bene/Scrivania/Tesi/marked_coeff_rec_left.txt");
-//    show squared mark from reconstructed left   ********************
-//    double *squared_mark_from_rec_left =  new double[squared_dim];
-//    for (int i=0;i<squared_dim;i++){
-//        squared_mark_from_rec_left[i] = (double)squared_left[i] - (double)squared_left_ric[i]  ;
-//    }
-//    stereo_watermarking::show_doubleImage(squared_mark_from_rec_left, 256, 256, "squared_mark_from_rec_left");
 
 //    similarity   ********************
-    stereo_watermarking::similarity_measures(wat, wat, coeff_num,"inserted watermak", "inserted watermak");
+  //  stereo_watermarking::similarity_measures(wat, wat, coeff_num,"inserted watermak", "inserted watermak");
+
+
     stereo_watermarking::similarity_measures(wat, marked_coeff_left, coeff_num,"inserted watermak", "marked_coeff_left");
-    stereo_watermarking::similarity_measures(wat, marked_coeff_right, coeff_num,"inserted watermak", "marked_coeff_right");
+ //   stereo_watermarking::similarity_measures(wat, marked_coeff_right, coeff_num,"inserted watermak", "marked_coeff_right");
+    stereo_watermarking::similarity_measures(marked_coeff_right, warp_mark_coeff, coeff_num,"marked_coeff_right", "warp_mark_coeff");
     stereo_watermarking::similarity_measures(wat, marked_coeff_rec_left, coeff_num,"inserted watermak", "marked_coeff_rec_left");
 
 
@@ -356,11 +369,20 @@ int main() {
 //    stereo_watermarking::show_ucharImage(squared_left, 256, 256, "squared left");
 //    stereo_watermarking::show_ucharImage(squared_marked_left, 256, 256, "squared marked left");
 //    stereo_watermarking::show_doubleImage(squared_mark, 256, 256, "squared_mark");
+//    stereo_watermarking::show_ucharImage(squared_mark_uchar, 256, 256, "squared_mark_uchar");
+
 //    stereo_watermarking::show_doubleImage(warped_mark, 640, 480, "mark_warped");
 //    stereo_watermarking::show_ucharImage(squared_right, 256, 256, "squared right");
 //    stereo_watermarking::show_ucharImage(marked_right, 640, 480, "marked_right");
 //    stereo_watermarking::show_ucharImage(squared_marked_right, 256, 256, "squared_marked_right");
 //    stereo_watermarking::show_ucharImage(squared_left_ric, 256, 256, "squared_left_ric");
+
+//    show squared mark from reconstructed left   ********************
+//    double *squared_mark_from_rec_left =  new double[squared_dim];
+//    for (int i=0;i<squared_dim;i++){
+//        squared_mark_from_rec_left[i] = (double)squared_left[i] - (double)squared_left_ric[i]  ;
+//    }
+//    stereo_watermarking::show_doubleImage(squared_mark_from_rec_left, 256, 256, "squared_mark_from_rec_left");
 
 //     dft check   ********************
 /*

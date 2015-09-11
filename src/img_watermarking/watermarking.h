@@ -188,10 +188,10 @@ public:
      */
     bool extractWatermark(unsigned char *image, int w, int h);
 
-
     void rgb_to_crom(unsigned char **imr, unsigned char **img,
                      unsigned char **imb, int nr, int nc, int flag,
                      float ** imc1, float **imc2, float ** imc3);
+
 
     void DecimVarfloat(float **imc1, int nr, int nc,
                        int win, float **img_map_flt);
@@ -229,7 +229,6 @@ private:
 
     int WatCod(unsigned char *ImageOut , int width, int height,
                const char *passw_str, const char *passw_num, int *watermark, int wsize, float power, bool flagClipping, int tilesize, int *tiles, int *ntiles);
-
 
     void seed_generator(const char *passw_str, const char *passw_num, LONG8BYTE *s );
     void generate_mark(int *watermark,int wsize, const char *passw_str, const char *passw_num, int coefficient_number,double* mark,bool detection) ;
