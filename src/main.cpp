@@ -254,9 +254,9 @@ int main() {
     cout<< "left_detection:    " << left_detection <<endl;
 //    saving marked dft left coefficient   ********************
     double *marked_coeff_left = image_watermarking.getMarked_coeff();
-    for (int i = 0; i < coeff_num; i++) {
+/*    for (int i = 0; i < coeff_num; i++) {
         marked_coeff_left[i] = marked_coeff_left[i]/coeff_left[i];
-    }
+    }*/
 //    double *retrieve_left_wat = stereo_watermarking::not_blind_extraction(coeff_left,marked_coeff_left,coeff_num,power);
 //    stereo_watermarking::writeMatToFile(retrieve_left_wat,coeff_num,"/home/bene/Scrivania/Tesi/retrieve_left_wat.txt");
 //    stereo_watermarking::writeMatToFile(marked_coeff_left,coeff_num,"/home/bene/Scrivania/Tesi/marked_coeff_left.txt");
@@ -349,9 +349,7 @@ int main() {
     bool rec_left_detection = image_watermarking.extractWatermark(squared_left_ric, 256, 256);
     cout<< "rec_left_detection:    " << rec_left_detection <<endl;
     double *marked_coeff_rec_left = image_watermarking.getMarked_coeff();
-    for (int i = 0; i < coeff_num; i++) {
-        marked_coeff_rec_left[i] = marked_coeff_rec_left[i]/coeff_left[i];
-    }
+
 //    double *retrieve_right_wat = stereo_watermarking::not_blind_extraction(coeff_left,marked_coeff_left,coeff_num,power);  // da modificare gli input
 //    stereo_watermarking::writeMatToFile(marked_coeff_rec_left,coeff_num,"/home/bene/Scrivania/Tesi/marked_coeff_rec_left.txt");
 
@@ -359,6 +357,10 @@ int main() {
   //  stereo_watermarking::similarity_measures(wat, wat, coeff_num,"inserted watermak", "inserted watermak");
 
 
+    double threshold = stereo_watermarking::threshold_computation(coeff_left, coeff_num, power);
+    cout<< "threshold:  "<<threshold<<endl;
+
+  //  stereo_watermarking::similarity_measures(wat, coeff_left, coeff_num,"inserted watermak", "coeff_left");
     stereo_watermarking::similarity_measures(wat, marked_coeff_left, coeff_num,"inserted watermak", "marked_coeff_left");
  //   stereo_watermarking::similarity_measures(wat, marked_coeff_right, coeff_num,"inserted watermak", "marked_coeff_right");
     stereo_watermarking::similarity_measures(marked_coeff_right, warp_mark_coeff, coeff_num,"marked_coeff_right", "warp_mark_coeff");

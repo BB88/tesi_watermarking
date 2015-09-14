@@ -29,6 +29,7 @@ namespace stereo_watermarking{
     void show_ucharImage(unsigned char * image, int width, int height, string nameImage);
     void show_doubleImage(double * image, int width, int height, string nameImage);
     double*  not_blind_extraction(double* original_coeff,double* marked_coeff, int coeff_num, double power);
+    double  threshold_computation(double* original_coeff,int coeff_num, double power);
     void writeMatToFile(double* m,int lenght, std::string filename);
     void similarity_graph(int number_of_marks,int coeff_num,double* wat);
 //    void viewPointCloudRGB(pcl::PointCloud<pcl::PointXYZRGB>::Ptr point_cloud_ptr, std::string title);

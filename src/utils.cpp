@@ -564,7 +564,7 @@ double stereo_watermarking::similarity_measures(double* wat, double* retrieve_wa
     for (int i = 0; i < wat_mat.cols; i++){
         wat_mat.at<float>(0,i) = (float)wat[i];
     }
-    Scalar     mean;
+  /*  Scalar     mean;
     Scalar     stddev;
     meanStdDev(wat_mat, mean, stddev);
     float myMAtMean = mean.val[0];
@@ -576,7 +576,7 @@ double stereo_watermarking::similarity_measures(double* wat, double* retrieve_wa
     }
     meanStdDev(wat_mat, mean, stddev);
     myMAtMean = mean.val[0];
-    myMAtSvd = stddev.val[0];
+    myMAtSvd = stddev.val[0];*/
     // cout <<"after :" << setprecision(15)<<myMAtMean<<endl;
     // cout  <<"after :"<< setprecision(15)<<myMAtSvd<<endl;
 
@@ -585,7 +585,7 @@ double stereo_watermarking::similarity_measures(double* wat, double* retrieve_wa
     for (int i = 0; i < ret_wat_mat.cols; i++){
         ret_wat_mat.at<float>(0,i) = (float)retrieve_wat[i];
     }
-    Scalar     ret_mean;
+    /*Scalar     ret_mean;
     Scalar     ret_stddev;
     meanStdDev(ret_wat_mat, ret_mean, ret_stddev);
     float ret_myMAtMean = ret_mean.val[0];
@@ -597,22 +597,22 @@ double stereo_watermarking::similarity_measures(double* wat, double* retrieve_wa
     }
     meanStdDev(ret_wat_mat, ret_mean, ret_stddev);
     ret_myMAtMean = ret_mean.val[0];
-    ret_myMAtSvd = ret_stddev.val[0];
+    ret_myMAtSvd = ret_stddev.val[0];*/
     // cout <<"ret_after :"<< setprecision(15)<<ret_myMAtMean<<endl;
     // cout <<"ret_after :" << setprecision(15)<<ret_myMAtSvd<<endl;
     Mat wat_corr;
     matchTemplate(ret_wat_mat,wat_mat, wat_corr, CV_TM_CCOEFF_NORMED);
     cout << "correlation btw " << first_element << " and "<< second_element << ":   " << (wat_corr.at<float>(0,0))<<endl;
 
-    double sim = 0.0;
+  /*  double sim = 0.0;
     double den = 0.0;
     for (int i = 0; i < ret_wat_mat.cols; i++){
         sim += wat_mat.at<float>(0,i)*ret_wat_mat.at<float>(0,i);
         den += ret_wat_mat.at<float>(0,i)*ret_wat_mat.at<float>(0,i);
     }
-    sim /= sqrt(den);
+    sim /= sqrt(den);*/
   //  cout <<"sim :   " << setprecision(15)<<sim<<endl; // max value 68
-    return sim;
+  //  return sim;
 
 
 }
@@ -709,4 +709,16 @@ double* stereo_watermarking::not_blind_extraction(double* original_coeff, double
         retrieve_wat[offset] = retrieve_wat[offset]/power;
     }
     return retrieve_wat;
+}
+
+double stereo_watermarking::threshold_computation(double* original_coeff,int coeff_num, double power){
+    Mat coeff_mat(1, coeff_num, CV_32F); // 1 è la riga
+    for (int i = 0; i < coeff_mat.cols; i++){
+        coeff_mat.at<float>(0,i) = (float)original_coeff[i];
+    }
+    cv:Scalar tmp = mean( coeff_mat );
+    float coeff_mean = tmp.val[0];
+    double thr = 0.0;
+    thr = power/2 * coeff_mean;
+    return thr;
 }
