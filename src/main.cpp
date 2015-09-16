@@ -352,6 +352,7 @@ int main() {
     for (int i = 0; i < coeff_num; i++) {
         marked_coeff_rec_left[i] = marked_coeff_rec_left[i];///coeff_left[i];
     }
+
 //    double *retrieve_right_wat = stereo_watermarking::not_blind_extraction(coeff_left,marked_coeff_left,coeff_num,power);  // da modificare gli input
 //    stereo_watermarking::writeToFile(marked_coeff_rec_left,coeff_num,"/home/miky/Scrivania/Tesi/marked_coeff_rec_left.txt");
 
@@ -359,6 +360,10 @@ int main() {
   //  stereo_watermarking::similarity_measures(wat, wat, coeff_num,"inserted watermak", "inserted watermak");
 
 
+    double threshold = stereo_watermarking::threshold_computation(coeff_left, coeff_num, power);
+    cout<< "threshold:  "<<threshold<<endl;
+
+  //  stereo_watermarking::similarity_measures(wat, coeff_left, coeff_num,"inserted watermak", "coeff_left");
     stereo_watermarking::similarity_measures(wat, marked_coeff_left, coeff_num,"inserted watermak", "marked_coeff_left");
  //   stereo_watermarking::similarity_measures(wat, marked_coeff_right, coeff_num,"inserted watermak", "marked_coeff_right");
     stereo_watermarking::similarity_measures(marked_coeff_right, warp_mark_coeff, coeff_num,"marked_coeff_right", "warp_mark_coeff");
