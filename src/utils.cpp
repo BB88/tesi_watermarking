@@ -1,5 +1,5 @@
 //
-// Created by bene on 16/08/15.
+// Created by miky on 16/08/15.
 //
 #include <iostream>
 #include <opencv2/core/core.hpp>
@@ -62,7 +62,7 @@ void stereo_watermarking::sobel_filtering(cv::Mat src, const char* window_name){
     addWeighted( abs_grad_x, 0.5, abs_grad_y, 0.5, 0, grad );
 
     std::ostringstream path ;
-    path << "/home/bene/ClionProjects/tesi_watermarking/img/"<< window_name<<".png";
+    path << "/home/miky/ClionProjects/tesi_watermarking/img/"<< window_name<<".png";
 //    cout<<path.str();
     cv::imwrite(path.str(),grad);
     imshow( window_name, grad );
@@ -292,10 +292,103 @@ void stereo_watermarking::dft_comparison(unsigned char* Image1, unsigned char* I
 
 }
 
+float* stereo_watermarking::compute_coeff_function(unsigned char* image, int dim){
+
+    Watermarking image_watermarking;
+
+    float   **imyout;			// immagine
+    double  **imdft;		// immagine della DFT
+    double  **imdftfase;	// immagine della fase della DFT
+
+    imyout = AllocIm::AllocImFloat(dim, dim);
+    imdft = AllocIm::AllocImDouble(dim, dim);
+    imdftfase = AllocIm::AllocImDouble(dim, dim);
+
+
+// SE COLOUR
+    unsigned char **imr;	// matrici delle componenti RGB
+    unsigned char **img;
+    unsigned char **imb;
+
+    float **imc2;			// matrice di crominanza c2
+    float **imc3;
+
+    imc2 = AllocIm::AllocImFloat(dim, dim);
+    imc3 = AllocIm::AllocImFloat(dim, dim);
+    imr = AllocIm::AllocImByte(dim, dim);
+    img = AllocIm::AllocImByte(dim, dim);
+    imb = AllocIm::AllocImByte(dim, dim);
+
+    int offset = 0;
+    for (int i=0; i<dim; i++)
+        for (int j=0; j<dim; j++)
+        {
+            imr[i][j] = image[offset];offset++;
+            img[i][j] = image[offset];offset++;
+            imb[i][j] = image[offset];offset++;
+        }
+
+    // Si calcolano le componenti di luminanza e crominanza dell'immagine
+    image_watermarking.rgb_to_crom(imr, img, imb, dim, dim, 1, imyout, imc2, imc3);
+
+    FFT2D::dft2d(imyout, imdft, imdftfase, dim, dim);
+
+    int lastValue = 128;
+    int currDiag = 0;
+    int loopFrom;
+    int loopTo;
+    int i;
+    int row;
+    int col;
+
+    float * coeff_vector = new float [128*128/2];
+
+    int j=0;
+    do
+    {
+        if ( currDiag < dim/2 ) // if doing the upper-left triangular half
+        {
+            loopFrom = 0;
+            loopTo = currDiag;
+        }
+        else // doing the bottom-right triangular half
+        {
+            loopFrom = currDiag - dim/2 + 1;
+            loopTo = dim/2 - 1;
+        }
+
+        for ( i = loopFrom; i <= loopTo; i++ )
+        {
+            if ( currDiag % 2 == 0 ) // want to fill upwards
+            {
+                row = loopTo - i + loopFrom;
+                col = i;
+            }
+            else // want to fill downwards
+            {
+                row = i;
+                col = loopTo - i + loopFrom;
+            }
+
+            coeff_vector[j] = imdft[ row ][ col ];
+//            cout << row<<" "<<col<<endl;
+            j++;
+        }
+
+        currDiag++;
+    }
+    while ( currDiag <= lastValue );
+    stereo_watermarking::writeToFile(coeff_vector,j,"/home/miky/Scrivania/Tesi/coeff_zigzag.txt");
+
+    return coeff_vector;
+
+}
+
+
 
 
 /*
-       cv::Mat right = imread("/home/bene/ClionProjects/tesi_watermarking/img/r.png", CV_LOAD_IMAGE_COLOR);
+       cv::Mat right = imread("/home/miky/ClionProjects/tesi_watermarking/img/r.png", CV_LOAD_IMAGE_COLOR);
        unsigned char *right_uchar = right.data;
        unsigned char *squared_right =  new unsigned char[squared_dim];
        for (int i = 0; i < 256; i ++ )
@@ -334,7 +427,7 @@ void stereo_watermarking::show_double_mat(int width,int height,double** A,std::s
         }
     }
     std::ostringstream path ;
-    path <<"/home/bene/Scrivania/images/dft/"<< window_name<<".png";
+    path <<"/home/miky/Scrivania/images/dft/"<< window_name<<".png";
 //    cout<<path.str();
     cv::imwrite(path.str(),mat);
     imshow(window_name,mat);
@@ -360,7 +453,7 @@ void stereo_watermarking::histo_equalizer(Mat img, std::string window_name){
     namedWindow("Original Image", CV_WINDOW_AUTOSIZE);
     namedWindow(window_name.c_str(), CV_WINDOW_AUTOSIZE);
     std::ostringstream path ;
-    path <<"/home/bene/ClionProjects/tesi_watermarking/img/"<< window_name<<".png";
+    path <<"/home/miky/ClionProjects/tesi_watermarking/img/"<< window_name<<".png";
 //    cout<<path.str();
     cv::imwrite(path.str(),img_hist_equalized);
     //show the image
@@ -476,7 +569,7 @@ void stereo_watermarking::histo_equalizer(Mat img, std::string window_name){
 //}
 //void stereo_watermarking::generatePointCloud(cv::Mat disp, cv::Mat img_left,cv::Mat img_right, int frame_num){
 //
-//    string path("/home/bene/ClionProjects/tesi_watermarking/dataset/NTSD-200/");
+//    string path("/home/miky/ClionProjects/tesi_watermarking/dataset/NTSD-200/");
 //    Ptr<tsukuba_dataset> dataset = tsukuba_dataset::create();
 //    dataset->load(path);
 //
@@ -540,7 +633,7 @@ void stereo_watermarking::histo_equalizer(Mat img, std::string window_name){
 //    stereo_watermarking::viewPointCloudRGB(point_cloud_ptr, "cloud ");
 //}
 
-void stereo_watermarking::writeMatToFile(double* m,int lenght, std::string filename)
+void stereo_watermarking::writeToFile(float* m,int lenght, std::string filename)
 {
     ofstream fout(filename);
 

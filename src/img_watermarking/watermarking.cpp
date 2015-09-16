@@ -19,7 +19,7 @@
 #include <opencv2/core/core.hpp>
 #include <highgui.h>
 
-#include </home/bene/ClionProjects/tesi_watermarking/src/utils.h>
+#include </home/miky/ClionProjects/tesi_watermarking/src/utils.h>
 
 
 using namespace cv;
@@ -260,7 +260,7 @@ int Watermarking::WatCod(unsigned char *ImageOut, int width, int height, const c
 //        addmark_right_view(coefficient_vector, mark, coefficient_number, alfamax);
 
 
-  //  stereo_watermarking::writeMatToFile(coeff_dft,coefficient_number,"/home/bene/Scrivania/Tesi/wat_coeff_left.txt");
+  //  stereo_watermarking::writeMatToFile(coeff_dft,coefficient_number,"/home/miky/Scrivania/Tesi/wat_coeff_left.txt");
     antizone(imdft, 256, 256, diag0, ndiag, coefficient_vector);
 
 
@@ -438,8 +438,8 @@ void Watermarking::addmark(double *buff, double *mark, int num_camp, double peso
 
     n = num_camp;	// lunghezza del vettore
     alfa = peso;	// peso con cui sommo il marchio
-//    stereo_watermarking::writeMatToFile(buff,num_camp,"/home/bene/Scrivania/Tesi/wat_coeff_left.txt");
-//    stereo_watermarking::writeMatToFile(mark,num_camp,"/home/bene/Scrivania/Tesi/wat_mark.txt");
+//    stereo_watermarking::writeMatToFile(buff,num_camp,"/home/miky/Scrivania/Tesi/wat_coeff_left.txt");
+//    stereo_watermarking::writeMatToFile(mark,num_camp,"/home/miky/Scrivania/Tesi/wat_mark.txt");
     int count = 0;
     // aggiorna il valore di dft
     for(i=0; i<n; i++) {
@@ -454,7 +454,7 @@ void Watermarking::addmark(double *buff, double *mark, int num_camp, double peso
 */  // additivo
     }
 //    cout << "valori negativi:   "<< count<<endl;
- //   stereo_watermarking::writeMatToFile(buff,num_camp,"/home/bene/Scrivania/Tesi/wat_marked_coeff_left.txt");
+ //   stereo_watermarking::writeMatToFile(buff,num_camp,"/home/miky/Scrivania/Tesi/wat_marked_coeff_left.txt");
 
 
 }
@@ -1533,7 +1533,7 @@ void Watermarking::decoale(double **imr, int nre, int nce, int d1, int nd,
     marked_coeff = new double [marklen];
     for (int k = 0; k < marklen; k++ )
         marked_coeff[k] = appbuff[k];
-//    stereo_watermarking::writeMatToFile(marked_coeff,marklen,"/home/bene/Scrivania/Tesi/dec_marked_coeff.txt");
+//    stereo_watermarking::writeMatToFile(marked_coeff,marklen,"/home/miky/Scrivania/Tesi/dec_marked_coeff.txt");
     marked_coeff_number = marklen;
 
 
