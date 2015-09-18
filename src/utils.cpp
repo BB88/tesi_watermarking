@@ -292,46 +292,46 @@ void stereo_watermarking::dft_comparison(unsigned char* Image1, unsigned char* I
 
 }
 
-float* stereo_watermarking::compute_coeff_function(unsigned char* image, int dim){
+double* stereo_watermarking::compute_coeff_function(unsigned char* image, int dim, std::string filename){
 
-    Watermarking image_watermarking;
+    Watermarking iw;
 
-    float   **imyout;			// immagine
-    double  **imdft;		// immagine della DFT
-    double  **imdftfase;	// immagine della fase della DFT
+    float   **imyout4;			// immagine
+    double  **imdft4;		// immagine della DFT
+    double  **imdftfase4;	// immagine della fase della DFT
 
-    imyout = AllocIm::AllocImFloat(dim, dim);
-    imdft = AllocIm::AllocImDouble(dim, dim);
-    imdftfase = AllocIm::AllocImDouble(dim, dim);
+    imyout4 = AllocIm::AllocImFloat(dim, dim);
+    imdft4 = AllocIm::AllocImDouble(dim, dim);
+    imdftfase4 = AllocIm::AllocImDouble(dim, dim);
 
 
 // SE COLOUR
-    unsigned char **imr;	// matrici delle componenti RGB
-    unsigned char **img;
-    unsigned char **imb;
+    unsigned char **imr4;	// matrici delle componenti RGB
+    unsigned char **img4;
+    unsigned char **imb4;
 
-    float **imc2;			// matrice di crominanza c2
-    float **imc3;
+    float **imc24;			// matrice di crominanza c2
+    float **imc34;
 
-    imc2 = AllocIm::AllocImFloat(dim, dim);
-    imc3 = AllocIm::AllocImFloat(dim, dim);
-    imr = AllocIm::AllocImByte(dim, dim);
-    img = AllocIm::AllocImByte(dim, dim);
-    imb = AllocIm::AllocImByte(dim, dim);
+    imc24 = AllocIm::AllocImFloat(dim, dim);
+    imc34 = AllocIm::AllocImFloat(dim, dim);
+    imr4 = AllocIm::AllocImByte(dim, dim);
+    img4 = AllocIm::AllocImByte(dim, dim);
+    imb4 = AllocIm::AllocImByte(dim, dim);
 
     int offset = 0;
     for (int i=0; i<dim; i++)
         for (int j=0; j<dim; j++)
         {
-            imr[i][j] = image[offset];offset++;
-            img[i][j] = image[offset];offset++;
-            imb[i][j] = image[offset];offset++;
+            imr4[i][j] = image[offset];offset++;
+            img4[i][j] = image[offset];offset++;
+            imb4[i][j] = image[offset];offset++;
         }
 
     // Si calcolano le componenti di luminanza e crominanza dell'immagine
-    image_watermarking.rgb_to_crom(imr, img, imb, dim, dim, 1, imyout, imc2, imc3);
+    iw.rgb_to_crom(imr4, img4, imb4, dim, dim, 1, imyout4, imc24, imc34);
 
-    FFT2D::dft2d(imyout, imdft, imdftfase, dim, dim);
+    FFT2D::dft2d(imyout4, imdft4, imdftfase4, dim, dim);
 
     int lastValue = 128;
     int currDiag = 0;
@@ -341,7 +341,7 @@ float* stereo_watermarking::compute_coeff_function(unsigned char* image, int dim
     int row;
     int col;
 
-    float * coeff_vector = new float [128*128/2];
+    double * coeff_vector = new double [128*128/2];
 
     int j=0;
     do
@@ -370,7 +370,7 @@ float* stereo_watermarking::compute_coeff_function(unsigned char* image, int dim
                 col = loopTo - i + loopFrom;
             }
 
-            coeff_vector[j] = imdft[ row ][ col ];
+            coeff_vector[j] = imdft4[ row ][ col ];
 //            cout << row<<" "<<col<<endl;
             j++;
         }
@@ -378,7 +378,21 @@ float* stereo_watermarking::compute_coeff_function(unsigned char* image, int dim
         currDiag++;
     }
     while ( currDiag <= lastValue );
-    stereo_watermarking::writeToFile(coeff_vector,j,"/home/miky/Scrivania/Tesi/coeff_zigzag.txt");
+
+    std::ostringstream path ;
+    path <<"/home/miky/Scrivania/"<< filename<<".txt";
+
+    stereo_watermarking::writeToFile(coeff_vector,j,path.str());
+
+    AllocIm::FreeIm(imc24) ;
+    AllocIm::FreeIm(imc34) ;
+    AllocIm::FreeIm(imr4);
+    AllocIm::FreeIm(img4);
+    AllocIm::FreeIm(imb4);
+
+    AllocIm::FreeIm(imyout4);
+    AllocIm::FreeIm(imdft4);
+    AllocIm::FreeIm(imdftfase4);
 
     return coeff_vector;
 
@@ -633,7 +647,7 @@ void stereo_watermarking::histo_equalizer(Mat img, std::string window_name){
 //    stereo_watermarking::viewPointCloudRGB(point_cloud_ptr, "cloud ");
 //}
 
-void stereo_watermarking::writeToFile(float* m,int lenght, std::string filename)
+void stereo_watermarking::writeToFile(double* m,int lenght, std::string filename)
 {
     ofstream fout(filename);
 
@@ -759,19 +773,36 @@ void stereo_watermarking::similarity_graph(int number_of_marks,int coeff_num,dou
 */
 }
 
-void stereo_watermarking::show_ucharImage(unsigned char * image, int width, int height, string nameImage){
+void stereo_watermarking::show_ucharImage(unsigned char * image, int width, int height, string nameImage, int channels){
 
     int count = 0;
-    cv::Mat mat_image = cv::Mat::zeros(height, width, CV_8UC3);
-    for (int j = 0; j < height; j++)
-        for (int i = 0; i < width; i++){
+    namedWindow(nameImage, WINDOW_NORMAL);
+    if( channels == 3) {
+        cv::Mat mat_image = cv::Mat::zeros(height, width, CV_8UC3);
+        for (int j = 0; j < height; j++)
+            for (int i = 0; i < width; i++) {
 
-            mat_image.at<Vec3b>(j,i) [0] = image[count]; count++;
-            mat_image.at<Vec3b>(j,i) [1] = image[count]; count++;
-            mat_image.at<Vec3b>(j,i) [2] = image[count]; count++;
+                mat_image.at<Vec3b>(j, i)[0] = image[count];
+                count++;
+                mat_image.at<Vec3b>(j, i)[1] = image[count];
+                count++;
+                mat_image.at<Vec3b>(j, i)[2] = image[count];
+                count++;
 
-        }
-    imshow(nameImage, mat_image);
+            }
+        imshow(nameImage, mat_image);
+    }else if (channels ==1){
+        cv::Mat mat_image = cv::Mat::zeros(height, width, CV_8UC1);
+        for (int j = 0; j < height; j++)
+            for (int i = 0; i < width; i++) {
+                mat_image.at<uchar>(j, i) = image[count];
+                count++;
+            }
+        imshow(nameImage, mat_image);
+    }
+    else
+        cout<<"error: wrong number of channels"<<endl;
+
     waitKey(0);
 }
 

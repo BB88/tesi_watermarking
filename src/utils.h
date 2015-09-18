@@ -26,13 +26,13 @@ namespace stereo_watermarking{
     void show_double_mat(int width,int height,double** A,std::string window_name);
     void histo_equalizer(Mat img, std::string window_name);
     double similarity_measures(double* wat, double* retrieve_wat, int coeff_num, std::string first_element, std::string second_element);
-    void show_ucharImage(unsigned char * image, int width, int height, string nameImage);
+    void show_ucharImage(unsigned char * image, int width, int height, string nameImage, int channels);
     void show_doubleImage(double * image, int width, int height, string nameImage);
     double*  not_blind_extraction(double* original_coeff,double* marked_coeff, int coeff_num, double power);
-    void writeToFile(float* m,int lenght, std::string filename);
+    void writeToFile(double* m,int lenght, std::string filename);
     double  threshold_computation(double* original_coeff,int coeff_num, double power);
     void similarity_graph(int number_of_marks,int coeff_num,double* wat);
-    float* compute_coeff_function(unsigned char* image, int dim);
+    double* compute_coeff_function(unsigned char* image, int dim,std::string filename);
 //    void viewPointCloudRGB(pcl::PointCloud<pcl::PointXYZRGB>::Ptr point_cloud_ptr, std::string title);
 //    boost::shared_ptr<pcl::visualization::PCLVisualizer> createVisualizerRGB (pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr cloud, std::string title);
 //    void createPointCloudOpenCV (cv::Mat& img1, cv::Mat& img2,  cv::Mat& Q, cv::Mat& disp, cv::Mat& recons3D, pcl::PointCloud<pcl::PointXYZRGB>::Ptr &point_cloud_ptr);

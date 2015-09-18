@@ -179,14 +179,14 @@ public:
      *
      * \note The input image is not modified.
      */
-    unsigned char *insertWatermark(unsigned char *image, int w, int h);
+    unsigned char *insertWatermark(unsigned char *image, int w, int h,int dim);
 
     /**
      * Extract the watermark from the given image.
      *
      * This method wrap the original image watermarking decoding algorithm (WatDec).
      */
-    bool extractWatermark(unsigned char *image, int w, int h);
+    bool extractWatermark(unsigned char *image, int w, int h,int dim);
 
     void rgb_to_crom(unsigned char **imr, unsigned char **img,
                      unsigned char **imb, int nr, int nc, int flag,
@@ -228,7 +228,7 @@ public:
 private:
 
     int WatCod(unsigned char *ImageOut , int width, int height,
-               const char *passw_str, const char *passw_num, int *watermark, int wsize, float power, bool flagClipping, int tilesize, int *tiles, int *ntiles);
+               const char *passw_str, const char *passw_num, int *watermark, int wsize, float power, bool flagClipping, int tilesize, int *tiles, int *ntiles,int dim);
 
     void seed_generator(const char *passw_str, const char *passw_num, LONG8BYTE *s );
     void generate_mark(int *watermark,int wsize, const char *passw_str, const char *passw_num, int coefficient_number,double* mark,bool detection) ;
@@ -246,7 +246,7 @@ private:
                              const char *campolett, const char *camponum,
                              int *bit, int size, int nbit,
                              float power, double *datiuscita, unsigned char *buffimrisinc,
-                             int *vettoretile, bool flagRisincTotale );
+                             int *vettoretile, bool flagRisincTotale,int dim );
     void decoale(double **imr, int nre, int nce, int d1, int nd,
                                LONG8BYTE *seed, double alpha,int *bit, int nbit);
 

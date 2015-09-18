@@ -1,5 +1,5 @@
 //
-// Created by bene on 05/06/15.
+// Created by miky on 05/06/15.
 //
 
 #include "right_view.h"
@@ -21,7 +21,7 @@ using namespace cv;
         printf("Matrix: %s %dx%d \n", ty.c_str(), disp.cols, disp.rows );*/
         int d, xr;
         // original right view
-        cv::Mat o_right = cv::imread("/home/bene/ClionProjects/tesi_watermarking/img/r.png", CV_LOAD_IMAGE_COLOR);
+        cv::Mat o_right = cv::imread("/home/miky/ClionProjects/tesi_watermarking/img/r.png", CV_LOAD_IMAGE_COLOR);
         /*
         string ty =  type2str( o_right.type() );
         printf("Matrix: %s %dx%d \n", ty.c_str(), o_right.cols, o_right.rows);
@@ -44,7 +44,7 @@ using namespace cv;
                 n_right.at<Vec3b>(j,xr) [2] = left.at<Vec3b>(j,i) [2];
             }
         }
-        imwrite("/home/bene/ClionProjects/tesi_watermarking/img/nkz_right.png", n_right);
+        imwrite("/home/miky/ClionProjects/tesi_watermarking/img/nkz_right.png", n_right);
         /*imshow*/
 /*
         cv::imshow("Left",left);
@@ -56,42 +56,90 @@ using namespace cv;
 
 unsigned char* Right_view::left_uchar_reconstruction(unsigned char *marked_right, unsigned char *disp_uchar, unsigned char* occ_map, int width, int height) {
 
-    int nc = 640 *3;
+    int nc = width *3;
     unsigned char d = 0;
     unsigned char occ = 0;
     //create general left image
-    int rect_dim = 480*640*3;
+    int rect_dim = height*width*3;
     unsigned char *left_uchar = new unsigned char[rect_dim];
     for (int i = 0; i< rect_dim; i ++)
         left_uchar[i] = (unsigned char)0;
-    for(int i = 0; i<480; i++){
-        for (int j = (640-1)*3; j>=0 ; j-=3){
-            d = disp_uchar[(i*640)+((j/3))];
-            occ = occ_map[(i*640)+((j/3))];
-            if (static_cast<unsigned>(occ)!=0){
-                if ((i*nc) + (j +2 + static_cast<unsigned>(d)*3) < (i+1)*640*3 ){
-                // assign new values to reconstructed left view
-                    left_uchar[ (i*nc) + (j + 0 + static_cast<unsigned>(d)*3)] = marked_right[ (i*nc) + (j + 0)];
-                    left_uchar[ (i*nc) + (j + 1 + static_cast<unsigned>(d)*3)] = marked_right[ (i*nc) + (j + 1)];
-                    left_uchar[ (i*nc) + (j + 2 + static_cast<unsigned>(d)*3)] = marked_right[ (i*nc) + (j + 2)];
-                }
-            }
 
+
+    for(int i = 0; i<height; i++){
+        for (int j =0; j<width ; j++){
+            d = disp_uchar[i*width + j];
+            occ = occ_map[ i * width + j ];
+            if(static_cast<int>(occ)!=0)
+            if((j + static_cast<int>(d)) <= width )
+                for(int k =0; k<3;k++){
+                    left_uchar[(i*width + j+ static_cast<int>(d))*3 + k] =  marked_right[(i*width + j)*3 + k];
+                }
         }
     }
-   cv::Mat left_marked = cv::Mat::zeros(480, 640, CV_8UC3);
+
+
+
+
+//    for(int i = 0; i<height; i++){
+//        for (int j = (width-1)*3; j>=0 ; j-=3){
+//            d = disp_uchar[(i*width)+((j/3))];
+//            occ = occ_map[(i*width)+((j/3))];
+//            if (static_cast<unsigned>(occ)!=0){
+//                if ((i*nc) + (j +2 + static_cast<unsigned>(d)*3) < (i+1)*width*3 ){
+//            // assign new values to reconstructed left view
+//                    left_uchar[ (i*nc) + (j + 0 + static_cast<unsigned>(d)*3)] = marked_right[ (i*nc) + (j + 0)];
+//                    left_uchar[ (i*nc) + (j + 1 + static_cast<unsigned>(d)*3)] = marked_right[ (i*nc) + (j + 1)];
+//                    left_uchar[ (i*nc) + (j + 2 + static_cast<unsigned>(d)*3)] = marked_right[ (i*nc) + (j + 2)];
+//                }
+//            }
+//
+//        }
+//    }
+   cv::Mat left_marked = cv::Mat::zeros(height, width, CV_8UC3);
     int count = 0;
-    for (int j = 0; j < 480; j++)
-        for (int i = 0; i < 640; i++){
+    for (int j = 0; j < height; j++)
+        for (int i = 0; i < width; i++){
             left_marked.at<Vec3b>(j,i) [0] = left_uchar[count]; count++;
             left_marked.at<Vec3b>(j,i) [1] = left_uchar[count]; count++;
             left_marked.at<Vec3b>(j,i) [2] = left_uchar[count]; count++;
         }
-    imwrite("/home/bene/ClionProjects/tesi_watermarking/img/left_reconstructed_uchar.png", left_marked);
+    imwrite("/home/miky/ClionProjects/tesi_watermarking/img/left_reconstructed_uchar.png", left_marked);
     return left_uchar;
 
 }
+unsigned char* Right_view::right_uchar_reconstruction(unsigned char *marked_left, unsigned char *disp_uchar, unsigned char* occ_map, int width, int height) {
 
+    unsigned char d = 0;
+    unsigned char occ = 0;
+    //create general left image
+    int rect_dim = width*height*3;
+    unsigned char *right_uchar = new unsigned char[rect_dim];
+    for (int i = 0; i< rect_dim; i ++)
+        right_uchar[i] = (unsigned char)0;
+    for(int i = 0; i<height; i++){
+        for (int j =0; j<width ; j++){
+            d = disp_uchar[i*width + j];
+            occ = occ_map[ i * width + j ];
+            if(static_cast<int>(occ)!=0)
+                if(j - static_cast<int>(d)>=0 )
+                    for(int k =0; k<3;k++){
+                        right_uchar[(i*width + j- static_cast<int>(d))*3 + k] =  marked_left[(i*width + j)*3 + k];
+                    }
+        }
+    }
+    cv::Mat right_marked = cv::Mat::zeros(height, width, CV_8UC3);
+    int count = 0;
+    for (int j = 0; j < height; j++)
+        for (int i = 0; i < width; i++){
+            right_marked.at<Vec3b>(j,i) [0] = right_uchar[count]; count++;
+            right_marked.at<Vec3b>(j,i) [1] = right_uchar[count]; count++;
+            right_marked.at<Vec3b>(j,i) [2] = right_uchar[count]; count++;
+        }
+    imwrite("/home/miky/ClionProjects/tesi_watermarking/img/left_reconstructed_uchar.png", right_marked);
+    return right_uchar;
+
+}
     string type2str(int type) {
         string r;
 
