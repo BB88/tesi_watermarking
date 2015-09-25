@@ -149,6 +149,11 @@ private:
 
 
 
+private:
+//    watermark multiply by coeff_left and alpha
+    double *codemark = NULL;
+
+
 
 // public methods
 public:
@@ -179,7 +184,7 @@ public:
      *
      * \note The input image is not modified.
      */
-    unsigned char *insertWatermark(unsigned char *image, int w, int h);
+    unsigned char *insertWatermark(unsigned char *image, int w, int h, float** imidft_wat, bool warp_flag);
 
     /**
      * Extract the watermark from the given image.
@@ -222,22 +227,29 @@ public:
         return final_mark;
     }
 
+    double *getCodemark() const {
+        return codemark;
+    }
+
     double* marks_generator(int *watermark,int wsize, const char *passw_str, const char *passw_num, int coefficient_number) ;
+    void WarpedWatCod(unsigned char *ImageOut,double* coeff, int width, int height);
+    double* zones_to_watermark(double **imdft, int height, int width, int diag0, int ndiag, int detect, int *coefficient_number);
 
 
 private:
 
     int WatCod(unsigned char *ImageOut , int width, int height,
-               const char *passw_str, const char *passw_num, int *watermark, int wsize, float power, bool flagClipping, int tilesize, int *tiles, int *ntiles);
+               const char *passw_str, const char *passw_num, int *watermark, int wsize, float power,float** imidft_wat);
+    int warpedWatCod(unsigned char *ImageOut , int width, int height,
+               const char *passw_str, const char *passw_num, int *watermark, int wsize, float power,float** imidft_wat);
 
     void seed_generator(const char *passw_str, const char *passw_num, LONG8BYTE *s );
     void generate_mark(int *watermark,int wsize, const char *passw_str, const char *passw_num, int coefficient_number,double* mark,bool detection) ;
     void seed_initialization(LONG8BYTE *s);
     double pseudo_random_generator();
-    double* zones_to_watermark(double **imdft, int height, int width, int diag0, int ndiag, int detect, int *coefficient_number);
 
 
-    void addmark(double *buff, double *mark, int num_camp, double peso);
+    void addmark(double *buff, double *mark, int coeff_number, double power, int add_mult);
 
 
     void antizone(double **imdft,int nr, int nc, int diag0, int ndiag, double *buff);
@@ -252,6 +264,7 @@ private:
 
     void mlfunc(double *buff,int nrfile,int niteraz);
     double dgamma(double x);
+
 
 //    void rgb_to_crom(unsigned char **imr, unsigned char **img,
 //                                   unsigned char **imb, int nr, int nc, int flag,

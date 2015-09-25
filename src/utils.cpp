@@ -1,5 +1,5 @@
 //
-// Created by miky on 16/08/15.
+// Created by bene on 16/08/15.
 //
 #include <iostream>
 #include <opencv2/core/core.hpp>
@@ -62,7 +62,7 @@ void stereo_watermarking::sobel_filtering(cv::Mat src, const char* window_name){
     addWeighted( abs_grad_x, 0.5, abs_grad_y, 0.5, 0, grad );
 
     std::ostringstream path ;
-    path << "/home/miky/ClionProjects/tesi_watermarking/img/"<< window_name<<".png";
+    path << "/home/bene/ClionProjects/tesi_watermarking/img/"<< window_name<<".png";
 //    cout<<path.str();
     cv::imwrite(path.str(),grad);
     imshow( window_name, grad );
@@ -185,35 +185,26 @@ return sum;
 void stereo_watermarking::dft_comparison(unsigned char* Image1, unsigned char* Image2, int dim, std::string img1_name, std::string img2_name ){
 
     Watermarking image_watermarking;
+//    luminance matrice  ********************
     float   **imyout1;			// immagine
-    double  **imdft1;		// immagine della DFT
-    double  **imdftfase1;	// immagine della fase della DFT
-
-
-
+//    DFT magnitude and fase  ********************
+    double  **imdft1;
+    double  **imdftfase1;
     imyout1 = AllocIm::AllocImFloat(dim, dim);
     imdft1 = AllocIm::AllocImDouble(dim, dim);
     imdftfase1 = AllocIm::AllocImDouble(dim, dim);
-
-
-
-
-// SE COLOUR
-    unsigned char **imr1;	// matrici delle componenti RGB
+//    rgb matrices   ********************
+    unsigned char **imr1;
     unsigned char **img1;
     unsigned char **imb1;
-
-    float **imc21;			// matrice di crominanza c2
+//    chrominance matrices   ********************
+    float **imc21;
     float **imc31;
-
     imc21 = AllocIm::AllocImFloat(dim, dim);
     imc31 = AllocIm::AllocImFloat(dim, dim);
     imr1 = AllocIm::AllocImByte(dim, dim);
     img1 = AllocIm::AllocImByte(dim, dim);
     imb1 = AllocIm::AllocImByte(dim, dim);
-
-
-
     int offset = 0;
     for (int i=0; i<dim; i++)
         for (int j=0; j<dim; j++)
@@ -222,42 +213,31 @@ void stereo_watermarking::dft_comparison(unsigned char* Image1, unsigned char* I
             img1[i][j] = Image1[offset];offset++;
             imb1[i][j] = Image1[offset];offset++;
         }
-
-    // Si calcolano le componenti di luminanza e crominanza dell'immagine
+//    computing luminance and chrominances  ********************
     image_watermarking.rgb_to_crom(imr1, img1, imb1, dim, dim, 1, imyout1, imc21, imc31);
 
     FFT2D::dft2d(imyout1, imdft1, imdftfase1, dim, dim);
-
-    float   **imyout2;			// immagine
-    double  **imdft2;		// immagine della DFT
-    double  **imdftfase2;	// immagine della fase della DFT
-
-
-
+//    luminance matrix  ********************
+    float   **imyout2;
+//    DFT magnitude and fase  ********************
+    double  **imdft2;
+    double  **imdftfase2;
     imyout2 = AllocIm::AllocImFloat(dim, dim);
     imdft2 = AllocIm::AllocImDouble(dim, dim);
     imdftfase2 = AllocIm::AllocImDouble(dim, dim);
-
-
-
-
-// SE COLOUR
-    unsigned char **imr2;	// matrici delle componenti RGB
+//    rgb matrices   ********************
+    unsigned char **imr2;
     unsigned char **img2;
     unsigned char **imb2;
-
-    float **imc22;			// matrice di crominanza c2
+//    chrominance matrices   ********************
+    float **imc22;
     float **imc32;
-
     imc22 = AllocIm::AllocImFloat(dim, dim);
     imc32 = AllocIm::AllocImFloat(dim, dim);
     imr2 = AllocIm::AllocImByte(dim, dim);
     img2 = AllocIm::AllocImByte(dim, dim);
     imb2 = AllocIm::AllocImByte(dim, dim);
-
-
-
-     offset = 0;
+    offset = 0;
     for (int i=0; i<dim; i++)
         for (int j=0; j<dim; j++)
         {
@@ -265,17 +245,31 @@ void stereo_watermarking::dft_comparison(unsigned char* Image1, unsigned char* I
             img2[i][j] = Image2[offset];offset++;
             imb2[i][j] = Image2[offset];offset++;
         }
-
-    // Si calcolano le componenti di luminanza e crominanza dell'immagine
+//    computing luminance and chrominances  ********************
     image_watermarking.rgb_to_crom(imr2, img2, imb2, dim, dim, 1, imyout2, imc22, imc32);
 
     FFT2D::dft2d(imyout2, imdft2, imdftfase2, dim, dim);
-
     float mse_mag = stereo_watermarking::MSE(dim,dim,imdft1,imdft2);
     float mse_ph = stereo_watermarking::MSE(dim,dim,imdftfase1,imdftfase2);
-
-
     std::cout<<std::setprecision (15) <<"immagini "<<img1_name<<" e "<<img2_name<<" : MSE magnitudine: "<< mse_mag << " MSE fase: "<<mse_ph<<endl;
+
+    AllocIm::FreeIm(imc21) ;
+    AllocIm::FreeIm(imc31) ;
+    AllocIm::FreeIm(imr1);
+    AllocIm::FreeIm(img1);
+    AllocIm::FreeIm(imb1);
+    AllocIm::FreeIm(imyout1);
+    AllocIm::FreeIm(imdft1);
+    AllocIm::FreeIm(imdftfase1);
+
+    AllocIm::FreeIm(imc22) ;
+    AllocIm::FreeIm(imc32) ;
+    AllocIm::FreeIm(imr2);
+    AllocIm::FreeIm(img2);
+    AllocIm::FreeIm(imb2);
+    AllocIm::FreeIm(imyout2);
+    AllocIm::FreeIm(imdft2);
+    AllocIm::FreeIm(imdftfase2);
 
     std::ostringstream filename1 ;
     filename1 << "magnitudine_"<< img1_name;
@@ -292,7 +286,91 @@ void stereo_watermarking::dft_comparison(unsigned char* Image1, unsigned char* I
 
 }
 
-float* stereo_watermarking::compute_coeff_function(unsigned char* image, int dim){
+void stereo_watermarking::compute_luminance(unsigned char* image, int dim, int flag, unsigned char **imr,unsigned char **img,
+                                               unsigned char **imb, float **imyout, float **imc2,float **imc3){
+    Watermarking image_watermarking;
+    int offset = 0;
+    if (flag == 1) {
+        for (int i = 0; i < dim; i++)
+            for (int j = 0; j < dim; j++) {
+                imr[i][j] = image[offset];offset++;
+                img[i][j] = image[offset];offset++;
+                imb[i][j] = image[offset];offset++;
+            }
+        image_watermarking.rgb_to_crom(imr, img, imb, dim, dim, 1, imyout, imc2, imc3);
+    } else if(flag == -1) {
+        image_watermarking.rgb_to_crom(imr, img, imb, dim, dim, -1, imyout, imc2, imc3);
+        offset = 0;
+        for (int i=0; i<dim; i++)
+            for (int j=0; j<dim; j++)
+            {
+                image[offset] = imr[i][j]; offset++;
+                image[offset] = img[i][j]; offset++;
+                image[offset] = imb[i][j]; offset++;
+            }
+
+    }
+}
+
+
+
+void stereo_watermarking::compute_magnitude_phase(unsigned char* image, int dim, string file_name ){
+    Watermarking image_watermarking;
+    float   **imyout;
+    double  **imdft;
+    double  **imdftfase;
+
+    imyout = AllocIm::AllocImFloat(dim, dim);
+    imdft = AllocIm::AllocImDouble(dim, dim);
+    imdftfase = AllocIm::AllocImDouble(dim, dim);
+
+    unsigned char **imr;
+    unsigned char **img;
+    unsigned char **imb;
+
+    float **imc2;
+    float **imc3;
+
+    imc2 = AllocIm::AllocImFloat(dim, dim);
+    imc3 = AllocIm::AllocImFloat(dim, dim);
+    imr = AllocIm::AllocImByte(dim, dim);
+    img = AllocIm::AllocImByte(dim, dim);
+    imb = AllocIm::AllocImByte(dim, dim);
+
+    int offset = 0;
+    for (int i=0; i<dim; i++)
+        for (int j=0; j<dim; j++)
+        {
+            imr[i][j] = image[offset];offset++;
+            img[i][j] = image[offset];offset++;
+            imb[i][j] = image[offset];offset++;
+        }
+
+
+    image_watermarking.rgb_to_crom(imr, img, imb, dim, dim, 1, imyout, imc2, imc3);
+
+    FFT2D::dft2d(imyout, imdft, imdftfase, dim, dim);
+
+    std::ostringstream path ;
+    path <<"/home/bene/Scrivania/dft_matrices/"<<file_name<<"_mag.txt";
+    stereo_watermarking::writeMatToFile(imdft,dim,path.str());
+    std::ostringstream path2 ;
+    path2 <<"/home/bene/Scrivania/dft_matrices/"<<file_name<<"_phase.txt";
+    stereo_watermarking::writeMatToFile(imdftfase,dim,path2.str());
+
+
+    AllocIm::FreeIm(imc2) ;
+    AllocIm::FreeIm(imc3) ;
+    AllocIm::FreeIm(imr);
+    AllocIm::FreeIm(img);
+    AllocIm::FreeIm(imb);
+    AllocIm::FreeIm(imyout);
+    AllocIm::FreeIm(imdft);
+    AllocIm::FreeIm(imdftfase);
+}
+
+
+double* stereo_watermarking::compute_coeff_function(unsigned char* image, int dim,string file_name ){
 
     Watermarking image_watermarking;
 
@@ -333,6 +411,7 @@ float* stereo_watermarking::compute_coeff_function(unsigned char* image, int dim
 
     FFT2D::dft2d(imyout, imdft, imdftfase, dim, dim);
 
+
     int lastValue = 128;
     int currDiag = 0;
     int loopFrom;
@@ -341,7 +420,7 @@ float* stereo_watermarking::compute_coeff_function(unsigned char* image, int dim
     int row;
     int col;
 
-    float * coeff_vector = new float [128*128/2];
+    double * coeff_vector = new double [128*128/2];
 
     int j=0;
     do
@@ -378,7 +457,9 @@ float* stereo_watermarking::compute_coeff_function(unsigned char* image, int dim
         currDiag++;
     }
     while ( currDiag <= lastValue );
-    stereo_watermarking::writeToFile(coeff_vector,j,"/home/miky/Scrivania/Tesi/coeff_zigzag.txt");
+    std::ostringstream path ;
+    path <<"/home/bene/Scrivania/dft_coeff/"<<file_name<<".txt";
+    stereo_watermarking::writeToFile(coeff_vector,j,path.str());
 
     return coeff_vector;
 
@@ -386,9 +467,8 @@ float* stereo_watermarking::compute_coeff_function(unsigned char* image, int dim
 
 
 
-
 /*
-       cv::Mat right = imread("/home/miky/ClionProjects/tesi_watermarking/img/r.png", CV_LOAD_IMAGE_COLOR);
+       cv::Mat right = imread("/home/bene/ClionProjects/tesi_watermarking/img/r.png", CV_LOAD_IMAGE_COLOR);
        unsigned char *right_uchar = right.data;
        unsigned char *squared_right =  new unsigned char[squared_dim];
        for (int i = 0; i < 256; i ++ )
@@ -427,7 +507,7 @@ void stereo_watermarking::show_double_mat(int width,int height,double** A,std::s
         }
     }
     std::ostringstream path ;
-    path <<"/home/miky/Scrivania/images/dft/"<< window_name<<".png";
+    path <<"/home/bene/Scrivania/images/dft/"<< window_name<<".png";
 //    cout<<path.str();
     cv::imwrite(path.str(),mat);
     imshow(window_name,mat);
@@ -453,7 +533,7 @@ void stereo_watermarking::histo_equalizer(Mat img, std::string window_name){
     namedWindow("Original Image", CV_WINDOW_AUTOSIZE);
     namedWindow(window_name.c_str(), CV_WINDOW_AUTOSIZE);
     std::ostringstream path ;
-    path <<"/home/miky/ClionProjects/tesi_watermarking/img/"<< window_name<<".png";
+    path <<"/home/bene/ClionProjects/tesi_watermarking/img/"<< window_name<<".png";
 //    cout<<path.str();
     cv::imwrite(path.str(),img_hist_equalized);
     //show the image
@@ -569,7 +649,7 @@ void stereo_watermarking::histo_equalizer(Mat img, std::string window_name){
 //}
 //void stereo_watermarking::generatePointCloud(cv::Mat disp, cv::Mat img_left,cv::Mat img_right, int frame_num){
 //
-//    string path("/home/miky/ClionProjects/tesi_watermarking/dataset/NTSD-200/");
+//    string path("/home/bene/ClionProjects/tesi_watermarking/dataset/NTSD-200/");
 //    Ptr<tsukuba_dataset> dataset = tsukuba_dataset::create();
 //    dataset->load(path);
 //
@@ -633,9 +713,9 @@ void stereo_watermarking::histo_equalizer(Mat img, std::string window_name){
 //    stereo_watermarking::viewPointCloudRGB(point_cloud_ptr, "cloud ");
 //}
 
-void stereo_watermarking::writeToFile(float* m,int lenght, std::string filename)
+void stereo_watermarking::writeToFile(double* m,int lenght, std::string filepath)
 {
-    ofstream fout(filename);
+    ofstream fout(filepath);
 
     if(!fout)
     {
@@ -651,7 +731,43 @@ void stereo_watermarking::writeToFile(float* m,int lenght, std::string filename)
     fout.close();
 }
 
-double stereo_watermarking::similarity_measures(double* wat, double* retrieve_wat, int coeff_num, std::string first_element, std::string second_element){
+void stereo_watermarking::writeMatToFile(double** m,int dim, std::string filepath)
+{
+    ofstream fout(filepath);
+
+    if(!fout)
+    {
+        cout<<"File Not Opened"<<endl;  return;
+    }
+
+    for(int i=0; i<dim; i++) {
+        for (int j = 0; j<dim;j++) {
+            fout << m[i][j]<< "\t";
+            fout << endl;
+        }
+    }
+    fout.close();
+}
+
+void stereo_watermarking::writefloatMatToFile(float** m,int dim, std::string filepath)
+{
+    ofstream fout(filepath);
+
+    if(!fout)
+    {
+        cout<<"File Not Opened"<<endl;  return;
+    }
+
+    for(int i=0; i<dim; i++) {
+        for (int j = 0; j<dim;j++) {
+            fout << m[i][j]<< "\t";
+            fout << endl;
+        }
+    }
+    fout.close();
+}
+
+float stereo_watermarking::similarity_measures(double* wat, double* retrieve_wat, int coeff_num, std::string first_element, std::string second_element){
 
     Mat wat_mat(1, coeff_num, CV_32F); // 1 è la riga
     for (int i = 0; i < wat_mat.cols; i++){
@@ -695,7 +811,8 @@ double stereo_watermarking::similarity_measures(double* wat, double* retrieve_wa
     // cout <<"ret_after :" << setprecision(15)<<ret_myMAtSvd<<endl;
     Mat wat_corr;
     matchTemplate(ret_wat_mat,wat_mat, wat_corr, CV_TM_CCOEFF_NORMED);
-    cout << "correlation btw " << first_element << " and "<< second_element << ":   " << (wat_corr.at<float>(0,0))<<endl;
+    float correlation = wat_corr.at<float>(0,0);
+    cout << "correlation btw " << first_element << " and "<< second_element << ":   " << correlation <<endl;
 
   /*  double sim = 0.0;
     double den = 0.0;
@@ -706,58 +823,49 @@ double stereo_watermarking::similarity_measures(double* wat, double* retrieve_wa
     sim /= sqrt(den);*/
   //  cout <<"sim :   " << setprecision(15)<<sim<<endl; // max value 68
   //  return sim;
-
+    return correlation;
 
 }
 
-void stereo_watermarking::similarity_graph(int number_of_marks,int coeff_num,double* wat){
 
-    static const char alpha_char[] = "abcdefghijklmnopqrstuvwxyz";
-    static const char num_char [] =  "0123456789";
-    Watermarking image_watermarking;
-   // Point points[number_of_marks];
-    float* sim_values = new float [number_of_marks+1];
-    for (int k = 0; k < number_of_marks; k++) {
-        double *retrieve_wat = new double[coeff_num];
-        int mark[64];
-        // generate another 64random bit watermark
-        for (int i = 0; i < 64; i++) {
-            int b = rand() % 2;
-            mark[i] = b;
-        }
-        char *string_pswd = new char[16];
-        char *num_pswd = new char[8];
-        for (int i = 0; i < 16; i++) {
-            string_pswd[i] = alpha_char[rand() % (sizeof(alpha_char) - 1)];
-        }
-        for (int i = 0; i < 8; i++) {
-            num_pswd[i] = num_char[rand() % (sizeof(num_char) - 1)];
-        }
-        retrieve_wat = image_watermarking.marks_generator(mark, 64, string_pswd, num_pswd, coeff_num);
-        // correlation and sim
-        double sim = stereo_watermarking::similarity_measures(wat, retrieve_wat, coeff_num, "wat", "retrieve_wat");
-        sim_values[k] = (float)sim;
-      //  points[k]=  Point(k,sim);
+
+void stereo_watermarking::showGraph( float* sim_values,int number_of_marks ){
+    for (int i = 0; i < number_of_marks; i++) {
+        sim_values[i] = sim_values[i] *100;
     }
-    sim_values[number_of_marks] = 67.517831195934;
-    float tmp = 0.0;
-    tmp = sim_values[27];
-    sim_values[27] = sim_values[number_of_marks];
-    sim_values[number_of_marks] = tmp;
-    //drawFloatGraph(sim_values, number_of_marks, NULL, 0, 300,);
-    //(floatArray, numFloats, bgImg, -25,25, w, h, "Yaw (in degrees)");
-    showFloatGraph("Watermarks similarity", sim_values, number_of_marks+1, 0);
-    // Create black empty images
-   /* Mat simImage(number_of_marks, 1, CV_8UC3, Scalar(255, 255, 255));
-    for (int i=1;i<number_of_marks;i++){
-        line(simImage,points[i-1],points[i],Scalar(0,0,0),2,8,0);
+    int w = 500;
+    int offset = w-15*w/16 ;
+    int thickness = 1;
+    int lineType = 8;
+    cout<<offset<<endl;
+    Mat corr_image = Mat::zeros( w, w, CV_8UC3 );
+    line( corr_image, Point( 0, w -offset), Point( w, w-offset ),Scalar( 255, 255,255 ),thickness, lineType );
+    line( corr_image, Point( offset, w-1 ), Point( offset, 0 ),Scalar( 255, 255,255 ),thickness, lineType );
+    /*  for (int i= 1; i< w; i += 20){
+          line( corr_image, Point(w-15*w/16 + i,15*w/16 - 5 ), Point(w-15*w/16 + i,15*w/16 + 5 ) ,Scalar( 255, 255, 255 ),0.5, lineType);
+      }*/
+    /* for (int j= 1; j< w; j += 20){
+         line( corr_image, Point(w-15*w/16 + j,15*w/16 - 5 ), Point(w-15*w/16 + j,15*w/16 + 5 ) ,Scalar( 255, 255, 255 ),0.5, lineType);
+     }*/
+    int k = 0;
+    for (int i = 1; i<number_of_marks;i++){
+
+        int y = w - offset - sim_values[i-1];
+        int y_next = w - offset - sim_values[i];
+        line(corr_image,Point(offset + (i-1), y ), Point(offset + i + k+5, y_next ),Scalar( 255, 0, 0 ),0.5,lineType,0);
+        k = k +5;
+        // if (i = 27)
+        // circle(corr_image,Point(offset + i, y_next),0.05,Scalar( 0, 0, 255 ),0.5,lineType);
+
     }
-    namedWindow("similarity image",CV_WINDOW_AUTOSIZE);
-    imshow("similarity image",simImage);
-    waitKey(0);
-    return;
-*/
+    line(corr_image,Point(offset + 27, w - offset  ), Point(offset + 27, w -offset  ),Scalar( 0, 0, 255 ),0.00001,lineType,0);
+    namedWindow("similarity image",CV_WINDOW_NORMAL);
+    imshow( "similarity image", corr_image );
+    //  moveWindow( rook_window, w, 200 );
+    waitKey( 0 );
+
 }
+
 
 void stereo_watermarking::show_ucharImage(unsigned char * image, int width, int height, string nameImage){
 
@@ -785,6 +893,23 @@ void stereo_watermarking::show_doubleImage(double * image, int width, int height
             mat_image.at<Vec3b>(j,i) [0] = image[count]; count++;
             mat_image.at<Vec3b>(j,i) [1] = image[count]; count++;
             mat_image.at<Vec3b>(j,i) [2] = image[count]; count++;
+
+        }
+    imshow(nameImage, mat_image);
+    waitKey(0);
+}
+
+
+void stereo_watermarking::show_floatImage(float ** image, int width, int height, string nameImage){
+
+    int count = 0;
+    cv::Mat mat_image = cv::Mat::zeros(height, width, CV_8UC3);
+    for (int j = 0; j < height; j++)
+        for (int i = 0; i < width; i++){
+
+            mat_image.at<Vec3b>(j,i) [0] = image[j][i];
+            mat_image.at<Vec3b>(j,i) [1] = image[j][i];
+            mat_image.at<Vec3b>(j,i) [2] = image[j][i];
 
         }
     imshow(nameImage, mat_image);
