@@ -221,8 +221,8 @@ int Watermarking::WatCod(unsigned char *ImageOut, int width, int height, const c
     mmedio = 1.0 - mmedio;
 
 //     Si calcola il valore massimo di alfa
- //   double alfamax = power/mmedio;
-    double alfamax = power;
+    double alfamax = power/mmedio;
+//    double alfamax = power;
 
     int coefficient_number;
     double *coefficient_vector = NULL;
@@ -276,11 +276,11 @@ int Watermarking::WatCod(unsigned char *ImageOut, int width, int height, const c
 
     FFT2D::idft2d(imdft, imdftfase, imidft, dim, dim);
 
-/*    for(int i=0;i<256;i++)
-        for(int j=0;j<256;j++)
-            img_map_flt[i][j] = 255.0f*img_map_flt[i][j];*/
+   for(int i=0;i<dim;i++)
+        for(int j=0;j<dim;j++)
+            img_map_flt[i][j] = 255.0f*img_map_flt[i][j];
 
-//    PicRoutfloat(imyout, 256, 256, imidft, img_map_flt, impic);
+    PicRoutfloat(imyout, dim, dim, imidft, img_map_flt, impic);
 
 
     //reinserimento della luminanza

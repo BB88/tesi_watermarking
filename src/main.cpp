@@ -217,7 +217,7 @@ int main() {
 
 
 
-    /*watermarking dft 256*256 + MSE    -> controllare watermarking.cpp : 256 e diag */
+    /*watermarking dft 512*256 + MSE    -> controllare watermarking.cpp : 256 e diag */
 
     cv::Mat left = imread("/home/miky/ClionProjects/tesi_watermarking/img/l.png", CV_LOAD_IMAGE_COLOR);
 
@@ -225,18 +225,23 @@ int main() {
 
 
     unsigned char *left_uchar = left.data;
-    int squared_dim = 256 * 256 *3;
+    int squared_dim = 512 * 512 *3;
     unsigned char *squared_left =  new unsigned char[squared_dim];
     int nc = 640;
-    int nc_s = 256;
+    int nc_s = 512;
+
+    for (int k =0; k<squared_dim;k++){
+        squared_left[k]=0;
+    }
 
     int offset = 127;
-    for (int i = 0; i < nc_s; i ++ )
+    for (int i = 0; i < 480; i ++ )
         for (int j = 0; j < nc_s; j++) {
             for (int k =0; k<3;k++){
                 squared_left[(i * nc_s + j)*3 + k] = left_uchar[(i *nc + j + offset)*3 + k];
             }
         }
+
     Watermarking image_watermarking;
 //    random binary watermark   ********************
     int watermark[64];
@@ -246,7 +251,9 @@ int main() {
     }
     image_watermarking.setParameters(watermark,wsize,tilesize,power,clipping,flagResyncAll,NULL,tilelistsize);
     image_watermarking.setPassword(passwstr,passwnum);
-    unsigned char *squared_marked_left = image_watermarking.insertWatermark(squared_left,256,256,256);
+    unsigned char *squared_marked_left = image_watermarking.insertWatermark(squared_left,512,512,512);
+    stereo_watermarking::show_ucharImage(squared_marked_left, 512, 512, "squared_marked_left",3);
+
 //    START COEFFICIENT ANALYSIS:  saving dft left coefficient   ********************
     double *coeff_left = image_watermarking.getCoeff_dft();
     int coeff_num = image_watermarking.getCoeff_number();
@@ -255,7 +262,7 @@ int main() {
 //    stereo_watermarking::writeToFile(wat,coeff_num,"/home/miky/Scrivania/Tesi/wat.txt");
 //    stereo_watermarking::writeToFile(coeff_left,coeff_num,"/home/miky/Scrivania/Tesi/coeff_left.txt");
 //    decoding   ********************
-    bool left_detection = image_watermarking.extractWatermark(squared_marked_left, 256, 256,256);
+    bool left_detection = image_watermarking.extractWatermark(squared_marked_left, 512, 512,512);
     cout<< "left_detection:    " << left_detection <<endl;
 //    saving marked dft left coefficient   ********************
     double *marked_coeff_left = image_watermarking.getMarked_coeff();
@@ -277,25 +284,33 @@ int main() {
     unsigned char *left_reconstructed = rv.left_uchar_reconstruction(right.data, right_disp.data, occ_right.data,640,480);
 
 
-
     unsigned char *right_uchar = left_reconstructed;
     unsigned char *right_uchar_original = right.data;
 
     unsigned char *squared_right_to_mark =  new unsigned char[squared_dim];
+    for (int k =0; k<squared_dim;k++){
+        squared_right_to_mark[k]=0;
+    }
     unsigned char *squared_right_original =  new unsigned char[squared_dim];
+    for (int k =0; k<squared_dim;k++){
+        squared_right_original[k]=0;
+    }
+
 //    cv::Mat right_squared = cv::Mat::zeros(256, 256, CV_8UC3);
 //    unsigned char d_val = disp.at<uchar>(0,127);
-    for (int i = 0; i < nc_s; i ++ )
+    for (int i = 0; i < 480; i ++ )
         for (int j = 0; j < nc_s; j++)
             for(int k = 0; k<3; k++)
                 squared_right_to_mark[(i * nc_s + j)*3 + k] = right_uchar[(i * nc + j + offset)*3 + k];
 
 
-    for (int i = 0; i < nc_s; i ++ )
+    for (int i = 0; i < 480; i ++ )
         for (int j = 0; j < nc_s; j++)
             for(int k = 0; k<3; k++)
                 squared_right_original[(i * nc_s + j)*3 + k] = right_uchar_original[(i * nc + j + offset)*3 + k];
 
+//    stereo_watermarking::dft_comparison(squared_left,squared_right_original,512,"squared_left","squared_right_original");
+//    stereo_watermarking::dft_comparison(squared_left,squared_right_to_mark,512,"squared_left","squared_right_to_mark");
 
 //    for (int i = 0; i < nc_s; i ++ )
 //        for (int j = 0; j < nc_s; j++) {
@@ -338,11 +353,11 @@ int main() {
 //            for (int k = 0; k<3; k++)
 //                squared_warped_mark[(i*nc_s + j )*3 + k] = warped_mark[(i*nc + j + offset - d_val)*3 + k];
 
-    unsigned char *squared_marked_right = image_watermarking.insertWatermark(squared_right_to_mark,256,256,256);
-    stereo_watermarking::show_ucharImage(squared_marked_right, 256, 256, "squared_marked_right",3);
+    unsigned char *squared_marked_right = image_watermarking.insertWatermark(squared_right_to_mark,512,512,512);
+    stereo_watermarking::show_ucharImage(squared_marked_right, 512, 512, "squared_marked_right",3);
 
 
-    bool squared_marked_right_detection = image_watermarking.extractWatermark(squared_marked_right, 256, 256,256 );
+    bool squared_marked_right_detection = image_watermarking.extractWatermark(squared_marked_right, 512, 512,512 );
     cout<< "squared_marked_right_detection:    " << squared_marked_right_detection <<endl;
 
 //    for (int i = 0; i < nc_s; i ++ )
@@ -364,44 +379,56 @@ int main() {
 
     unsigned char *disp_uchar_left = disp.data;
     unsigned char *squared_disp_left =  new unsigned char[squared_dim];
+    for (int k =0; k<squared_dim;k++){
+        squared_disp_left[k]=0;
+    }
 //    cv::Mat right_squared = cv::Mat::zeros(256, 256, CV_8UC3);
 //    unsigned char d_val = disp.at<uchar>(0,127);
-    for (int i = 0; i < nc_s; i ++ )
+    for (int i = 0; i < 480; i ++ )
         for (int j = 0; j < nc_s; j++)
             squared_disp_left[(i * nc_s + j) ] = disp_uchar_left[(i * nc + j + offset) ];
 
     unsigned char *disp_uchar_right = right_disp.data;
     unsigned char *squared_disp_right =  new unsigned char[squared_dim];
+    for (int k =0; k<squared_dim;k++){
+        squared_disp_right[k]=0;
+    }
 //    cv::Mat right_squared = cv::Mat::zeros(256, 256, CV_8UC3);
 //    unsigned char d_val = disp.at<uchar>(0,127);
-    for (int i = 0; i < nc_s; i ++ )
+    for (int i = 0; i < 480; i ++ )
         for (int j = 0; j < nc_s; j++)
             squared_disp_right[(i * nc_s + j) ] = disp_uchar_right[(i * nc + j + offset) ];
 
 
     unsigned char *occ_uchar_left = occ_left.data;
     unsigned char *squared_occ_left =  new unsigned char[squared_dim];
+    for (int k =0; k<squared_dim;k++){
+        squared_occ_left[k]=0;
+    }
 //    cv::Mat right_squared = cv::Mat::zeros(256, 256, CV_8UC3);
 //    unsigned char d_val = disp.at<uchar>(0,127);
-    for (int i = 0; i < nc_s; i ++ )
+    for (int i = 0; i < 480; i ++ )
         for (int j = 0; j < nc_s; j++)
                 squared_occ_left[(i * nc_s + j)] = occ_uchar_left[(i * nc + j + offset)];
 
     unsigned char *occ_uchar_right = occ_right.data;
     unsigned char *squared_occ_right =  new unsigned char[squared_dim];
+    for (int k =0; k<squared_dim;k++){
+        squared_occ_right[k]=0;
+    }
 //    cv::Mat right_squared = cv::Mat::zeros(256, 256, CV_8UC3);
 //    unsigned char d_val = disp.at<uchar>(0,127);
-    for (int i = 0; i < nc_s; i ++ )
+    for (int i = 0; i < 480; i ++ )
         for (int j = 0; j < nc_s; j++)
             squared_occ_right[(i * nc_s + j)] = occ_uchar_right[(i * nc + j + offset)];
 
 
-    stereo_watermarking::show_ucharImage(squared_disp_left, 256, 256, "squared_disp_left",1);
-    stereo_watermarking::show_ucharImage(squared_occ_left, 256, 256, "squared_occ_left",1);
+    stereo_watermarking::show_ucharImage(squared_disp_left, 512, 512, "squared_disp_left",1);
+    stereo_watermarking::show_ucharImage(squared_occ_left, 512, 512, "squared_occ_left",1);
 
-    unsigned char* squared_right_rec = rv.right_uchar_reconstruction(squared_marked_right,squared_disp_left,squared_occ_left,256,256);
+    unsigned char* squared_right_rec = rv.right_uchar_reconstruction(squared_marked_right,squared_disp_left,squared_occ_left,512,512);
 
-    stereo_watermarking::show_ucharImage(squared_right_rec, 256, 256, "squared_right_rec",3);
+    stereo_watermarking::show_ucharImage(squared_right_rec, 512, 512, "squared_right_rec",3);
 
 
 //    for (int i=0;i<squared_dim;i++){
@@ -409,10 +436,10 @@ int main() {
 //            squared_right_rec[i] = squared_right_original[i];
 //    }
 
-    cv::Mat mat_image = cv::Mat::zeros(256, 256, CV_8UC3);
+    cv::Mat mat_image = cv::Mat::zeros(512, 512, CV_8UC3);
     int count=0;
-    for (int j = 0; j < 256; j++)
-        for (int i = 0; i < 256; i++) {
+    for (int j = 0; j < 512; j++)
+        for (int i = 0; i < 512; i++) {
 
             mat_image.at<Vec3b>(j, i)[0] = squared_right_rec[count];
             count++;
@@ -422,10 +449,10 @@ int main() {
             count++;
 
         }
-    cv::Mat mat_image2 = cv::Mat::zeros(256, 256, CV_8UC3);
+    cv::Mat mat_image2 = cv::Mat::zeros(512, 512, CV_8UC3);
     count=0;
-    for (int j = 0; j < 256; j++)
-        for (int i = 0; i < 256; i++) {
+    for (int j = 0; j < 512; j++)
+        for (int i = 0; i < 512; i++) {
 
             mat_image2.at<Vec3b>(j, i)[0] = squared_right_original[count];
             count++;
@@ -434,8 +461,8 @@ int main() {
             mat_image2.at<Vec3b>(j, i)[2] = squared_right_original[count];
             count++;
         }
-    for (int j = 0; j < 256; j++)
-        for (int i = 0; i < 256; i++){
+    for (int j = 0; j < 512; j++)
+        for (int i = 0; i < 512; i++){
             if ( mat_image.at<Vec3b>(j,i)[0]==0 && mat_image.at<Vec3b>(j,i)[1]==0 && mat_image.at<Vec3b>(j,i)[2]==0){
                 mat_image.at<Vec3b>(j,i)[0] = mat_image2.at<Vec3b>(j,i)[0];
                 mat_image.at<Vec3b>(j,i)[1] = mat_image2.at<Vec3b>(j,i)[1];
@@ -446,20 +473,20 @@ int main() {
     imshow("Mat squared right", mat_image);
     waitKey(0);
 
-    stereo_watermarking::show_ucharImage(squared_right_rec, 256, 256, "squared_right_rec",3);
-    bool right_detection = image_watermarking.extractWatermark(mat_image.data, 256, 256,256);
+    stereo_watermarking::show_ucharImage(squared_right_rec, 512, 512, "squared_right_rec",3);
+    bool right_detection = image_watermarking.extractWatermark(mat_image.data, 512, 512,512);
     cout<< "right_detection:    " << right_detection <<endl;
 
 
 //    stereo_watermarking::show_ucharImage(squared_right_rec, 256, 256, "squared_right_rec",3);
-    stereo_watermarking::show_ucharImage(squared_disp_right, 256, 256, "squared_disp_right",1);
-    stereo_watermarking::show_ucharImage(squared_occ_right, 256, 256, "squared_occ_right",1);
+    stereo_watermarking::show_ucharImage(squared_disp_right, 512, 512, "squared_disp_right",1);
+    stereo_watermarking::show_ucharImage(squared_occ_right, 512, 512, "squared_occ_right",1);
 
-    unsigned char* left_rec_from_right_marked = rv.left_uchar_reconstruction(mat_image.data,squared_disp_right,squared_occ_right,256,256);
+    unsigned char* left_rec_from_right_marked = rv.left_uchar_reconstruction(mat_image.data,squared_disp_right,squared_occ_right,512,512);
 
-    stereo_watermarking::show_ucharImage(left_rec_from_right_marked, 256, 256, "left_rec_from_right_marked",3);
+    stereo_watermarking::show_ucharImage(left_rec_from_right_marked, 512, 512, "left_rec_from_right_marked",3);
 
-    bool left_rec_detection = image_watermarking.extractWatermark(left_rec_from_right_marked, 256, 256,256);
+    bool left_rec_detection = image_watermarking.extractWatermark(left_rec_from_right_marked, 512, 512,512);
     cout<< "left_rec_detection:    " << left_rec_detection <<endl;
 
 //    bool mark_detection = image_watermarking.extractWatermark(squared_warped_mark, 256, 256);
