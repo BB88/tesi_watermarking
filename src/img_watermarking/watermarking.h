@@ -149,7 +149,9 @@ private:
 
 
 
-
+private:
+//    watermark multiply by coeff_left and alpha
+    double *codemark = NULL;
 // public methods
 public:
 
@@ -179,7 +181,7 @@ public:
      *
      * \note The input image is not modified.
      */
-    unsigned char *insertWatermark(unsigned char *image, int w, int h,int dim);
+    unsigned char *insertWatermark(unsigned char *imageIn, int w, int h,int dim,float** imidft_wat,bool warp_flag);
 
     /**
      * Extract the watermark from the given image.
@@ -224,12 +226,15 @@ public:
 
     double* marks_generator(int *watermark,int wsize, const char *passw_str, const char *passw_num, int coefficient_number) ;
 
-
+    double *getCodemark() const {
+        return codemark;
+    }
 private:
 
-    int WatCod(unsigned char *ImageOut , int width, int height,
-               const char *passw_str, const char *passw_num, int *watermark, int wsize, float power, bool flagClipping, int tilesize, int *tiles, int *ntiles,int dim);
-
+    int WatCod( unsigned char *ImageOut, int width, int height, const char *passw_str, const char *passw_num,
+                int *watermark, int wsize, float power, float** imidft_wat,int dim);
+    int warpedWatCod(unsigned char *ImageOut, int width, int height, const char *passw_str, const char *passw_num,
+                                   int *watermark, int wsize, float power, float** imidft_wat);
     void seed_generator(const char *passw_str, const char *passw_num, LONG8BYTE *s );
     void generate_mark(int *watermark,int wsize, const char *passw_str, const char *passw_num, int coefficient_number,double* mark,bool detection) ;
     void seed_initialization(LONG8BYTE *s);
@@ -237,7 +242,7 @@ private:
     double* zones_to_watermark(double **imdft, int height, int width, int diag0, int ndiag, int detect, int *coefficient_number);
 
 
-    void addmark(double *buff, double *mark, int num_camp, double peso);
+    void addmark(double *buff, double *mark, int coeff_number, double power, int add_mult );
 
 
     void antizone(double **imdft,int nr, int nc, int diag0, int ndiag, double *buff);

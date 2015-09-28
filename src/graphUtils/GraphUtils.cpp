@@ -348,7 +348,7 @@ void showFloatGraph(const char *name, const float *arraySrc, int nArrayLength, i
 {
 #ifdef USE_HIGHGUI
 	// Draw the graph
-	IplImage *imageGraph = drawFloatGraph(arraySrc, nArrayLength, background, -3, 105, 640,480);
+	IplImage *imageGraph = drawFloatGraph(arraySrc, nArrayLength, background, -3, 1,640,480);
 
 	// Display the graph into a window
     cvNamedWindow( name, CV_WINDOW_NORMAL );

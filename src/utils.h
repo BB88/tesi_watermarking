@@ -29,7 +29,7 @@ namespace stereo_watermarking{
     void show_ucharImage(unsigned char * image, int width, int height, string nameImage, int channels);
     void show_doubleImage(double * image, int width, int height, string nameImage);
     double*  not_blind_extraction(double* original_coeff,double* marked_coeff, int coeff_num, double power);
-    void writeToFile(double* m,int lenght, std::string filename);
+//    void writeToFile(double* m,int lenght, std::string filename);
     double  threshold_computation(double* original_coeff,int coeff_num, double power);
     void similarity_graph(int number_of_marks,int coeff_num,double* wat);
     double* compute_coeff_function(unsigned char* image, int dim,std::string filename);
@@ -38,5 +38,14 @@ namespace stereo_watermarking{
 //    void createPointCloudOpenCV (cv::Mat& img1, cv::Mat& img2,  cv::Mat& Q, cv::Mat& disp, cv::Mat& recons3D, pcl::PointCloud<pcl::PointXYZRGB>::Ptr &point_cloud_ptr);
 //    cv::datasets::FramePair rectifyImages(Mat& img1, Mat& img2, Mat& M1, Mat& D1, Mat& M2, Mat& D2, Mat& R, Mat& T, Mat& R1, Mat& R2, Mat& P1, Mat& P2, Mat& Q, Rect &roi1, Rect &roi2, float scale);
 //    void generatePointCloud(cv::Mat disp, cv::Mat img_left,cv::Mat img_right, int frame_num);
+    void show_floatImage(float ** image, int width, int height, string nameImage);
+    void show_doubleImage(double * image, int width, int height, string nameImage);
+    void show_ucharImage(unsigned char * image, int width, int height, string nameImage);
+    void writefloatMatToFile(float** m,int dim, std::string filepath);
+    void writeMatToFile(double** m,int dim, std::string filepath);
+    void writeToFile(double* m,int lenght, std::string filepath);
+    void show_double_mat(int width,int height,double** A,std::string window_name);
+    void compute_luminance(unsigned char* image, int dim, int flag, unsigned char **imr,unsigned char **img,
+                                                unsigned char **imb, float **imyout, float **imc2,float **imc3);
 
-    }
+}
