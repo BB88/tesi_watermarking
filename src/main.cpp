@@ -736,7 +736,7 @@ int main() {
 //    compute image from luminance   ********************
     unsigned char *marked_right = new unsigned char[squared_dim];
     stereo_watermarking::compute_luminance(marked_right,dim,-1,imr,img,imb,marked_right_lum,imc2,imc3);
-    stereo_watermarking::show_ucharImage(marked_right,dim,dim,"marked_right");
+//    stereo_watermarking::show_ucharImage(marked_right,dim,dim,"marked_right");
 //    left view reconstruction   ********************
 
 
@@ -775,8 +775,8 @@ int main() {
                 mat_image2.at<Vec3b>(j,i)[2] = mat_image.at<Vec3b>(j,i)[2];
             }
         }
-    imshow("recontructed", mat_image2);
-    waitKey(0);
+//    imshow("recontructed", mat_image2);
+//    waitKey(0);
 
 //    imshow   ********************
 //
@@ -786,7 +786,7 @@ int main() {
 //    stereo_watermarking::show_floatImage(warp_mark,dim,dim,"warp_mark");
 //    stereo_watermarking::show_floatImage(marked_right_lum,dim,dim,"marked_right_lum");
 //    stereo_watermarking::show_ucharImage(marked_right,256,256,"marked_right");
-    stereo_watermarking::show_ucharImage(rcn_squared_left,512,512,"rcn_squared_left");
+//    stereo_watermarking::show_ucharImage(rcn_squared_left,512,512,"rcn_squared_left");
 //    stereo_watermarking::show_ucharImage(marked_left,256,256,"marked_left2");
 
 
@@ -801,6 +801,33 @@ int main() {
     cout<<" right_det   "<< right_det<<endl;
     cout<<"rcnleft_det  "<< rcnleft_det<<endl;
 //    cout<<"left_marked_det  "<< left_marked_det<<endl;
+
+// back to normal size *******************
+
+    unsigned char *left_watermarked = new unsigned char [480*640*3];
+    left_watermarked = left.data;
+
+    for (int i = 0; i < 480; i ++ )
+        for (int j = 0; j < 512; j++) {
+            for (int k =0; k<3;k++){
+                left_watermarked[(i *nc + j + offset)*3 + k] = squared_marked_left[(i * nc_s + j)*3 + k];
+            }
+        }
+    stereo_watermarking::show_ucharImage(left_watermarked,640,480,"left_watermarked");
+    stereo_watermarking::save_ucharImage(left_watermarked,640,480,"left_watermarked");
+
+    unsigned char *right_watermarked = new unsigned char [480*640*3];
+    right_watermarked = right.data;
+
+    for (int i = 0; i < 480; i ++ )
+        for (int j = 0; j < 512; j++) {
+            for (int k =0; k<3;k++){
+                right_watermarked[(i *nc + j + offset)*3 + k] = marked_right[(i * nc_s + j)*3 + k];
+            }
+        }
+    stereo_watermarking::show_ucharImage(right_watermarked,640,480,"right_watermarked");
+    stereo_watermarking::save_ucharImage(right_watermarked,640,480,"right_watermarked");
+
 
 
 //    START COEFFICIENT ANALYSIS:  saving dft left coefficient   ********************
@@ -1209,9 +1236,9 @@ int main() {
 
 
 //    /* GRAPH CUTS DISPARITY COMPUTATION*/
-//
-//    std::string img1_path =  "/home/miky/ClionProjects/tesi_watermarking/img/left_marked.png";
-//    std::string img2_path =  "/home/miky/ClionProjects/tesi_watermarking/img/right_warped_marked.png";
+
+//    std::string img1_path =  "/home/miky/ClionProjects/tesi_watermarking/img/left_watermarked.png";
+//    std::string img2_path =  "/home/miky/ClionProjects/tesi_watermarking/img/right_watermarked.png";
 //
 //
 //    Match::Parameters params = { // Default parameters
@@ -1251,10 +1278,10 @@ int main() {
 //
 //    m.SaveScaledXLeft("/home/miky/ClionProjects/tesi_watermarking/img/disp_kz_wat.png", false);
 //
-////    cv::Mat disp = imread("/home/miky/Scrivania/disp.png");
+//    cv::Mat disp = imread("/home/miky/ClionProjects/tesi_watermarking/img/disp_kz_wat.png");
 //    imshow("kz disp",disp);
 //    waitKey(0);
-
+//
 
 
 

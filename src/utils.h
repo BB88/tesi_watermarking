@@ -47,5 +47,6 @@ namespace stereo_watermarking{
     void show_double_mat(int width,int height,double** A,std::string window_name);
     void compute_luminance(unsigned char* image, int dim, int flag, unsigned char **imr,unsigned char **img,
                                                 unsigned char **imb, float **imyout, float **imc2,float **imc3);
+    void save_ucharImage(unsigned char * image, int width, int height, string nameImage);
 
 }

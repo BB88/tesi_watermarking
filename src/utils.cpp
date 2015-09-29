@@ -960,6 +960,25 @@ void stereo_watermarking::show_ucharImage(unsigned char * image, int width, int 
     waitKey(0);
 }
 
+
+void stereo_watermarking::save_ucharImage(unsigned char * image, int width, int height, string nameImage){
+
+    int count = 0;
+    cv::Mat mat_image = cv::Mat::zeros(height, width, CV_8UC3);
+    for (int j = 0; j < height; j++)
+        for (int i = 0; i < width; i++){
+
+            mat_image.at<Vec3b>(j,i) [0] = image[count]; count++;
+            mat_image.at<Vec3b>(j,i) [1] = image[count]; count++;
+            mat_image.at<Vec3b>(j,i) [2] = image[count]; count++;
+
+        }
+
+    std::ostringstream path ;
+    path <<"/home/miky/ClionProjects/tesi_watermarking/img/"<<nameImage<<".png";
+    cv::imwrite(path.str(), mat_image);
+}
+
 void stereo_watermarking::show_doubleImage(double * image, int width, int height, string nameImage){
 
     int count = 0;
