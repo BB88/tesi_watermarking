@@ -224,8 +224,7 @@ int Watermarking::WatCod(unsigned char *ImageOut, int width, int height, const c
     AllocIm::FreeIm(imidft);
 
 }
-int Watermarking::warpedWatCod(unsigned char *ImageOut, int width, int height, const char *passw_str, const char *passw_num,
-                               int *watermark, int wsize, float power, float** imidft_wat)
+int Watermarking::warpedWatCod(unsigned char *ImageOut, int width, int height, const char *passw_str, const char *passw_num, int *watermark, int wsize, float power, float** imidft_wat)
 {
     int dim = width;
     int diag0;
@@ -1543,11 +1542,11 @@ void Watermarking::decoale(double **imr, int nre, int nce, int d1, int nd,
     // di coefficienti selezionati)
 
     appbuff = zones_to_watermark(imr, nre, nce, d1, nd, 1, &marklen);
-    marked_coeff = new double [marklen];
-    for (int k = 0; k < marklen; k++ )
-        marked_coeff[k] = appbuff[k];
-//    stereo_watermarking::writeMatToFile(marked_coeff,marklen,"/home/miky/Scrivania/Tesi/dec_marked_coeff.txt");
-    marked_coeff_number = marklen;
+//    marked_coeff = new double [marklen];
+//    for (int k = 0; k < marklen; k++ )
+//        marked_coeff[k] = appbuff[k];
+////    stereo_watermarking::writeMatToFile(marked_coeff,marklen,"/home/miky/Scrivania/Tesi/dec_marked_coeff.txt");
+//    marked_coeff_number = marklen;
 
 
 //

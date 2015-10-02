@@ -118,7 +118,9 @@ void Match::SaveScaledXLeft(const char *fileName, bool flag) {
         } else {
             if (dispSize == 0) c = 255;
             else if (flag) c = 255 - (255-64)*(dispMax - d)/dispSize;
+//            else if (flag) c =  (255-64)*(dispMax - d)/dispSize;
             else           c = 255 - (255-64)*(d - dispMin)/dispSize;
+//            else           c =  (255-64)*(d - dispMin)/dispSize;
             IMREF(im,*p).c[0]=IMREF(im,*p).c[1]=IMREF(im,*p).c[2] = c;
         }
     }
