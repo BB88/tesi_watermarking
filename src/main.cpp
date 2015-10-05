@@ -2,21 +2,10 @@
 #include <opencv2/core/core.hpp>
 #include "dataset/tsukuba_dataset.h"
 #include <cv.h>
-#include <cstdint>
 #include <highgui.h>
-#include "opencv2/highgui/highgui.hpp"
-#include "opencv2/imgproc/imgproc.hpp"
-#include <iostream>
-#include <string>
-#include <stdint.h>
+
 #include "./disparity_computation/stereo_matching.h"
-#include "./disparity_optimization/disp_opt.h"
-#include "./disparity_optimization/occlusions_handler.h"
-#include "./right_view_computation/right_view.h"
-#include "disparity_optimization/disp_opt.h"
-#include <limits>
-#include <cstddef>
-#include <iostream>
+
 #include <fstream>
 
 //includes watermarking
@@ -25,20 +14,13 @@
 #include "./img_watermarking/allocim.h"
 
 //grapfh cuts
-#include "./graphcuts/image.h"
-#include "./graphcuts/match.h"
 #include "./graphcuts/utils.h"
-#include "./graphcuts/io_png.h"
+
 
 //libconfig
 #include <libconfig.h++>
 #include "./config/config.hpp"
 
-#include "quality_metrics/quality_metrics.h"
-#include "utils.h"
-#include "img_watermarking/fft2d.h"
-
-#include "spatialWatermarking/gaussianNoise.h"
 #include "FDTwatermarking/frequencyWatermarking.h"
 
 using namespace std;
@@ -72,25 +54,21 @@ int main() {
     std::string passwstr=generalPars.passwstr;
     std::string passwnum=generalPars.passwnum;
 
-//    spatialWatermarking::gaussianNoiseStereoWatermarking();
+    bool gt = false;
+//  spatialWatermarking::gaussianNoiseStereoWatermarking(gt);
 
-    FDTStereoWatermarking::warpMarkWatermarking(wsize, tilesize, power, clipping, flagResyncAll, tilelistsize,
-                                                passwstr, passwnum);
+    FDTStereoWatermarking::warpMarkWatermarking(wsize, tilesize, power, clipping, flagResyncAll, tilelistsize, passwstr, passwnum, gt);
 
     //questo va ricontrollato
 
-//    FDTStereoWatermarking::warpRightWatermarking(wsize, tilesize, power, clipping, flagResyncAll, tilelistsize,
-//                                                 passwstr, passwnum);
+//    FDTStereoWatermarking::warpRightWatermarking(wsize, tilesize, power, clipping, flagResyncAll, tilelistsize, passwstr, passwnum,gt);
 
-
-
-
+//    bool left_to_right = true;
+//    graph_cuts_utils::kz_main(left_to_right);
 
 
 
 //////************WATERMARKING MIKY********************/////////////////////////
-
-
 
 //    START COEFFICIENT ANALYSIS:  saving dft left coefficient   ********************
 //    double *coeff_left = image_watermarking.getCoeff_dft();
@@ -149,6 +127,70 @@ int main() {
 //    similarity   ********************
 //    stereo_watermarking::similarity_measures(wat, wat, coeff_num,"inserted watermak", "inserted watermak");
 
+
+    /* GRAPH CUTS DISPARITY COMPUTATION*/
+//
+//    std::string img1_path =  "/home/miky/ClionProjects/tesi_watermarking/img/l.png";
+//    std::string img2_path =  "/home/miky/ClionProjects/tesi_watermarking/img/r.png";
+//
+//
+//    Match::Parameters params = { // Default parameters
+//            Match::Parameters::L2, 1, // dataCost, denominator
+//            8, -1, -1, // edgeThresh, lambda1, lambda2 (smoothness cost)
+//            -1,        // K (occlusion cost)
+//            4, false   // maxIter, bRandomizeEveryIteration
+//    };
+//    float K=-1, lambda=-1, lambda1=-1, lambda2=-1;
+//    params.dataCost = Match::Parameters::L1;
+////      params.dataCost = Match::Parameters::L2;
+//
+//    GeneralImage im1 = (GeneralImage)imLoad(IMAGE_GRAY, img1_path.c_str());
+//    GeneralImage im2 = (GeneralImage)imLoad(IMAGE_GRAY, img2_path.c_str());
+//    bool color = false;
+//    if(graph_cuts_utils::isGray((RGBImage)im1) && graph_cuts_utils::isGray((RGBImage)im2)) {
+//        color=false;
+//        graph_cuts_utils::convert_gray(im1);
+//        graph_cuts_utils::convert_gray(im2);
+//    }
+//
+//    Match m(im2, im1, color);
+////
+////////    // Disparity
+//    int dMin=19, dMax=77;   //r-l
+////    int dMin=-77, dMax=-19;  //l-r
+////    int dMin=8, dMax=33;  // r-l syn
+////
+//    m.SetDispRange(dMin, dMax);
+//
+//    time_t seed = time(NULL);
+//    srand((unsigned int)seed);
+//
+//    graph_cuts_utils::fix_parameters(m, params, K, lambda, lambda1, lambda2);
+//
+//    m.KZ2();
+//
+////        m.SaveXLeft(argv[5]);
+//
+//    m.SaveScaledXLeft("/home/miky/ClionProjects/tesi_watermarking/img/disp_rl_kz.png", true); //r -l
+////    m.SaveScaledXLeft("/home/miky/ClionProjects/tesi_watermarking/img/disp_lr_kz.png", false);  //l-r
+//
+//    cv::Mat disp = imread("/home/miky/ClionProjects/tesi_watermarking/img/disp_rl_kz.png");
+//    imshow("kz disp",disp);
+//    waitKey(0);
+//////
+
+    /*STEP 3: NORMALIZE DISPARITY (OUTPUT OF KZ)*/
+
+//    cv::Mat nkz_disp;
+//    cv::Mat kz_disp = imread("/home/miky/ClionProjects/tesi_watermarking/img/disp_rl_kz.png", CV_LOAD_IMAGE_GRAYSCALE);
+//    if (kz_disp.rows == 0){
+//        cout << "Empty image";
+//    } else {
+//        Disp_opt dp;
+//        dp.disparity_normalization(kz_disp, nkz_disp);
+//    }
+////
+//    imwrite("/home/miky/ClionProjects/tesi_watermarking/img/norm_disp_rl_kz.png",nkz_disp);
 //    similarity   ********************
 //    double threshold = stereo_watermarking::threshold_computation(coeff_left, coeff_num, power);
 //    double threshold = stereo_watermarking::threshold_computation(coeff_right, coeff_num, power);
@@ -304,67 +346,8 @@ int main() {
 
 
 
-    /*  kz_disp PARAMETERS */
-/*
-
-     *
-     * lambda = 15.8
-     * k = 79.12
-     * dispMin dispMax = -77 -19
-
-*/
 
 
-    /* GRAPH CUTS DISPARITY COMPUTATION*/
-////
-//    std::string img1_path =  "/home/miky/ClionProjects/tesi_watermarking/img/l.png";
-//    std::string img2_path =  "/home/miky/ClionProjects/tesi_watermarking/img/r.png";
-//
-//
-//    Match::Parameters params = { // Default parameters
-//            Match::Parameters::L2, 1, // dataCost, denominator
-//            8, -1, -1, // edgeThresh, lambda1, lambda2 (smoothness cost)
-//            -1,        // K (occlusion cost)
-//            4, false   // maxIter, bRandomizeEveryIteration
-//    };
-//    float K=-1, lambda=-1, lambda1=-1, lambda2=-1;
-//    params.dataCost = Match::Parameters::L1;
-////      params.dataCost = Match::Parameters::L2;
-//
-//    GeneralImage im1 = (GeneralImage)imLoad(IMAGE_GRAY, img1_path.c_str());
-//    GeneralImage im2 = (GeneralImage)imLoad(IMAGE_GRAY, img2_path.c_str());
-//    bool color = false;
-//    if(graph_cuts_utils::isGray((RGBImage)im1) && graph_cuts_utils::isGray((RGBImage)im2)) {
-//        color=false;
-//        graph_cuts_utils::convert_gray(im1);
-//        graph_cuts_utils::convert_gray(im2);
-//    }
-//
-//    Match m(im2, im1, color);
-////
-////////    // Disparity
-//    int dMin=19, dMax=77;
-////    int dMin=-77, dMax=-19;
-////    int dMin=8, dMax=33;
-////
-//    m.SetDispRange(dMin, dMax);
-//
-//    time_t seed = time(NULL);
-//    srand((unsigned int)seed);
-//
-//    graph_cuts_utils::fix_parameters(m, params, K, lambda, lambda1, lambda2);
-//
-//    m.KZ2();
-//
-////        m.SaveXLeft(argv[5]);
-//
-//    m.SaveScaledXLeft("/home/miky/ClionProjects/tesi_watermarking/img/disp_kz_rl.png", true);
-////    m.SaveScaledXLeft("/home/miky/ClionProjects/tesi_watermarking/img/disp_kz_syn.png", false);
-//
-//    cv::Mat disp = imread("/home/miky/ClionProjects/tesi_watermarking/img/disp_kz_rl.png");
-//    imshow("kz disp",disp);
-//    waitKey(0);
-////
 
 
 
@@ -383,18 +366,7 @@ int main() {
     // path clion /home/miky/ClionProjects/tesi_watermarking/img/
     // path Scrivania /home/miky/Scrivania/
 
-    /*STEP 3: NORMALIZE DISPARITY (OUTPUT OF KZ)*/
-//
-//    cv::Mat nkz_disp;
-//    cv::Mat rl_kz_disp = imread("/home/miky/ClionProjects/tesi_watermarking/img/disp_kz_syn.png", CV_LOAD_IMAGE_GRAYSCALE);
-//    if (kz_disp.rows == 0){
-//        cout << "Empty image";
-//    } else {
-//        Disp_opt dp;
-//        dp.disparity_normalization(rl_kz_disp, nkz_disp);
-//    }
-////
-//    imwrite("/home/miky/ClionProjects/tesi_watermarking/img/norm_disp_rl.png",nkz_disp);
+
 
 
     /* QUALITY METRICS*/

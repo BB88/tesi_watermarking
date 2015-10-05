@@ -15,6 +15,9 @@
 using namespace std;
 
 namespace graph_cuts_utils{
+
+    void kz_main(bool left_to_right);
+
     void convert_gray(GeneralImage& im);
     bool isGray(RGBImage im);
     void set_fractions(Match::Parameters& params,float K, float lambda1, float lambda2);

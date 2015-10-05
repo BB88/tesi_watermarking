@@ -15,7 +15,7 @@
 
 
 
-void spatialWatermarking::gaussianNoiseStereoWatermarking(){
+void spatialWatermarking::gaussianNoiseStereoWatermarking(bool gt){
 
     Mat left = imread("/home/miky/ClionProjects/tesi_watermarking/img/l.png", CV_LOAD_IMAGE_COLOR);
     cv::Mat right = imread("/home/miky/ClionProjects/tesi_watermarking//img/r.png",CV_LOAD_IMAGE_COLOR);
@@ -101,12 +101,16 @@ void spatialWatermarking::gaussianNoiseStereoWatermarking(){
 
 
 
-    cv::Mat disp = imread("/home/miky/ClionProjects/tesi_watermarking/img/gt_disp.png", CV_LOAD_IMAGE_GRAYSCALE);
+    cv::Mat disp_left;
+    if (gt)
+        disp_left = imread("/home/miky/ClionProjects/tesi_watermarking/img/disp_left.png", CV_LOAD_IMAGE_GRAYSCALE);
+    else  disp_left = imread("/home/miky/ClionProjects/tesi_watermarking/img/norm_disp_lr_kz.png", CV_LOAD_IMAGE_GRAYSCALE);
+
     cv::Mat warped_mark = cv::Mat::zeros(left.rows, left.cols , CV_8UC3);
     int d;
     for (int j = 0; j < 480; j++)
         for (int i = 0; i< 640; i++){
-            d = disp.at<uchar>(j,i);
+            d = disp_left.at<uchar>(j,i);
             if ((i-d)>=0){
               warped_mark.at<Vec3b>(j, i-d) [0] =  noise.at<Vec3b>(j, i) [0];
               warped_mark.at<Vec3b>(j, i-d) [1] =  noise.at<Vec3b>(j, i) [1];
@@ -139,11 +143,15 @@ void spatialWatermarking::gaussianNoiseStereoWatermarking(){
         } cout << endl; }
 
 
-    cv::Mat rdisp= imread("/home/miky/Scrivania/Tesi/frame_1.png",CV_LOAD_IMAGE_GRAYSCALE);
+    cv::Mat disp_right;
+    if (gt)
+        disp_right = imread("/home/miky/ClionProjects/tesi_watermarking/img/disp_right.png", CV_LOAD_IMAGE_GRAYSCALE);
+    else  disp_right = imread("/home/miky/ClionProjects/tesi_watermarking/img/norm_disp_rl_kz.png", CV_LOAD_IMAGE_GRAYSCALE);
+
     cv::Mat occ_right = imread("/home/miky/ClionProjects/tesi_watermarking/img/occ_right.png", CV_LOAD_IMAGE_GRAYSCALE);
 
     Right_view rv;
-    unsigned char* left_recon = rv.left_rnc(right_warp_w.data, rdisp, occ_right, 640, 480 );
+    unsigned char* left_recon = rv.left_rnc(right_warp_w.data, disp_right, occ_right, 640, 480, gt);
 
     cv::Mat left_reconstructed = cv::Mat::zeros(480, 640 , CV_8UC3);
 
@@ -183,7 +191,7 @@ void spatialWatermarking::gaussianNoiseStereoWatermarking(){
             squared_occ_synt.at<uchar>(i,j) = 255;
         }
 
-    unsigned char* left_recon_synt = rv.left_rnc(synt_view.data, disp_synt, squared_occ_synt, 640, 480 );
+    unsigned char* left_recon_synt = rv.left_rnc(synt_view.data, disp_synt, squared_occ_synt, 640, 480, gt);
 
     cv::Mat left_synt_reconstructed = cv::Mat::zeros(480, 640 , CV_8UC3);
 

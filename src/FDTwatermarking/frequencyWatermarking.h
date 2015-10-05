@@ -11,9 +11,9 @@
 namespace FDTStereoWatermarking{
 
     void warpMarkWatermarking(int wsize, int tilesize, float power, bool clipping, bool flagResyncAll,
-                              int tilelistsize, std::string passwstr, std::string passwnum);
+                              int tilelistsize, std::string passwstr, std::string passwnum, bool gt);
 
     void warpRightWatermarking(int wsize, int tilesize, float power, bool clipping,
                                                       bool flagResyncAll, int tilelistsize, std::string passwstr,
-                                                      std::string passwnum);
+                                                      std::string passwnum, bool gt);
 }

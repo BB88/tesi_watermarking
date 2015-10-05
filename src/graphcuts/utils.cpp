@@ -4,6 +4,15 @@
 
 #include "utils.h"
 #include <cmath>
+#include <opencv2/core/core.hpp>
+#include <cv.h>
+#include <highgui.h>
+#include "../disparity_computation/stereo_matching.h"
+#include "../disparity_optimization/disp_opt.h"
+
+using namespace std;
+using namespace cv;
+
 static const int MAX_DENOM=1<<4;
 
 //bool isGray(RGBImage im) {
@@ -14,7 +23,8 @@ static const int MAX_DENOM=1<<4;
 //               imRef(im,x,y).c[0] != imRef(im,x,y).c[2])
 //                return false;
 //    return true;
-//}
+//}#include <cstdint>
+
 
 
 /// Convert to gray level a color image (extract red channel)
@@ -62,6 +72,7 @@ void graph_cuts_utils::set_fractions(Match::Parameters& params,
             e += std::abs((num2=int(i*lambda2+.5f))/(i*lambda2) - 1.0f);
         if(e<minError) {
             minError = e;
+
             params.denominator = i;
             params.K = numK;
             params.lambda1 = num1;
@@ -87,4 +98,95 @@ void graph_cuts_utils::fix_parameters(Match& m, Match::Parameters& params,
     if(lambda2<0) lambda2 = lambda;
     set_fractions(params, K, lambda1, lambda2);
     m.SetParameters(&params);
+}
+
+void graph_cuts_utils::kz_main(bool left_to_right) {
+
+    /*  kz_disp PARAMETERS */
+/*
+
+     *
+     * lambda = 15.8
+     * k = 79.12
+     * dispMin dispMax = -77 -19
+
+*/
+
+    std::string img1_path =  "/home/miky/ClionProjects/tesi_watermarking/img/l.png";
+    std::string img2_path =  "/home/miky/ClionProjects/tesi_watermarking/img/r.png";
+
+
+    Match::Parameters params = { // Default parameters
+            Match::Parameters::L2, 1, // dataCost, denominator
+            8, -1, -1, // edgeThresh, lambda1, lambda2 (smoothness cost)
+            -1,        // K (occlusion cost)
+            4, false   // maxIter, bRandomizeEveryIteration
+    };
+    float K=-1, lambda=-1, lambda1=-1, lambda2=-1;
+    params.dataCost = Match::Parameters::L1;
+//      params.dataCost = Match::Parameters::L2;
+
+    GeneralImage im1 = (GeneralImage)imLoad(IMAGE_GRAY, img1_path.c_str());
+    GeneralImage im2 = (GeneralImage)imLoad(IMAGE_GRAY, img2_path.c_str());
+    bool color = false;
+    if(graph_cuts_utils::isGray((RGBImage)im1) && graph_cuts_utils::isGray((RGBImage)im2)) {
+        color=false;
+        graph_cuts_utils::convert_gray(im1);
+        graph_cuts_utils::convert_gray(im2);
+    }
+
+
+    Match m1(im1, im2, color);
+    Match m2(im2, im1, color);
+//////    // Disparity
+    int dMinr=19, dMaxr=77;   //r-l
+    int dMinl=-77, dMaxl=-19;  //l-r
+//    int dMin=8, dMax=33;  // r-l syn
+
+    if (left_to_right)
+        m1.SetDispRange(dMinl, dMaxl);
+    else  m2.SetDispRange(dMinr, dMaxr);
+
+    time_t seed = time(NULL);
+    srand((unsigned int)seed);
+
+    if (left_to_right){
+        graph_cuts_utils::fix_parameters(m1, params, K, lambda, lambda1, lambda2);
+        m1.KZ2();
+        m1.SaveScaledXLeft("/home/miky/ClionProjects/tesi_watermarking/img/disp_lr_kz.png", true);
+    }
+    else {
+        graph_cuts_utils::fix_parameters(m2, params, K, lambda, lambda1, lambda2);
+        m2.KZ2();
+        m2.SaveScaledXLeft("/home/miky/ClionProjects/tesi_watermarking/img/disp_rl_kz.png", false);
+    }
+
+//    cv::Mat disp = imread("/home/miky/ClionProjects/tesi_watermarking/img/disp_rl_kz.png");
+//    imshow("kz disp",disp);
+//    waitKey(0);
+
+    cv::Mat nkz_disp;
+    cv::Mat kz_disp;
+
+    if (left_to_right){
+        kz_disp = imread("/home/miky/ClionProjects/tesi_watermarking/img/disp_lr_kz.png", CV_LOAD_IMAGE_GRAYSCALE);}
+    else {
+        kz_disp = imread("/home/miky/ClionProjects/tesi_watermarking/img/disp_rl_kz.png", CV_LOAD_IMAGE_GRAYSCALE);
+    }
+
+    if (kz_disp.rows == 0){
+        cout << "Empty image";
+    } else {
+        Disp_opt dp;
+        dp.disparity_normalization(kz_disp, nkz_disp);
+    }
+
+    if (left_to_right){
+        imwrite("/home/miky/ClionProjects/tesi_watermarking/img/norm_disp_lr_kz.png",nkz_disp); }
+    else {
+        imwrite("/home/miky/ClionProjects/tesi_watermarking/img/norm_disp_rl_kz.png",nkz_disp);  }
+
+
+
+
 }

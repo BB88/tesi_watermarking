@@ -46,8 +46,8 @@ void Disp_opt::disparity_normalization(cv::Mat kz_disp, cv::Mat &wkz_disp) {
     dispSize = dMax - dMin + 1;
     wkz_disp = cv::Mat::zeros(kz_disp.rows, kz_disp.cols, CV_8UC1);
     // load ground_truth for comparison
-    Mat gt_disp = imread("/home/miky/ClionProjects/tesi_watermarking/img/gt_disp.png",
-                    CV_LOAD_IMAGE_GRAYSCALE);
+//    Mat gt_disp = imread("/home/miky/ClionProjects/tesi_watermarking/img/gt_disp.png",
+//                    CV_LOAD_IMAGE_GRAYSCALE);
 //    cout << "channels" << fg_disp.channels() << endl;
     for(int j=0;j< kz_disp.rows;j++) {
         for (int i = 0; i < kz_disp.cols; i++) {

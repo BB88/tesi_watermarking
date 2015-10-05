@@ -9,6 +9,6 @@
 
 namespace spatialWatermarking{
 
-void gaussianNoiseStereoWatermarking();
+void gaussianNoiseStereoWatermarking(bool gt);
 
 }
