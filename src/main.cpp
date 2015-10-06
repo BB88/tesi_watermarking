@@ -16,6 +16,9 @@
 //grapfh cuts
 #include "./graphcuts/utils.h"
 
+//quality metrics
+#include "./quality_metrics/quality_metrics.h"
+#include "./quality_metrics/RRQualityMetrics.h"
 
 //libconfig
 #include <libconfig.h++>
@@ -28,7 +31,8 @@ using namespace cv;
 using namespace cv::datasets;
 using namespace libconfig;
 using namespace graph_cuts_utils;
-
+using namespace qm;
+using namespace RRQualityMetrics;
 
 
 
@@ -57,14 +61,15 @@ int main() {
     bool gt = false;
 //  spatialWatermarking::gaussianNoiseStereoWatermarking(gt);
 
-    FDTStereoWatermarking::warpMarkWatermarking(wsize, tilesize, power, clipping, flagResyncAll, tilelistsize, passwstr, passwnum, gt);
+//    FDTStereoWatermarking::warpMarkWatermarking(wsize, tilesize, power, clipping, flagResyncAll, tilelistsize, passwstr, passwnum, gt);
 
     //questo va ricontrollato
-
 //    FDTStereoWatermarking::warpRightWatermarking(wsize, tilesize, power, clipping, flagResyncAll, tilelistsize, passwstr, passwnum,gt);
 
-//    bool left_to_right = true;
-//    graph_cuts_utils::kz_main(left_to_right);
+//    bool left_to_right = false;
+//    graph_cuts_utils::kz_main(left_to_right,"left_watermarked","right_watermarked");
+
+    RRQualityMetrics::compute_metrics();
 
 
 

@@ -100,7 +100,7 @@ void graph_cuts_utils::fix_parameters(Match& m, Match::Parameters& params,
     m.SetParameters(&params);
 }
 
-void graph_cuts_utils::kz_main(bool left_to_right) {
+void graph_cuts_utils::kz_main(bool left_to_right, std::string img1_name,  std::string img2_name) {
 
     /*  kz_disp PARAMETERS */
 /*
@@ -111,9 +111,11 @@ void graph_cuts_utils::kz_main(bool left_to_right) {
      * dispMin dispMax = -77 -19
 
 */
+    std::stringstream path1 ;
+    path1 << "/home/miky/ClionProjects/tesi_watermarking/img/"<< img1_name <<".png";
 
-    std::string img1_path =  "/home/miky/ClionProjects/tesi_watermarking/img/l.png";
-    std::string img2_path =  "/home/miky/ClionProjects/tesi_watermarking/img/r.png";
+    std::stringstream path2 ;
+    path2 << "/home/miky/ClionProjects/tesi_watermarking/img/"<< img2_name <<".png";
 
 
     Match::Parameters params = { // Default parameters
@@ -126,8 +128,8 @@ void graph_cuts_utils::kz_main(bool left_to_right) {
     params.dataCost = Match::Parameters::L1;
 //      params.dataCost = Match::Parameters::L2;
 
-    GeneralImage im1 = (GeneralImage)imLoad(IMAGE_GRAY, img1_path.c_str());
-    GeneralImage im2 = (GeneralImage)imLoad(IMAGE_GRAY, img2_path.c_str());
+    GeneralImage im1 = (GeneralImage)imLoad(IMAGE_GRAY, path1.str().c_str());
+    GeneralImage im2 = (GeneralImage)imLoad(IMAGE_GRAY,  path2.str().c_str());
     bool color = false;
     if(graph_cuts_utils::isGray((RGBImage)im1) && graph_cuts_utils::isGray((RGBImage)im2)) {
         color=false;
@@ -150,15 +152,22 @@ void graph_cuts_utils::kz_main(bool left_to_right) {
     time_t seed = time(NULL);
     srand((unsigned int)seed);
 
+    std::stringstream path_disp ;
+    if (left_to_right)
+        path_disp << "/home/miky/ClionProjects/tesi_watermarking/img/disp_"<< img1_name <<"_"<<"to_"<<img2_name<<".png";
+    else  path_disp << "/home/miky/ClionProjects/tesi_watermarking/img/disp_"<< img2_name <<"_"<<"to_"<<img1_name<<".png";
+
+
+
     if (left_to_right){
         graph_cuts_utils::fix_parameters(m1, params, K, lambda, lambda1, lambda2);
         m1.KZ2();
-        m1.SaveScaledXLeft("/home/miky/ClionProjects/tesi_watermarking/img/disp_lr_kz.png", true);
+        m1.SaveScaledXLeft(path_disp.str().c_str(), false);
     }
     else {
         graph_cuts_utils::fix_parameters(m2, params, K, lambda, lambda1, lambda2);
         m2.KZ2();
-        m2.SaveScaledXLeft("/home/miky/ClionProjects/tesi_watermarking/img/disp_rl_kz.png", false);
+        m2.SaveScaledXLeft(path_disp.str().c_str(), true);
     }
 
 //    cv::Mat disp = imread("/home/miky/ClionProjects/tesi_watermarking/img/disp_rl_kz.png");
@@ -166,13 +175,19 @@ void graph_cuts_utils::kz_main(bool left_to_right) {
 //    waitKey(0);
 
     cv::Mat nkz_disp;
-    cv::Mat kz_disp;
+    cv::Mat kz_disp=imread(path_disp.str().c_str(), CV_LOAD_IMAGE_GRAYSCALE);
 
-    if (left_to_right){
-        kz_disp = imread("/home/miky/ClionProjects/tesi_watermarking/img/disp_lr_kz.png", CV_LOAD_IMAGE_GRAYSCALE);}
-    else {
-        kz_disp = imread("/home/miky/ClionProjects/tesi_watermarking/img/disp_rl_kz.png", CV_LOAD_IMAGE_GRAYSCALE);
-    }
+//
+//    if (left_to_right){
+//        kz_disp = imread(path_disp.str().c_str(), CV_LOAD_IMAGE_GRAYSCALE);}
+//    else {
+//        kz_disp = imread(path_disp.str().c_str(), CV_LOAD_IMAGE_GRAYSCALE);
+//    }
+
+    std::stringstream path_norm_disp;
+    if (left_to_right)
+        path_norm_disp <<"/home/miky/ClionProjects/tesi_watermarking/img/norm_disp_"<< img1_name <<"_"<<"to_"<<img2_name<<".png";
+    else  path_norm_disp <<  "/home/miky/ClionProjects/tesi_watermarking/img/norm_disp_"<< img2_name <<"_"<<"to_"<<img1_name<<".png";
 
     if (kz_disp.rows == 0){
         cout << "Empty image";
@@ -181,12 +196,12 @@ void graph_cuts_utils::kz_main(bool left_to_right) {
         dp.disparity_normalization(kz_disp, nkz_disp);
     }
 
+
     if (left_to_right){
-        imwrite("/home/miky/ClionProjects/tesi_watermarking/img/norm_disp_lr_kz.png",nkz_disp); }
+        imwrite(path_norm_disp.str().c_str(),nkz_disp); }
     else {
-        imwrite("/home/miky/ClionProjects/tesi_watermarking/img/norm_disp_rl_kz.png",nkz_disp);  }
 
-
+        imwrite(path_norm_disp.str().c_str(),nkz_disp); }
 
 
 }

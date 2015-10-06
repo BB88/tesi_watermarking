@@ -16,7 +16,7 @@ using namespace std;
 
 namespace graph_cuts_utils{
 
-    void kz_main(bool left_to_right);
+    void kz_main(bool left_to_right,std::string img1_name,  std::string img2_name);
 
     void convert_gray(GeneralImage& im);
     bool isGray(RGBImage im);

@@ -33,7 +33,7 @@ void FDTStereoWatermarking::warpMarkWatermarking(int wsize, int tilesize, float 
                                                  std::string passwnum, bool gt){
 
     Right_view rv;
-    cv::Mat left = imread("/home/miky/ClionProjects/tesi_watermarking/img/l.png", CV_LOAD_IMAGE_COLOR);
+    cv::Mat left = imread("/home/miky/ClionProjects/tesi_watermarking/img/left.png", CV_LOAD_IMAGE_COLOR);
     int dim = 512;
 
     unsigned char *left_uchar = left.data;
@@ -106,7 +106,7 @@ void FDTStereoWatermarking::warpMarkWatermarking(int wsize, int tilesize, float 
             squared_rOcc.at<uchar>(i,j) = occ_right.at<uchar>(i,j+offset);
         }
 
-    cv::Mat right = imread("/home/miky/ClionProjects/tesi_watermarking/img/r.png",CV_LOAD_IMAGE_COLOR);
+    cv::Mat right = imread("/home/miky/ClionProjects/tesi_watermarking/img/right.png",CV_LOAD_IMAGE_COLOR);
     unsigned char *right_uchar = right.data;
     unsigned char *squared_right =  new unsigned char[squared_dim];
     for (int i = 0; i < 480; i ++ )
