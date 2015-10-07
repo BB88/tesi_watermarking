@@ -24,6 +24,8 @@
 #include <libconfig.h++>
 #include "./config/config.hpp"
 
+#include "./spatialWatermarking/gaussianNoise.h"
+
 #include "FDTwatermarking/frequencyWatermarking.h"
 
 using namespace std;
@@ -33,6 +35,7 @@ using namespace libconfig;
 using namespace graph_cuts_utils;
 using namespace qm;
 using namespace RRQualityMetrics;
+using namespace spatialWatermarking;
 
 
 
@@ -59,17 +62,49 @@ int main() {
     std::string passwnum=generalPars.passwnum;
 
     bool gt = false;
+
+
+    //video processing
+
+    CvCapture* capture = 0;
+    IplImage *frame = 0;
+
+    if (!(capture = cvCaptureFromFile("/home/miky/ClionProjects/tesi_watermarking/img/output.mp4")))
+        printf("Cannot open video\n");
+
+    cvNamedWindow("tsukuba", CV_WINDOW_AUTOSIZE);
+
+    while (1) {
+
+        frame = cvQueryFrame(capture);
+        if (!frame)
+            break;
+
+        //non serve a nulla ma ti fa vedere che da un frame crea un'immagine e la mostra
+        IplImage *temp = cvCreateImage(cvSize(frame->width/2, frame->height/2), frame->depth, frame->nChannels); // A new Image half size
+        cvShowImage("temporary ", temp); // Display the frame
+
+        cvResize(frame, temp, CV_INTER_CUBIC); // Resize
+        cvShowImage("tsukuba", frame); // Display the frame
+        cvReleaseImage(&temp);
+        if (cvWaitKey(5000) == 27) // Escape key and wait, 5 sec per capture
+            break;
+    }
+
+    cvReleaseImage(&frame);
+    cvReleaseCapture(&capture);
+
 //  spatialWatermarking::gaussianNoiseStereoWatermarking(gt);
 
-//    FDTStereoWatermarking::warpMarkWatermarking(wsize, tilesize, power, clipping, flagResyncAll, tilelistsize, passwstr, passwnum, gt);
+//   FDTStereoWatermarking::warpMarkWatermarking(wsize, tilesize, power, clipping, flagResyncAll, tilelistsize, passwstr, passwnum, gt);
 
     //questo va ricontrollato
-//    FDTStereoWatermarking::warpRightWatermarking(wsize, tilesize, power, clipping, flagResyncAll, tilelistsize, passwstr, passwnum,gt);
+//   FDTStereoWatermarking::warpRightWatermarking(wsize, tilesize, power, clipping, flagResyncAll, tilelistsize, passwstr, passwnum,gt);
 
-//    bool left_to_right = false;
-//    graph_cuts_utils::kz_main(left_to_right,"left_watermarked","right_watermarked");
+//   bool left_to_right = false;
+//   graph_cuts_utils::kz_main(left_to_right,"left_watermarked","right_watermarked");
 
-    RRQualityMetrics::compute_metrics();
+//    RRQualityMetrics::compute_metrics();
 
 
 

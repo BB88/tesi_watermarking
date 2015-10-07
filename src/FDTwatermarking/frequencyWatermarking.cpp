@@ -78,7 +78,7 @@ void FDTStereoWatermarking::warpMarkWatermarking(int wsize, int tilesize, float 
     cv::Mat disp_left;
     if (gt)
          disp_left = imread("/home/miky/ClionProjects/tesi_watermarking/img/disp_left.png", CV_LOAD_IMAGE_GRAYSCALE);
-    else  disp_left = imread("/home/miky/ClionProjects/tesi_watermarking/img/norm_disp_lr_kz.png", CV_LOAD_IMAGE_GRAYSCALE);
+    else  disp_left = imread("/home/miky/ClionProjects/tesi_watermarking/img/norm_disp_left_to_right.png", CV_LOAD_IMAGE_GRAYSCALE);
 
 
     cv::Mat occ_left = imread("/home/miky/ClionProjects/tesi_watermarking/img/occ_left.png", CV_LOAD_IMAGE_GRAYSCALE);
@@ -93,7 +93,7 @@ void FDTStereoWatermarking::warpMarkWatermarking(int wsize, int tilesize, float 
     cv::Mat disp_right;
     if (gt)
         disp_right = imread("/home/miky/ClionProjects/tesi_watermarking/img/disp_right.png", CV_LOAD_IMAGE_GRAYSCALE);
-    else  disp_right = imread("/home/miky/ClionProjects/tesi_watermarking/img/norm_disp_rl_kz.png", CV_LOAD_IMAGE_GRAYSCALE);
+    else  disp_right = imread("/home/miky/ClionProjects/tesi_watermarking/img/norm_disp_right_to_left.png", CV_LOAD_IMAGE_GRAYSCALE);
 
 
     cv::Mat occ_right = imread("/home/miky/ClionProjects/tesi_watermarking/img/occ_right.png", CV_LOAD_IMAGE_GRAYSCALE);

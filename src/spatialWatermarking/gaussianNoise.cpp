@@ -17,8 +17,8 @@
 
 void spatialWatermarking::gaussianNoiseStereoWatermarking(bool gt){
 
-    Mat left = imread("/home/miky/ClionProjects/tesi_watermarking/img/l.png", CV_LOAD_IMAGE_COLOR);
-    cv::Mat right = imread("/home/miky/ClionProjects/tesi_watermarking//img/r.png",CV_LOAD_IMAGE_COLOR);
+    Mat left = imread("/home/miky/ClionProjects/tesi_watermarking/img/left.png", CV_LOAD_IMAGE_COLOR);
+    cv::Mat right = imread("/home/miky/ClionProjects/tesi_watermarking//img/right.png",CV_LOAD_IMAGE_COLOR);
 
     double m_NoiseStdDev=10;
 //    double m_NoiseStdDev2=100;
@@ -104,7 +104,7 @@ void spatialWatermarking::gaussianNoiseStereoWatermarking(bool gt){
     cv::Mat disp_left;
     if (gt)
         disp_left = imread("/home/miky/ClionProjects/tesi_watermarking/img/disp_left.png", CV_LOAD_IMAGE_GRAYSCALE);
-    else  disp_left = imread("/home/miky/ClionProjects/tesi_watermarking/img/norm_disp_lr_kz.png", CV_LOAD_IMAGE_GRAYSCALE);
+    else  disp_left = imread("/home/miky/ClionProjects/tesi_watermarking/img/norm_disp_left_to_right.png", CV_LOAD_IMAGE_GRAYSCALE);
 
     cv::Mat warped_mark = cv::Mat::zeros(left.rows, left.cols , CV_8UC3);
     int d;
@@ -130,7 +130,7 @@ void spatialWatermarking::gaussianNoiseStereoWatermarking(bool gt){
 
     Mat right_warped_correl;
     right_warp_w.convertTo(m1, CV_32F);
-    noise.convertTo(m2, CV_32F);
+    warped_mark.convertTo(m2, CV_32F); // correlo con marchio warpato
 
     matchTemplate(m1, m2, right_warped_correl, CV_TM_CCOEFF_NORMED);
 
@@ -139,14 +139,14 @@ void spatialWatermarking::gaussianNoiseStereoWatermarking(bool gt){
 //        cout << "row " << i << endl;
         for (int j = 0; j < right_warped_correl.cols; j++)
         {
-            cout << "correlation btw right with warped watermark and watermark " << (right_warped_correl.at<float>(i,j));
+            cout << "correlation btw right with warped watermark and warped watermark " << (right_warped_correl.at<float>(i,j));
         } cout << endl; }
 
 
     cv::Mat disp_right;
     if (gt)
         disp_right = imread("/home/miky/ClionProjects/tesi_watermarking/img/disp_right.png", CV_LOAD_IMAGE_GRAYSCALE);
-    else  disp_right = imread("/home/miky/ClionProjects/tesi_watermarking/img/norm_disp_rl_kz.png", CV_LOAD_IMAGE_GRAYSCALE);
+    else  disp_right = imread("/home/miky/ClionProjects/tesi_watermarking/img/norm_disp_right_to_left.png", CV_LOAD_IMAGE_GRAYSCALE);
 
     cv::Mat occ_right = imread("/home/miky/ClionProjects/tesi_watermarking/img/occ_right.png", CV_LOAD_IMAGE_GRAYSCALE);
 
