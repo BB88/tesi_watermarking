@@ -32,6 +32,7 @@ namespace stereo_watermarking{
 //    void writeToFile(double* m,int lenght, std::string filename);
     double  threshold_computation(double* original_coeff,int coeff_num, double power);
     void similarity_graph(int number_of_marks,int coeff_num,double* wat);
+    void random_mark_detection(int number_of_marks,unsigned char* marked_image, int dim);
     double* compute_coeff_function(unsigned char* image, int dim,std::string filename);
 //    void viewPointCloudRGB(pcl::PointCloud<pcl::PointXYZRGB>::Ptr point_cloud_ptr, std::string title);
 //    boost::shared_ptr<pcl::visualization::PCLVisualizer> createVisualizerRGB (pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr cloud, std::string title);

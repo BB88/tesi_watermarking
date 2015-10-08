@@ -166,8 +166,7 @@ public:
      * \param tilelist      List of tiles to watermark
      * \param tilelistsize    Number of elements of the tiles list
      */
-    void setParameters(int *w, int watsize, int tsize, float pwr, bool useClipping,
-                       bool synchronization, int *tilelist, int tilelistsize);
+    void setParameters(int *w, int watsize, float pwr);
 
     /**
      * Set password.
@@ -234,7 +233,7 @@ private:
     int WatCod( unsigned char *ImageOut, int width, int height, const char *passw_str, const char *passw_num,
                 int *watermark, int wsize, float power, float** imidft_wat,int dim);
     int warpedWatCod(unsigned char *ImageOut, int width, int height, const char *passw_str, const char *passw_num,
-                                   int *watermark, int wsize, float power, float** imidft_wat);
+                     int *watermark, int wsize, float power, float** imidft_wat);
     void seed_generator(const char *passw_str, const char *passw_num, LONG8BYTE *s );
     void generate_mark(int *watermark,int wsize, const char *passw_str, const char *passw_num, int coefficient_number,double* mark,bool detection) ;
     void seed_initialization(LONG8BYTE *s);
@@ -248,12 +247,12 @@ private:
     void antizone(double **imdft,int nr, int nc, int diag0, int ndiag, double *buff);
 
     int WatDec(unsigned char *ImageIn, int nrImageIn, int ncImageIn,
-                             const char *campolett, const char *camponum,
-                             int *bit, int size, int nbit,
-                             float power, double *datiuscita, unsigned char *buffimrisinc,
-                             int *vettoretile, bool flagRisincTotale,int dim );
+               const char *campolett, const char *camponum,
+               int *bit, int size, int nbit,
+               float power, double *datiuscita, unsigned char *buffimrisinc,
+               int *vettoretile, bool flagRisincTotale,int dim );
     void decoale(double **imr, int nre, int nce, int d1, int nd,
-                               LONG8BYTE *seed, double alpha,int *bit, int nbit);
+                 LONG8BYTE *seed, double alpha,int *bit, int nbit);
 
     void mlfunc(double *buff,int nrfile,int niteraz);
     double dgamma(double x);

@@ -14,7 +14,7 @@ namespace Watermarking_config {
             // Read the file. If there is an error, report it and exit.
             try
             {
-                cfg.readFile("/home/miky/ClionProjects/tesi_watermarking/config/config.cfg");
+                cfg.readFile("/home/bene/ClionProjects/tesi_watermarking/config/config.cfg");
             }
             catch(const libconfig::FileIOException &fioex)
             {
@@ -41,11 +41,7 @@ namespace Watermarking_config {
             const libconfig::Setting & ConfigSettings  = root["set_parameters_params"];
 
             pars.wsize = (int) ConfigSettings["wsize"];
-            pars.tilesize = (int) ConfigSettings["tilesize"];
             pars.power = (float) ConfigSettings["power"];
-            pars.clipping = (bool) ConfigSettings["clipping"];
-            pars.flagResyncAll = (bool) ConfigSettings["flagResyncAll"];
-            pars.tilelistsize = (int)  ConfigSettings["tilelistsize"];
 
         }
         catch(const libconfig::SettingNotFoundException &nfex)

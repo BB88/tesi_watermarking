@@ -19,7 +19,7 @@
 #include <opencv2/core/core.hpp>
 #include <highgui.h>
 
-#include </home/miky/ClionProjects/tesi_watermarking/src/utils.h>
+#include </home/bene/ClionProjects/tesi_watermarking/src/utils.h>
 
 
 using namespace cv;
@@ -44,20 +44,12 @@ const int Watermarking::WINDOW = 9;
 using namespace AllocIm;
 using namespace std;
 
-void Watermarking::setParameters(int *w, int watsize, int tsize, float pwr, bool useClipping,
-                           bool resynchronization, int *tilelist, int tilelistsize)
+void Watermarking::setParameters(int *w, int watsize, float pwr)
 {
     // list of wsize (watermark)
     memcpy(watermark, w, sizeof(int) * watsize);
-
     wsize = watsize;
-    tilesize = tsize;
     power = pwr;
-    clipping = useClipping;
-    flagResyncAll = resynchronization;
-
-    assert(tilelistsize <= 33);
-    memcpy(tiles, tilelist, sizeof(int) * tilelistsize);
 }
 
 void Watermarking::setPassword(std::string passwStr, std::string passwNum)
@@ -147,6 +139,7 @@ int Watermarking::WatCod(unsigned char *ImageOut, int width, int height, const c
     double *coefficient_vector = NULL;
 //    coefficients extraction
     coefficient_vector = zones_to_watermark(imdft, dim, dim, diag0, ndiag, 0, &coefficient_number);
+    cout<<coefficient_number<<endl;
 //    stereo_watermarking::writeToFile(coefficient_vector,coefficient_number,"/home/miky/Scrivania/wm_coff_mark.txt");
 //    saving coefficients
     coeff_dft = new double [coefficient_number];
@@ -284,7 +277,7 @@ int Watermarking::warpedWatCod(unsigned char *ImageOut, int width, int height, c
     imdftfase_wat = AllocImDouble(dim, dim);
     FFT2D::dft2d(imidft_wat, imdft_wat, imdftfase_wat, dim, dim);
     double *mark = new double[coefficient_number];
-    mark = zones_to_watermark(imdft, dim, dim, diag0, ndiag, 0, &coefficient_number);
+//    mark = zones_to_watermark(imdft, dim, dim, diag0, ndiag, 0, &coefficient_number);
 
 //    add mark to coefficients: 1 if add_mult
     addmark(coefficient_vector, mark, coefficient_number, power,1);
@@ -1560,7 +1553,7 @@ void Watermarking::decoale(double **imr, int nre, int nce, int d1, int nd,
         // studio della statistica della zona i-esima
 
         mlfunc(appbuff,cont[k],NIT);
-
+        //cout<<cont[k]<<endl;
         appbuff += cont[k];
         tot += cont[k];
 
@@ -1673,12 +1666,12 @@ void Watermarking::mlfunc(double *buff,int nrfile,int niteraz)
     double *y;
 
 
-    nr=nrfile;
-    beta0=0.7;
-    beta1=2.3;
-    ny=niteraz;
+    nr=nrfile; //cont[k]
+    beta0 = 0.7;
+    beta1 = 2.3;
+    ny = niteraz;
 
-    dbeta=beta1-beta0;
+    dbeta = beta1-beta0;
     prec=dbeta/ny;
 
     y = new double [ny];

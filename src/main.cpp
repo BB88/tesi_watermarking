@@ -59,23 +59,44 @@ int main() {
     Watermarking_config::set_parameters_params pars = Watermarking_config::ConfigLoader::get_instance().loadSetParametersConfiguration();
 
     int wsize = pars.wsize;
-    int tilesize=pars.tilesize;
     float power=pars.power;
-    bool clipping=pars.clipping;
-    bool flagResyncAll=pars.flagResyncAll;
-    int tilelistsize=pars.tilelistsize;
-
 
     Watermarking_config::general_params generalPars = Watermarking_config::ConfigLoader::get_instance().loadGeneralParamsConfiguration();
 
-    bool masking=generalPars.masking;
-    std::string passwstr=generalPars.passwstr;
-    std::string passwnum=generalPars.passwnum;
+    bool masking = generalPars.masking;
+    std::string passwstr = generalPars.passwstr;
+    std::string passwnum = generalPars.passwnum;
+
+    //    random binary watermark   ********************
+    int watermark[64];
+    for (int i = 0; i < 64; i++){
+        int b = rand() % 2;
+        watermark[i]=b;
+    }
 
 //    spatialWatermarking::gaussianNoiseStereoWatermarking();
 
-    FDTStereoWatermarking::warpMarkWatermarking(wsize, tilesize, power, clipping, flagResyncAll, tilelistsize,
-                                                passwstr, passwnum);
+    FDTStereoWatermarking::warpMarkWatermarking(watermark, wsize, power, passwstr, passwnum);
+
+
+    cv::Mat marked_image = imread("/home/bene/ClionProjects/tesi_watermarking/img/left_watermarked.png", CV_LOAD_IMAGE_COLOR);
+    unsigned char *marked_image_uchar = marked_image.data;
+    int dim = 512;
+    int squared_dim = dim * dim *3;
+    unsigned char *squared_marked_image =  new unsigned char[squared_dim];
+    int nc = 640;
+    int nc_s = dim;
+    int offset = 127;
+    for (int i = 0; i < 480; i ++ )
+        for (int j = 0; j < nc_s; j++) {
+            for (int k =0; k<3;k++){
+                squared_marked_image[(i * nc_s + j)*3 + k] = marked_image_uchar[(i *nc + j + offset)*3 + k];
+            }
+        }
+    stereo_watermarking::random_mark_detection(100,squared_marked_image,512);
+
+
+
 
     //questo va ricontrollato
 
@@ -97,8 +118,8 @@ int main() {
 //    int coeff_num = image_watermarking.getCoeff_number();
 //    double *wat = new double[coeff_num];
 //    wat = image_watermarking.getFinal_mark();
-//    stereo_watermarking::writeToFile(wat,coeff_num,"/home/miky/Scrivania/wat.txt");
-//    stereo_watermarking::writeToFile(coeff_left,coeff_num,"/home/miky/Scrivania/diag_coeff_left.txt");
+//    stereo_watermarking::writeToFile(wat,coeff_num,"/home/bene/Scrivania/wat.txt");
+//    stereo_watermarking::writeToFile(coeff_left,coeff_num,"/home/bene/Scrivania/diag_coeff_left.txt");
 //    decoding   ********************
 //    bool left_detection = image_watermarking.extractWatermark(squared_marked_left, 256, 256);
 //    cout<< "left_detection:    " << left_detection <<endl;
@@ -108,13 +129,13 @@ int main() {
 //        marked_coeff_left[i] = marked_coeff_left[i]/coeff_left[i];
 //    }
 //    double *retrieve_left_wat = stereo_watermarking::not_blind_extraction(coeff_left,marked_coeff_left,coeff_num,power);
-//    stereo_watermarking::writeMatToFile(retrieve_left_wat,coeff_num,"/home/miky/Scrivania/Tesi/retrieve_left_wat.txt");
-//    stereo_watermarking::writeMatToFile(marked_coeff_left,coeff_num,"/home/miky/Scrivania/Tesi/marked_coeff_left.txt");
+//    stereo_watermarking::writeMatToFile(retrieve_left_wat,coeff_num,"/home/bene/Scrivania/Tesi/retrieve_left_wat.txt");
+//    stereo_watermarking::writeMatToFile(marked_coeff_left,coeff_num,"/home/bene/Scrivania/Tesi/marked_coeff_left.txt");
 //    stereo_watermarking::similarity_graph(100,coeff_num,wat);
 //    constructing SQUARED RIGHT to compute dft analysis   ********************
-//    cv::Mat right = imread("/home/miky/ClionProjects/tesi_watermarking/img/r.png",CV_LOAD_IMAGE_COLOR);
+//    cv::Mat right = imread("/home/bene/ClionProjects/tesi_watermarking/img/r.png",CV_LOAD_IMAGE_COLOR);
 //    unsigned char *right_uchar = right.data;
-//    cv::Mat disp = imread("/home/miky/ClionProjects/tesi_watermarking/img/gt_disp.png", CV_LOAD_IMAGE_GRAYSCALE);
+//    cv::Mat disp = imread("/home/bene/ClionProjects/tesi_watermarking/img/gt_disp.png", CV_LOAD_IMAGE_GRAYSCALE);
 //    unsigned char *squared_right =  new unsigned char[squared_dim];
 //    cv::Mat right_squared = cv::Mat::zeros(256, 256, CV_8UC3);
 //    unsigned char d_val = disp.at<uchar>(0,127);
@@ -127,7 +148,7 @@ int main() {
 //    unsigned char *squared_dft_marked_right = image_watermarking.insertWatermark(squared_right,256,256);
 ////    saving dft right coefficient   ********************
 //    double *coeff_right = image_watermarking.getCoeff_dft();
-//    stereo_watermarking::writeToFile(coeff_right,coeff_num,"/home/miky/Scrivania/diag_coeff_right.txt");
+//    stereo_watermarking::writeToFile(coeff_right,coeff_num,"/home/bene/Scrivania/diag_coeff_right.txt");
 //    spatial extraction of the watermark   ********************
 
 
@@ -144,7 +165,7 @@ int main() {
 
 
 //    double *retrieve_right_wat = stereo_watermarking::not_blind_extraction(coeff_left,marked_coeff_left,coeff_num,power);  // da modificare gli input
-//    stereo_watermarking::writeMatToFile(marked_coeff_rec_left,coeff_num,"/home/miky/Scrivania/Tesi/marked_coeff_rec_left.txt");
+//    stereo_watermarking::writeMatToFile(marked_coeff_rec_left,coeff_num,"/home/bene/Scrivania/Tesi/marked_coeff_rec_left.txt");
 
 //    similarity   ********************
 //    stereo_watermarking::similarity_measures(wat, wat, coeff_num,"inserted watermak", "inserted watermak");
@@ -172,19 +193,6 @@ int main() {
 
 
 
-//    imshow   ********************
-//    stereo_watermarking::show_ucharImage(squared_left, 256, 256, "squared left");
-//    stereo_watermarking::show_ucharImage(mark_uchar, 256, 256, "mark_uchar");
-//    stereo_watermarking::show_doubleImage(squared_mark, 256, 256, "squared_mark");
-//    stereo_watermarking::show_ucharImage(squared_marked_left, 256, 256, "squared marked left");
-//    stereo_watermarking::show_doubleImage(squared_mark, 256, 256, "squared_mark");
-//    stereo_watermarking::show_ucharImage(squared_mark_uchar, 256, 256, "squared_mark_uchar");
-//
-//    stereo_watermarking::show_doubleImage(warped_mark, 640, 480, "mark_warped");
-//    stereo_watermarking::show_ucharImage(squared_right, 256, 256, "squared right");
-//    stereo_watermarking::show_ucharImage(marked_right, 640, 480, "marked_right");
-//    stereo_watermarking::show_ucharImage(squared_marked_right, 256, 256, "squared_marked_right");
-//    stereo_watermarking::show_ucharImage(squared_left_ric, 256, 256, "squared_left_ric");
 
 //    show squared mark from reconstructed left   ********************
 //    double *squared_mark_from_rec_left =  new double[squared_dim];
@@ -205,11 +213,11 @@ int main() {
 //    saving marked dft left coefficient   ********************
 //    double *marked_coeff_right = image_watermarking.getMarked_coeff();
 ////    double *retrieve_right_wat = stereo_watermarking::not_blind_extraction(coeff_left,marked_coeff_left,coeff_num,power);  // da modificare gli input
-////    stereo_watermarking::writeToFile(marked_coeff_right,coeff_num,"/home/miky/Scrivania/Tesi/marked_coeff_right.txt");
+////    stereo_watermarking::writeToFile(marked_coeff_right,coeff_num,"/home/bene/Scrivania/Tesi/marked_coeff_right.txt");
 ////    reconstructing marked left   ********************
-////    cv::Mat right_disp = imread("/home/miky/ClionProjects/tesi_watermarking/img/disp_right.png", CV_LOAD_IMAGE_GRAYSCALE);
+////    cv::Mat right_disp = imread("/home/bene/ClionProjects/tesi_watermarking/img/disp_right.png", CV_LOAD_IMAGE_GRAYSCALE);
 //    unsigned char *right_disp_uchar = right_disp.data;
-////    cv::Mat occ_right = imread("/home/miky/ClionProjects/tesi_watermarking/img/occ_right.png", CV_LOAD_IMAGE_GRAYSCALE);
+////    cv::Mat occ_right = imread("/home/bene/ClionProjects/tesi_watermarking/img/occ_right.png", CV_LOAD_IMAGE_GRAYSCALE);
 ////    Right_view rv;
 //    unsigned char *left_reconstructed_uchar = rv.left_uchar_reconstruction(marked_right, right_disp_uchar, occ_right.data,640,480);
 ////    constrution of the squared reconstructed marked left   ********************
@@ -227,7 +235,7 @@ int main() {
 //    }
 
 //    double *retrieve_right_wat = stereo_watermarking::not_blind_extraction(coeff_left,marked_coeff_left,coeff_num,power);  // da modificare gli input
-//    stereo_watermarking::writeToFile(marked_coeff_rec_left,coeff_num,"/home/miky/Scrivania/Tesi/marked_coeff_rec_left.txt");
+//    stereo_watermarking::writeToFile(marked_coeff_rec_left,coeff_num,"/home/bene/Scrivania/Tesi/marked_coeff_rec_left.txt");
 
 //    similarity   ********************
   //  stereo_watermarking::similarity_measures(wat, wat, coeff_num,"inserted watermak", "inserted watermak");
@@ -252,7 +260,7 @@ int main() {
 //    for (int i = 0; i < 8382; i++) {
 //        coeff_vector_mark[i] = coeff_vector_mark[i]/coeff_vector_left[i];
 //    }
-//    stereo_watermarking::writeToFile(coeff_vector_mark,8383,"/home/miky/Scrivania/coeff_vector_mark.txt");
+//    stereo_watermarking::writeToFile(coeff_vector_mark,8383,"/home/bene/Scrivania/coeff_vector_mark.txt");
 
 
 
@@ -295,7 +303,7 @@ int main() {
 //    /*GENERAZIONE NUVOLA 3D*/
 //
 //    int frame_num=0; //serve per prendere i parametri dal file di testo ma per ora usiamo sempre il frame 0
-//    cv::Mat nkz_disp = imread("/home/miky/ClionProjects/tesi_watermarking/img/nkz_disp.png", CV_LOAD_IMAGE_GRAYSCALE);
+//    cv::Mat nkz_disp = imread("/home/bene/ClionProjects/tesi_watermarking/img/nkz_disp.png", CV_LOAD_IMAGE_GRAYSCALE);
 //    stereo_watermarking::generatePointCloud(nkz_disp,left,right,frame_num);
 
 //
@@ -317,8 +325,8 @@ int main() {
 
     /* GRAPH CUTS DISPARITY COMPUTATION*/
 ////
-//    std::string img1_path =  "/home/miky/ClionProjects/tesi_watermarking/img/l.png";
-//    std::string img2_path =  "/home/miky/ClionProjects/tesi_watermarking/img/r.png";
+//    std::string img1_path =  "/home/bene/ClionProjects/tesi_watermarking/img/l.png";
+//    std::string img2_path =  "/home/bene/ClionProjects/tesi_watermarking/img/r.png";
 //
 //
 //    Match::Parameters params = { // Default parameters
@@ -358,10 +366,10 @@ int main() {
 //
 ////        m.SaveXLeft(argv[5]);
 //
-//    m.SaveScaledXLeft("/home/miky/ClionProjects/tesi_watermarking/img/disp_kz_rl.png", true);
-////    m.SaveScaledXLeft("/home/miky/ClionProjects/tesi_watermarking/img/disp_kz_syn.png", false);
+//    m.SaveScaledXLeft("/home/bene/ClionProjects/tesi_watermarking/img/disp_kz_rl.png", true);
+////    m.SaveScaledXLeft("/home/bene/ClionProjects/tesi_watermarking/img/disp_kz_syn.png", false);
 //
-//    cv::Mat disp = imread("/home/miky/ClionProjects/tesi_watermarking/img/disp_kz_rl.png");
+//    cv::Mat disp = imread("/home/bene/ClionProjects/tesi_watermarking/img/disp_kz_rl.png");
 //    imshow("kz disp",disp);
 //    waitKey(0);
 ////
@@ -371,7 +379,7 @@ int main() {
     /*STEP 2: FILTER DISPARITY (OUTPUT OF KZ)*/
 
 
-//    cv::Mat disp_synt = imread("/home/miky/ClionProjects/tesi_watermarking/img/disp_kz_syn.png", CV_LOAD_IMAGE_COLOR);
+//    cv::Mat disp_synt = imread("/home/bene/ClionProjects/tesi_watermarking/img/disp_kz_syn.png", CV_LOAD_IMAGE_COLOR);
 //    if (disp_synt.rows == 0){
 //        cout << "Empty image";
 //    } else {
@@ -380,13 +388,13 @@ int main() {
 //    }
 
 
-    // path clion /home/miky/ClionProjects/tesi_watermarking/img/
-    // path Scrivania /home/miky/Scrivania/
+    // path clion /home/bene/ClionProjects/tesi_watermarking/img/
+    // path Scrivania /home/bene/Scrivania/
 
     /*STEP 3: NORMALIZE DISPARITY (OUTPUT OF KZ)*/
 //
 //    cv::Mat nkz_disp;
-//    cv::Mat rl_kz_disp = imread("/home/miky/ClionProjects/tesi_watermarking/img/disp_kz_syn.png", CV_LOAD_IMAGE_GRAYSCALE);
+//    cv::Mat rl_kz_disp = imread("/home/bene/ClionProjects/tesi_watermarking/img/disp_kz_syn.png", CV_LOAD_IMAGE_GRAYSCALE);
 //    if (kz_disp.rows == 0){
 //        cout << "Empty image";
 //    } else {
@@ -394,30 +402,30 @@ int main() {
 //        dp.disparity_normalization(rl_kz_disp, nkz_disp);
 //    }
 ////
-//    imwrite("/home/miky/ClionProjects/tesi_watermarking/img/norm_disp_rl.png",nkz_disp);
+//    imwrite("/home/bene/ClionProjects/tesi_watermarking/img/norm_disp_rl.png",nkz_disp);
 
 
     /* QUALITY METRICS*/
 
 
-//    cv::Mat disp_kz = imread( "/home/miky/ClionProjects/tesi_watermarking/img/nkz_right_dim_disp.png",CV_LOAD_IMAGE_GRAYSCALE);
+//    cv::Mat disp_kz = imread( "/home/bene/ClionProjects/tesi_watermarking/img/nkz_right_dim_disp.png",CV_LOAD_IMAGE_GRAYSCALE);
 //    stereo_watermarking::sobel_filtering(disp_kz,"sobel_disp");
-//    cv::Mat sobel_disp = imread("/home/miky/ClionProjects/tesi_watermarking/img/sobel_disp.png",CV_LOAD_IMAGE_GRAYSCALE);
+//    cv::Mat sobel_disp = imread("/home/bene/ClionProjects/tesi_watermarking/img/sobel_disp.png",CV_LOAD_IMAGE_GRAYSCALE);
 //
-//    cv::Mat disp_kz_wat = imread(  "/home/miky/ClionProjects/tesi_watermarking/img/norm_disp_from_wat.png",CV_LOAD_IMAGE_GRAYSCALE);
+//    cv::Mat disp_kz_wat = imread(  "/home/bene/ClionProjects/tesi_watermarking/img/norm_disp_from_wat.png",CV_LOAD_IMAGE_GRAYSCALE);
 //    stereo_watermarking::sobel_filtering(disp_kz_wat,"sobel_disp_wat");
-//    cv::Mat sobel_disp_wat  = imread( "/home/miky/ClionProjects/tesi_watermarking/img/sobel_disp_wat.png",CV_LOAD_IMAGE_GRAYSCALE);
+//    cv::Mat sobel_disp_wat  = imread( "/home/bene/ClionProjects/tesi_watermarking/img/sobel_disp_wat.png",CV_LOAD_IMAGE_GRAYSCALE);
 //
-//    cv::Mat left_marked = imread("/home/miky/ClionProjects/tesi_watermarking/img/left_marked.png", CV_LOAD_IMAGE_COLOR);
+//    cv::Mat left_marked = imread("/home/bene/ClionProjects/tesi_watermarking/img/left_marked.png", CV_LOAD_IMAGE_COLOR);
 //    stereo_watermarking::sobel_filtering(left_marked,"sobel_left_w");
-//    Mat sobel_left_w = imread("/home/miky/ClionProjects/tesi_watermarking/img/sobel_left_w.png", CV_LOAD_IMAGE_GRAYSCALE);
+//    Mat sobel_left_w = imread("/home/bene/ClionProjects/tesi_watermarking/img/sobel_left_w.png", CV_LOAD_IMAGE_GRAYSCALE);
 //
-//    cv::Mat left2 = imread("/home/miky/ClionProjects/tesi_watermarking/img/l.png", CV_LOAD_IMAGE_COLOR);
+//    cv::Mat left2 = imread("/home/bene/ClionProjects/tesi_watermarking/img/l.png", CV_LOAD_IMAGE_COLOR);
 //    stereo_watermarking::sobel_filtering(left2,"sobel_left");
-//    Mat sobel_left = imread("/home/miky/ClionProjects/tesi_watermarking/img/sobel_left.png", CV_LOAD_IMAGE_GRAYSCALE);
+//    Mat sobel_left = imread("/home/bene/ClionProjects/tesi_watermarking/img/sobel_left.png", CV_LOAD_IMAGE_GRAYSCALE);
 //
-////    char* f1="/home/miky/ClionProjects/tesi_watermarking/img/left.png";
-////    char* f2="/home/miky/ClionProjects/tesi_watermarking/img/left_marked.png";
+////    char* f1="/home/bene/ClionProjects/tesi_watermarking/img/left.png";
+////    char* f2="/home/bene/ClionProjects/tesi_watermarking/img/left_marked.png";
 ////
 ////    qm::compute_quality_metrics(f1,f2,8);
 //
@@ -428,14 +436,6 @@ int main() {
 //    cout << "MQcolor : " << mqcolor << endl;
 
 
-
-    /*ENHANCING OCCLUSIONS*/
-
-/*
-    cv::Mat f_disp = imread("/home/miky/ClionProjects/tesi_watermarking/img/f_disp.png", CV_LOAD_IMAGE_COLOR);
-    Disp_opt dp;
-    dp.occlusions_enhancing(f_disp);
-*/
 
 
     return 0;
