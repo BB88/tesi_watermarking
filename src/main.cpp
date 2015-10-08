@@ -2,21 +2,10 @@
 #include <opencv2/core/core.hpp>
 #include "dataset/tsukuba_dataset.h"
 #include <cv.h>
-#include <cstdint>
 #include <highgui.h>
-#include "opencv2/highgui/highgui.hpp"
-#include "opencv2/imgproc/imgproc.hpp"
-#include <iostream>
-#include <string>
-#include <stdint.h>
+
 #include "./disparity_computation/stereo_matching.h"
-#include "./disparity_optimization/disp_opt.h"
-#include "./disparity_optimization/occlusions_handler.h"
-#include "./right_view_computation/right_view.h"
-#include "disparity_optimization/disp_opt.h"
-#include <limits>
-#include <cstddef>
-#include <iostream>
+
 #include <fstream>
 
 //includes watermarking
@@ -25,20 +14,18 @@
 #include "./img_watermarking/allocim.h"
 
 //grapfh cuts
-#include "./graphcuts/image.h"
-#include "./graphcuts/match.h"
 #include "./graphcuts/utils.h"
-#include "./graphcuts/io_png.h"
+
+//quality metrics
+#include "./quality_metrics/quality_metrics.h"
+#include "./quality_metrics/RRQualityMetrics.h"
 
 //libconfig
 #include <libconfig.h++>
 #include "./config/config.hpp"
 
-#include "quality_metrics/quality_metrics.h"
-#include "utils.h"
-#include "img_watermarking/fft2d.h"
+#include "./spatialWatermarking/gaussianNoise.h"
 
-#include "spatialWatermarking/gaussianNoise.h"
 #include "FDTwatermarking/frequencyWatermarking.h"
 
 using namespace std;
@@ -46,7 +33,9 @@ using namespace cv;
 using namespace cv::datasets;
 using namespace libconfig;
 using namespace graph_cuts_utils;
-
+using namespace qm;
+using namespace RRQualityMetrics;
+using namespace spatialWatermarking;
 
 
 
@@ -59,6 +48,7 @@ int main() {
     Watermarking_config::set_parameters_params pars = Watermarking_config::ConfigLoader::get_instance().loadSetParametersConfiguration();
 
     int wsize = pars.wsize;
+    int tilesize=pars.tilesize;
     float power=pars.power;
 
     Watermarking_config::general_params generalPars = Watermarking_config::ConfigLoader::get_instance().loadGeneralParamsConfiguration();
@@ -67,6 +57,7 @@ int main() {
     std::string passwstr = generalPars.passwstr;
     std::string passwnum = generalPars.passwnum;
 
+    bool gt = false;
     //    random binary watermark   ********************
     int watermark[64];
     for (int i = 0; i < 64; i++){
@@ -78,6 +69,7 @@ int main() {
 
     FDTStereoWatermarking::warpMarkWatermarking(watermark, wsize, power, passwstr, passwnum);
 
+   
 
     cv::Mat marked_image = imread("/home/bene/ClionProjects/tesi_watermarking/img/left_watermarked.png", CV_LOAD_IMAGE_COLOR);
     unsigned char *marked_image_uchar = marked_image.data;
@@ -99,19 +91,50 @@ int main() {
 
 
     //questo va ricontrollato
+    //video processing
+    CvCapture* capture = 0;
+    IplImage *frame = 0;
 
-//    FDTStereoWatermarking::warpRightWatermarking(wsize, tilesize, power, clipping, flagResyncAll, tilelistsize,
-//                                                 passwstr, passwnum);
+    if (!(capture = cvCaptureFromFile("/home/miky/ClionProjects/tesi_watermarking/img/output.mp4")))
+        printf("Cannot open video\n");
 
+    cvNamedWindow("tsukuba", CV_WINDOW_AUTOSIZE);
 
+    while (1) {
 
+        frame = cvQueryFrame(capture);
+        if (!frame)
+            break;
 
+        //non serve a nulla ma ti fa vedere che da un frame crea un'immagine e la mostra
+        IplImage *temp = cvCreateImage(cvSize(frame->width/2, frame->height/2), frame->depth, frame->nChannels); // A new Image half size
+        cvShowImage("temporary ", temp); // Display the frame
+
+        cvResize(frame, temp, CV_INTER_CUBIC); // Resize
+        cvShowImage("tsukuba", frame); // Display the frame
+        cvReleaseImage(&temp);
+        if (cvWaitKey(5000) == 27) // Escape key and wait, 5 sec per capture
+            break;
+    }
+
+    cvReleaseImage(&frame);
+    cvReleaseCapture(&capture);
+
+//  spatialWatermarking::gaussianNoiseStereoWatermarking(gt);
+
+//   FDTStereoWatermarking::warpMarkWatermarking(wsize, tilesize, power, clipping, flagResyncAll, tilelistsize, passwstr, passwnum, gt);
+
+    //questo va ricontrollato
+//   FDTStereoWatermarking::warpRightWatermarking(wsize, tilesize, power, clipping, flagResyncAll, tilelistsize, passwstr, passwnum,gt);
+
+//   bool left_to_right = false;
+//   graph_cuts_utils::kz_main(left_to_right,"left_watermarked","right_watermarked");
+
+//    RRQualityMetrics::compute_metrics();
 
 
 
 //////************WATERMARKING MIKY********************/////////////////////////
-
-
 
 //    START COEFFICIENT ANALYSIS:  saving dft left coefficient   ********************
 //    double *coeff_left = image_watermarking.getCoeff_dft();
@@ -170,6 +193,70 @@ int main() {
 //    similarity   ********************
 //    stereo_watermarking::similarity_measures(wat, wat, coeff_num,"inserted watermak", "inserted watermak");
 
+
+    /* GRAPH CUTS DISPARITY COMPUTATION*/
+//
+//    std::string img1_path =  "/home/miky/ClionProjects/tesi_watermarking/img/l.png";
+//    std::string img2_path =  "/home/miky/ClionProjects/tesi_watermarking/img/r.png";
+//
+//
+//    Match::Parameters params = { // Default parameters
+//            Match::Parameters::L2, 1, // dataCost, denominator
+//            8, -1, -1, // edgeThresh, lambda1, lambda2 (smoothness cost)
+//            -1,        // K (occlusion cost)
+//            4, false   // maxIter, bRandomizeEveryIteration
+//    };
+//    float K=-1, lambda=-1, lambda1=-1, lambda2=-1;
+//    params.dataCost = Match::Parameters::L1;
+////      params.dataCost = Match::Parameters::L2;
+//
+//    GeneralImage im1 = (GeneralImage)imLoad(IMAGE_GRAY, img1_path.c_str());
+//    GeneralImage im2 = (GeneralImage)imLoad(IMAGE_GRAY, img2_path.c_str());
+//    bool color = false;
+//    if(graph_cuts_utils::isGray((RGBImage)im1) && graph_cuts_utils::isGray((RGBImage)im2)) {
+//        color=false;
+//        graph_cuts_utils::convert_gray(im1);
+//        graph_cuts_utils::convert_gray(im2);
+//    }
+//
+//    Match m(im2, im1, color);
+////
+////////    // Disparity
+//    int dMin=19, dMax=77;   //r-l
+////    int dMin=-77, dMax=-19;  //l-r
+////    int dMin=8, dMax=33;  // r-l syn
+////
+//    m.SetDispRange(dMin, dMax);
+//
+//    time_t seed = time(NULL);
+//    srand((unsigned int)seed);
+//
+//    graph_cuts_utils::fix_parameters(m, params, K, lambda, lambda1, lambda2);
+//
+//    m.KZ2();
+//
+////        m.SaveXLeft(argv[5]);
+//
+//    m.SaveScaledXLeft("/home/miky/ClionProjects/tesi_watermarking/img/disp_rl_kz.png", true); //r -l
+////    m.SaveScaledXLeft("/home/miky/ClionProjects/tesi_watermarking/img/disp_lr_kz.png", false);  //l-r
+//
+//    cv::Mat disp = imread("/home/miky/ClionProjects/tesi_watermarking/img/disp_rl_kz.png");
+//    imshow("kz disp",disp);
+//    waitKey(0);
+//////
+
+    /*STEP 3: NORMALIZE DISPARITY (OUTPUT OF KZ)*/
+
+//    cv::Mat nkz_disp;
+//    cv::Mat kz_disp = imread("/home/miky/ClionProjects/tesi_watermarking/img/disp_rl_kz.png", CV_LOAD_IMAGE_GRAYSCALE);
+//    if (kz_disp.rows == 0){
+//        cout << "Empty image";
+//    } else {
+//        Disp_opt dp;
+//        dp.disparity_normalization(kz_disp, nkz_disp);
+//    }
+////
+//    imwrite("/home/miky/ClionProjects/tesi_watermarking/img/norm_disp_rl_kz.png",nkz_disp);
 //    similarity   ********************
 //    double threshold = stereo_watermarking::threshold_computation(coeff_left, coeff_num, power);
 //    double threshold = stereo_watermarking::threshold_computation(coeff_right, coeff_num, power);
@@ -193,6 +280,19 @@ int main() {
 
 
 
+//    imshow   ********************
+//    stereo_watermarking::show_ucharImage(squared_left, 256, 256, "squared left");
+//    stereo_watermarking::show_ucharImage(mark_uchar, 256, 256, "mark_uchar");
+//    stereo_watermarking::show_doubleImage(squared_mark, 256, 256, "squared_mark");
+//    stereo_watermarking::show_ucharImage(squared_marked_left, 256, 256, "squared marked left");
+//    stereo_watermarking::show_doubleImage(squared_mark, 256, 256, "squared_mark");
+//    stereo_watermarking::show_ucharImage(squared_mark_uchar, 256, 256, "squared_mark_uchar");
+//
+//    stereo_watermarking::show_doubleImage(warped_mark, 640, 480, "mark_warped");
+//    stereo_watermarking::show_ucharImage(squared_right, 256, 256, "squared right");
+//    stereo_watermarking::show_ucharImage(marked_right, 640, 480, "marked_right");
+//    stereo_watermarking::show_ucharImage(squared_marked_right, 256, 256, "squared_marked_right");
+//    stereo_watermarking::show_ucharImage(squared_left_ric, 256, 256, "squared_left_ric");
 
 //    show squared mark from reconstructed left   ********************
 //    double *squared_mark_from_rec_left =  new double[squared_dim];
@@ -312,21 +412,14 @@ int main() {
 
 
 
-    /*  kz_disp PARAMETERS */
-/*
 
-     *
-     * lambda = 15.8
-     * k = 79.12
-     * dispMin dispMax = -77 -19
 
-*/
 
 
     /* GRAPH CUTS DISPARITY COMPUTATION*/
 ////
-//    std::string img1_path =  "/home/bene/ClionProjects/tesi_watermarking/img/l.png";
-//    std::string img2_path =  "/home/bene/ClionProjects/tesi_watermarking/img/r.png";
+//    std::string img1_path =  "/home/miky/ClionProjects/tesi_watermarking/img/l.png";
+//    std::string img2_path =  "/home/miky/ClionProjects/tesi_watermarking/img/r.png";
 //
 //
 //    Match::Parameters params = { // Default parameters
@@ -366,15 +459,13 @@ int main() {
 //
 ////        m.SaveXLeft(argv[5]);
 //
-//    m.SaveScaledXLeft("/home/bene/ClionProjects/tesi_watermarking/img/disp_kz_rl.png", true);
-////    m.SaveScaledXLeft("/home/bene/ClionProjects/tesi_watermarking/img/disp_kz_syn.png", false);
+//    m.SaveScaledXLeft("/home/miky/ClionProjects/tesi_watermarking/img/disp_kz_rl.png", true);
+////    m.SaveScaledXLeft("/home/miky/ClionProjects/tesi_watermarking/img/disp_kz_syn.png", false);
 //
-//    cv::Mat disp = imread("/home/bene/ClionProjects/tesi_watermarking/img/disp_kz_rl.png");
+//    cv::Mat disp = imread("/home/miky/ClionProjects/tesi_watermarking/img/disp_kz_rl.png");
 //    imshow("kz disp",disp);
 //    waitKey(0);
 ////
-
-
 
     /*STEP 2: FILTER DISPARITY (OUTPUT OF KZ)*/
 
@@ -391,18 +482,7 @@ int main() {
     // path clion /home/bene/ClionProjects/tesi_watermarking/img/
     // path Scrivania /home/bene/Scrivania/
 
-    /*STEP 3: NORMALIZE DISPARITY (OUTPUT OF KZ)*/
-//
-//    cv::Mat nkz_disp;
-//    cv::Mat rl_kz_disp = imread("/home/bene/ClionProjects/tesi_watermarking/img/disp_kz_syn.png", CV_LOAD_IMAGE_GRAYSCALE);
-//    if (kz_disp.rows == 0){
-//        cout << "Empty image";
-//    } else {
-//        Disp_opt dp;
-//        dp.disparity_normalization(rl_kz_disp, nkz_disp);
-//    }
-////
-//    imwrite("/home/bene/ClionProjects/tesi_watermarking/img/norm_disp_rl.png",nkz_disp);
+
 
 
     /* QUALITY METRICS*/
@@ -436,6 +516,14 @@ int main() {
 //    cout << "MQcolor : " << mqcolor << endl;
 
 
+
+    /*ENHANCING OCCLUSIONS*/
+
+/*
+    cv::Mat f_disp = imread("/home/miky/ClionProjects/tesi_watermarking/img/f_disp.png", CV_LOAD_IMAGE_COLOR);
+    Disp_opt dp;
+    dp.occlusions_enhancing(f_disp);
+*/
 
 
     return 0;

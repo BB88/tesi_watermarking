@@ -23,6 +23,7 @@ using namespace cv::datasets;
 
 void stereo_watermarking::sobel_filtering(cv::Mat src, const char* window_name){
     /* SOBEL */
+
     cv::Mat  src_gray;
     cv::Mat grad;
     int scale = 1;

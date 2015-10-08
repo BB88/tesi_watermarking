@@ -164,7 +164,7 @@ unsigned char* Right_view::right_uchar_reconstruction(unsigned char *marked_left
         return r;
     }
 
-unsigned char* Right_view::left_rnc(unsigned char *right, cv::Mat disp, cv::Mat occ_map, int width, int height) {
+unsigned char* Right_view::left_rnc(unsigned char *right, cv::Mat disp, cv::Mat occ_map, int width, int height, bool gt) {
 
     int nc = width;
     unsigned char d = 0;
@@ -177,8 +177,11 @@ unsigned char* Right_view::left_rnc(unsigned char *right, cv::Mat disp, cv::Mat 
     for (int i=0;i<height;i++)
         for (int j= (width-1);j>=0;j--){
             d = disp.at<uchar>(i,j);
-            occ = occ_map.at<uchar>(i,j);
-            int sum = j + static_cast<int>(d);
+
+            if (gt )
+                occ = occ_map.at<uchar>(i,j);
+            else  occ = disp.at<uchar>(i,j);
+
             if(static_cast<int>(occ)!=0 && ((i*nc + j + static_cast<unsigned>(d))*3 + 2) < ((i+1)*nc*3))
                 for (int k=0; k<3; k++)
                     rcn_left[(i*nc + j + static_cast<int>(d))*3 + k ] = right[(i*nc + j)*3 + k];
