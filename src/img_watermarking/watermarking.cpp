@@ -1,5 +1,5 @@
 //
-// Created by miky on 22/07/15.
+// Created by bene on 22/07/15.
 //
 #include <stdio.h>
 #include <string.h>
@@ -139,8 +139,7 @@ int Watermarking::WatCod(unsigned char *ImageOut, int width, int height, const c
     double *coefficient_vector = NULL;
 //    coefficients extraction
     coefficient_vector = zones_to_watermark(imdft, dim, dim, diag0, ndiag, 0, &coefficient_number);
-    cout<<coefficient_number<<endl;
-//    stereo_watermarking::writeToFile(coefficient_vector,coefficient_number,"/home/miky/Scrivania/wm_coff_mark.txt");
+//    stereo_watermarking::writeToFile(coefficient_vector,coefficient_number,"/home/bene/Scrivania/wm_coff_mark.txt");
 //    saving coefficients
     coeff_dft = new double [coefficient_number];
     for (int k = 0; k < coefficient_number; k++ )
@@ -184,7 +183,7 @@ int Watermarking::WatCod(unsigned char *ImageOut, int width, int height, const c
                 imdftfase_wat[i][j] = 0.0;
             }
     FFT2D::idft2d(imdft_wat, imdftfase_wat, imidft_wat, dim, dim);
-//    stereo_watermarking::writefloatMatToFile(imidft_wat,dim,"/home/miky/Scrivania/wat_lum.txt");
+//    stereo_watermarking::writefloatMatToFile(imidft_wat,dim,"/home/bene/Scrivania/wat_lum.txt");
 //    add mark to coefficients: 1 if add_mult
     addmark(coefficient_vector, mark, coefficient_number, power,1);
 //    put back the marked coefficients
@@ -262,14 +261,14 @@ int Watermarking::warpedWatCod(unsigned char *ImageOut, int width, int height, c
         }
 
     rgb_to_crom(imr, img, imb, dim, dim, 1, imyout, imc2, imc3);
-    stereo_watermarking::writefloatMatToFile(imyout,256,"/home/miky/Scrivania/right_lum.txt");
+    stereo_watermarking::writefloatMatToFile(imyout,256,"/home/bene/Scrivania/right_lum.txt");
 //    dft computation: magnitude and phase
     FFT2D::dft2d(imyout, imdft, imdftfase, dim, dim);
     int coefficient_number;
     double *coefficient_vector = NULL;
 //    coefficients extraction
     coefficient_vector = zones_to_watermark(imdft, dim, dim, diag0, ndiag, 0, &coefficient_number);
-//    stereo_watermarking::writeToFile(coefficient_vector,coefficient_number,"/home/miky/Scrivania/wm_coff_mark.txt");
+//    stereo_watermarking::writeToFile(coefficient_vector,coefficient_number,"/home/bene/Scrivania/wm_coff_mark.txt");
 //    compute magnitude and phase of the watermark
     double  **imdft_wat;
     double  **imdftfase_wat;
@@ -285,7 +284,7 @@ int Watermarking::warpedWatCod(unsigned char *ImageOut, int width, int height, c
     antizone(imdft, dim, dim, diag0, ndiag, coefficient_vector);
 //    idft->back to the luminance
     FFT2D::idft2d(imdft, imdftfase, imidft, dim, dim);
-//    stereo_watermarking::writefloatMatToFile(imidft,256,"/home/miky/Scrivania/marked_right_lum.txt");
+//    stereo_watermarking::writefloatMatToFile(imidft,256,"/home/bene/Scrivania/marked_right_lum.txt");
     stereo_watermarking::show_floatImage(imidft,dim,dim,"marked_right_dft");
 //    back to chrominance
     rgb_to_crom(imr, img, imb, dim, dim, -1, imidft, imc2, imc3);
@@ -450,7 +449,7 @@ void Watermarking::addmark(double *buff, double *mark, int coeff_number, double 
             }
         }
     }
-    cout << "#not marked coeff :   "<< count<<endl;
+//    cout << "#not marked coeff :   "<< count<<endl;
 }
 
 
@@ -1538,7 +1537,7 @@ void Watermarking::decoale(double **imr, int nre, int nce, int d1, int nd,
 //    marked_coeff = new double [marklen];
 //    for (int k = 0; k < marklen; k++ )
 //        marked_coeff[k] = appbuff[k];
-////    stereo_watermarking::writeMatToFile(marked_coeff,marklen,"/home/miky/Scrivania/Tesi/dec_marked_coeff.txt");
+////    stereo_watermarking::writeMatToFile(marked_coeff,marklen,"/home/bene/Scrivania/Tesi/dec_marked_coeff.txt");
 //    marked_coeff_number = marklen;
 
 

@@ -27,6 +27,7 @@
 #include "./spatialWatermarking/gaussianNoise.h"
 
 #include "FDTwatermarking/frequencyWatermarking.h"
+#include "utils.h"
 
 using namespace std;
 using namespace cv;
@@ -45,57 +46,139 @@ int main() {
 
     /*CONFIG SETTINGS*/
 
-    Watermarking_config::set_parameters_params pars = Watermarking_config::ConfigLoader::get_instance().loadSetParametersConfiguration();
 
-    int wsize = pars.wsize;
-    int tilesize=pars.tilesize;
-    float power=pars.power;
+    bool coding = false;
+    if (coding) {
+        Watermarking_config::set_parameters_params pars = Watermarking_config::ConfigLoader::get_instance().loadSetParametersConfiguration();
+        int wsize = pars.wsize;
+        float power=pars.power;
+        Watermarking_config::general_params generalPars = Watermarking_config::ConfigLoader::get_instance().loadGeneralParamsConfiguration();
+        bool masking = generalPars.masking;
+        std::string passwstr = generalPars.passwstr;
+        std::string passwnum = generalPars.passwnum;
+        //    random binary watermark   ********************
+        int watermark[64];
+        for (int i = 0; i < 64; i++){
+            int b = rand() % 2;
+            watermark[i]=b;
+        }
+//        saving watermarking parameters
+        string filepath = "/home/bene/ClionProjects/tesi_watermarking/img/marked_frames/parameters.txt";
+        ofstream par_file(filepath);
+        if (!par_file) {
+            cout << "File Not Opened" << endl;
+        }
+        for (int i = 0; i < 64; i++) {
+            par_file << watermark[i] << " ";
+            //     par_file<<endl;
+        }
+        par_file << endl;
+        par_file << passwstr;
+        par_file << endl;
+        par_file << passwnum;
+        par_file << endl;
+        par_file << power;
+        par_file.close();
+        bool gt = true;
+//        read video
+        VideoCapture cap("/home/bene/ClionProjects/tesi_watermarking/img/output.mp4"); // open the default camera
+        if (!cap.isOpened())  // check if we succeeded
+            return -1;
+        int frame_number = -1;
+//        double cycle to process 100 frames at a time
+        int first_frame = 0;
+        int last_frame = 100;
+        for (int i = 0; i < first_frame; i++) {
+            frame_number++;
+            Mat frame;
+            cap >> frame;
+        }
+        for (int i = first_frame; i < last_frame; i++) {
+            frame_number++;
+            Mat frame;
+            cap >> frame; // get a new frame from camera
+            Mat marked_frame;
+            frame.copyTo(marked_frame);
+            FDTStereoWatermarking::leftWatermarking(frame, watermark, wsize, power, passwstr, passwnum, gt,
+                                                    marked_frame);
+            std::ostringstream path;
+            path << "/home/bene/ClionProjects/tesi_watermarking/img/marked_frames/frame_" << std::setw(3) << std::setfill('0') <<frame_number << ".png";
+            imwrite(path.str(), marked_frame);
+        }
+    } else {     //detection
+//    read parameters file
+        string filepath = "/home/bene/ClionProjects/tesi_watermarking/img/marked_frames/parameters.txt";
+        string line;
+        std::string passwstr;
+        std::string passwnum;
+        double power;
+        ifstream myfile(filepath);
+        getline(myfile, line);
+        string wat = line;
+        int wsize = wat.length() / 2;
+        int watermark[wsize];
+        stringstream stream(wat);
+        int count = 0;
+        while (1) {
+            int n;
+            stream >> n;
+            if (!stream)
+                break;
+            watermark[count] = n;
+            count++;
+        }
+        getline(myfile, line);
+        passwstr = line;
+        getline(myfile, line);
+        passwnum = line;
+        getline(myfile, line);
+        string alpha = line;
+        stringstream stream_alpha(alpha);
+        double d;
+        stream_alpha >> d;
+        power = d;
+//        read marked frames  ***********************
+        VideoCapture cap("/home/bene/ClionProjects/tesi_watermarking/img/output_L_marked.mp4"); // open the default camera
+        if (!cap.isOpened())  // check if we succeeded
+            return -1;
+        for (int i = 0; i < 0; i++) {
+            Mat frame;
+            cap >> frame;
+        }
+        for (int i = 0; i < 50; i++) {
+            Mat frame;
+            cap >> frame; // get a new frame from camera
+            imshow("frame", frame);
+            waitKey(0);
+            //        imshow("frames", frame);
+            //        waitKey(0);
+            Mat marked_frame;
+            frame.copyTo(marked_frame);
+            bool left_det = FDTStereoWatermarking::leftDetection(marked_frame, watermark, 64, 0.3, passwstr, passwnum, 512);
+            cout << "left_det " << left_det<<endl;
+        }
 
-    Watermarking_config::general_params generalPars = Watermarking_config::ConfigLoader::get_instance().loadGeneralParamsConfiguration();
-
-    bool masking = generalPars.masking;
-    std::string passwstr = generalPars.passwstr;
-    std::string passwnum = generalPars.passwnum;
-
-    bool gt = false;
-    //    random binary watermark   ********************
-    int watermark[64];
-    for (int i = 0; i < 64; i++){
-        int b = rand() % 2;
-        watermark[i]=b;
     }
 
-//    spatialWatermarking::gaussianNoiseStereoWatermarking();
+/*   Mat edges;
+   for(;;)
+    {
+        Mat frame;
+        cap >> frame; // get a new frame from camera
+        cvtColor(frame, edges, CV_BGR2GRAY);
 
-    FDTStereoWatermarking::warpMarkWatermarking(watermark, wsize, power, passwstr, passwnum);
-
-   
-
-    cv::Mat marked_image = imread("/home/bene/ClionProjects/tesi_watermarking/img/left_watermarked.png", CV_LOAD_IMAGE_COLOR);
-    unsigned char *marked_image_uchar = marked_image.data;
-    int dim = 512;
-    int squared_dim = dim * dim *3;
-    unsigned char *squared_marked_image =  new unsigned char[squared_dim];
-    int nc = 640;
-    int nc_s = dim;
-    int offset = 127;
-    for (int i = 0; i < 480; i ++ )
-        for (int j = 0; j < nc_s; j++) {
-            for (int k =0; k<3;k++){
-                squared_marked_image[(i * nc_s + j)*3 + k] = marked_image_uchar[(i *nc + j + offset)*3 + k];
-            }
-        }
-    stereo_watermarking::random_mark_detection(100,squared_marked_image,512);
-
-
-
+        GaussianBlur(edges, edges, Size(7,7), 1.5, 1.5);
+        Canny(edges, edges, 0, 30, 3);
+        imshow("edges", edges);
+        if(waitKey(30) >= 0) break;
+    }*/
 
     //questo va ricontrollato
     //video processing
-    CvCapture* capture = 0;
+/*    CvCapture* capture = 0;
     IplImage *frame = 0;
 
-    if (!(capture = cvCaptureFromFile("/home/miky/ClionProjects/tesi_watermarking/img/output.mp4")))
+    if (!(capture = cvCaptureFromFile("/home/bene/ClionProjects/tesi_watermarking/img/output.mp4")))
         printf("Cannot open video\n");
 
     cvNamedWindow("tsukuba", CV_WINDOW_AUTOSIZE);
@@ -118,7 +201,7 @@ int main() {
     }
 
     cvReleaseImage(&frame);
-    cvReleaseCapture(&capture);
+    cvReleaseCapture(&capture);*/
 
 //  spatialWatermarking::gaussianNoiseStereoWatermarking(gt);
 
@@ -134,7 +217,7 @@ int main() {
 
 
 
-//////************WATERMARKING MIKY********************/////////////////////////
+//////************WATERMARKING bene********************/////////////////////////
 
 //    START COEFFICIENT ANALYSIS:  saving dft left coefficient   ********************
 //    double *coeff_left = image_watermarking.getCoeff_dft();
@@ -158,7 +241,7 @@ int main() {
 //    constructing SQUARED RIGHT to compute dft analysis   ********************
 //    cv::Mat right = imread("/home/bene/ClionProjects/tesi_watermarking/img/r.png",CV_LOAD_IMAGE_COLOR);
 //    unsigned char *right_uchar = right.data;
-//    cv::Mat disp = imread("/home/bene/ClionProjects/tesi_watermarking/img/gt_disp.png", CV_LOAD_IMAGE_GRAYSCALE);
+//    cv::Mat disp = imread("/home/bene/ClionProjects/tesi_watermarking/img/disp_left.png", CV_LOAD_IMAGE_GRAYSCALE);
 //    unsigned char *squared_right =  new unsigned char[squared_dim];
 //    cv::Mat right_squared = cv::Mat::zeros(256, 256, CV_8UC3);
 //    unsigned char d_val = disp.at<uchar>(0,127);
@@ -196,8 +279,8 @@ int main() {
 
     /* GRAPH CUTS DISPARITY COMPUTATION*/
 //
-//    std::string img1_path =  "/home/miky/ClionProjects/tesi_watermarking/img/l.png";
-//    std::string img2_path =  "/home/miky/ClionProjects/tesi_watermarking/img/r.png";
+//    std::string img1_path =  "/home/bene/ClionProjects/tesi_watermarking/img/l.png";
+//    std::string img2_path =  "/home/bene/ClionProjects/tesi_watermarking/img/r.png";
 //
 //
 //    Match::Parameters params = { // Default parameters
@@ -237,10 +320,10 @@ int main() {
 //
 ////        m.SaveXLeft(argv[5]);
 //
-//    m.SaveScaledXLeft("/home/miky/ClionProjects/tesi_watermarking/img/disp_rl_kz.png", true); //r -l
-////    m.SaveScaledXLeft("/home/miky/ClionProjects/tesi_watermarking/img/disp_lr_kz.png", false);  //l-r
+//    m.SaveScaledXLeft("/home/bene/ClionProjects/tesi_watermarking/img/disp_rl_kz.png", true); //r -l
+////    m.SaveScaledXLeft("/home/bene/ClionProjects/tesi_watermarking/img/disp_lr_kz.png", false);  //l-r
 //
-//    cv::Mat disp = imread("/home/miky/ClionProjects/tesi_watermarking/img/disp_rl_kz.png");
+//    cv::Mat disp = imread("/home/bene/ClionProjects/tesi_watermarking/img/disp_rl_kz.png");
 //    imshow("kz disp",disp);
 //    waitKey(0);
 //////
@@ -248,7 +331,7 @@ int main() {
     /*STEP 3: NORMALIZE DISPARITY (OUTPUT OF KZ)*/
 
 //    cv::Mat nkz_disp;
-//    cv::Mat kz_disp = imread("/home/miky/ClionProjects/tesi_watermarking/img/disp_rl_kz.png", CV_LOAD_IMAGE_GRAYSCALE);
+//    cv::Mat kz_disp = imread("/home/bene/ClionProjects/tesi_watermarking/img/disp_rl_kz.png", CV_LOAD_IMAGE_GRAYSCALE);
 //    if (kz_disp.rows == 0){
 //        cout << "Empty image";
 //    } else {
@@ -256,7 +339,7 @@ int main() {
 //        dp.disparity_normalization(kz_disp, nkz_disp);
 //    }
 ////
-//    imwrite("/home/miky/ClionProjects/tesi_watermarking/img/norm_disp_rl_kz.png",nkz_disp);
+//    imwrite("/home/bene/ClionProjects/tesi_watermarking/img/norm_disp_rl_kz.png",nkz_disp);
 //    similarity   ********************
 //    double threshold = stereo_watermarking::threshold_computation(coeff_left, coeff_num, power);
 //    double threshold = stereo_watermarking::threshold_computation(coeff_right, coeff_num, power);
@@ -418,8 +501,8 @@ int main() {
 
     /* GRAPH CUTS DISPARITY COMPUTATION*/
 ////
-//    std::string img1_path =  "/home/miky/ClionProjects/tesi_watermarking/img/l.png";
-//    std::string img2_path =  "/home/miky/ClionProjects/tesi_watermarking/img/r.png";
+//    std::string img1_path =  "/home/bene/ClionProjects/tesi_watermarking/img/l.png";
+//    std::string img2_path =  "/home/bene/ClionProjects/tesi_watermarking/img/r.png";
 //
 //
 //    Match::Parameters params = { // Default parameters
@@ -459,10 +542,10 @@ int main() {
 //
 ////        m.SaveXLeft(argv[5]);
 //
-//    m.SaveScaledXLeft("/home/miky/ClionProjects/tesi_watermarking/img/disp_kz_rl.png", true);
-////    m.SaveScaledXLeft("/home/miky/ClionProjects/tesi_watermarking/img/disp_kz_syn.png", false);
+//    m.SaveScaledXLeft("/home/bene/ClionProjects/tesi_watermarking/img/disp_kz_rl.png", true);
+////    m.SaveScaledXLeft("/home/bene/ClionProjects/tesi_watermarking/img/disp_kz_syn.png", false);
 //
-//    cv::Mat disp = imread("/home/miky/ClionProjects/tesi_watermarking/img/disp_kz_rl.png");
+//    cv::Mat disp = imread("/home/bene/ClionProjects/tesi_watermarking/img/disp_kz_rl.png");
 //    imshow("kz disp",disp);
 //    waitKey(0);
 ////
@@ -520,7 +603,7 @@ int main() {
     /*ENHANCING OCCLUSIONS*/
 
 /*
-    cv::Mat f_disp = imread("/home/miky/ClionProjects/tesi_watermarking/img/f_disp.png", CV_LOAD_IMAGE_COLOR);
+    cv::Mat f_disp = imread("/home/bene/ClionProjects/tesi_watermarking/img/f_disp.png", CV_LOAD_IMAGE_COLOR);
     Disp_opt dp;
     dp.occlusions_enhancing(f_disp);
 */

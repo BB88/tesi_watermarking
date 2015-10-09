@@ -1,5 +1,5 @@
 //
-// Created by miky on 02/10/15.
+// Created by bene on 02/10/15.
 //
 
 #include "frequencyWatermarking.h"
@@ -29,11 +29,10 @@ using namespace cv::datasets;
 
 
 void FDTStereoWatermarking::warpMarkWatermarking(int*watermark,int wsize, float power, std::string passwstr,
-                                                 std::string passwnum){
+                                                 std::string passwnum, bool gt){
 
     Right_view rv;
     cv::Mat left = imread("/home/bene/ClionProjects/tesi_watermarking/img/l.png", CV_LOAD_IMAGE_COLOR);
-    cv::Mat left = imread("/home/miky/ClionProjects/tesi_watermarking/img/left.png", CV_LOAD_IMAGE_COLOR);
     int dim = 512;
 
     unsigned char *left_uchar = left.data;
@@ -71,11 +70,11 @@ void FDTStereoWatermarking::warpMarkWatermarking(int*watermark,int wsize, float 
 //     generate squared disp and occ map   ********************
     cv::Mat disp_left;
     if (gt)
-         disp_left = imread("/home/miky/ClionProjects/tesi_watermarking/img/disp_left.png", CV_LOAD_IMAGE_GRAYSCALE);
-    else  disp_left = imread("/home/miky/ClionProjects/tesi_watermarking/img/norm_disp_left_to_right.png", CV_LOAD_IMAGE_GRAYSCALE);
+         disp_left = imread("/home/bene/ClionProjects/tesi_watermarking/img/disp_left.png", CV_LOAD_IMAGE_GRAYSCALE);
+    else  disp_left = imread("/home/bene/ClionProjects/tesi_watermarking/img/norm_disp_left_to_right.png", CV_LOAD_IMAGE_GRAYSCALE);
 
 
-    cv::Mat occ_left = imread("/home/miky/ClionProjects/tesi_watermarking/img/occ_left.png", CV_LOAD_IMAGE_GRAYSCALE);
+    cv::Mat occ_left = imread("/home/bene/ClionProjects/tesi_watermarking/img/occ_left.png", CV_LOAD_IMAGE_GRAYSCALE);
     cv::Mat squared_lDisp = cv::Mat::zeros(dim, dim, CV_8UC1);
     cv::Mat squared_lOcc = cv::Mat::zeros(dim, dim, CV_8UC1);
     for (int i=0;i<480;i++)
@@ -86,11 +85,11 @@ void FDTStereoWatermarking::warpMarkWatermarking(int*watermark,int wsize, float 
 
     cv::Mat disp_right;
     if (gt)
-        disp_right = imread("/home/miky/ClionProjects/tesi_watermarking/img/disp_right.png", CV_LOAD_IMAGE_GRAYSCALE);
-    else  disp_right = imread("/home/miky/ClionProjects/tesi_watermarking/img/norm_disp_right_to_left.png", CV_LOAD_IMAGE_GRAYSCALE);
+        disp_right = imread("/home/bene/ClionProjects/tesi_watermarking/img/disp_right.png", CV_LOAD_IMAGE_GRAYSCALE);
+    else  disp_right = imread("/home/bene/ClionProjects/tesi_watermarking/img/norm_disp_right_to_left.png", CV_LOAD_IMAGE_GRAYSCALE);
 
 
-    cv::Mat occ_right = imread("/home/miky/ClionProjects/tesi_watermarking/img/occ_right.png", CV_LOAD_IMAGE_GRAYSCALE);
+    cv::Mat occ_right = imread("/home/bene/ClionProjects/tesi_watermarking/img/occ_right.png", CV_LOAD_IMAGE_GRAYSCALE);
     cv::Mat squared_rDisp = cv::Mat::zeros(dim, dim, CV_8UC1);
     cv::Mat squared_rOcc = cv::Mat::zeros(dim, dim, CV_8UC1);
 
@@ -151,7 +150,7 @@ void FDTStereoWatermarking::warpMarkWatermarking(int*watermark,int wsize, float 
             }
         }
 
-// ottengo il marchio generato con lasinistra ricostruita
+// ottengo il marchio generato con lasinistra ricostruita (imidft_wat)
     unsigned char *squared_marked_left_rec = image_watermarking.insertWatermark(mat_image4.data,dim,dim,dim,imidft_wat_rec,false);
 
 //    computing warped watermark   ********************
@@ -181,8 +180,8 @@ void FDTStereoWatermarking::warpMarkWatermarking(int*watermark,int wsize, float 
 //    imdft_warp_mark = AllocIm::AllocImDouble(dim, dim);
 //    imdftfase_warp_mark = AllocIm::AllocImDouble(dim, dim);
 //    FFT2D::dft2d(warp_mark, imdft_warp_mark, imdftfase_warp_mark, dim, dim);
-//    stereo_watermarking::writeMatToFile(imdft_warp_mark,dim,"/home/miky/Scrivania/warp_wat_mag.txt");
-//    stereo_watermarking::writeMatToFile(imdftfase_warp_mark,dim,"/home/miky/Scrivania/warp_wat_phase.txt");
+//    stereo_watermarking::writeMatToFile(imdft_warp_mark,dim,"/home/bene/Scrivania/warp_wat_mag.txt");
+//    stereo_watermarking::writeMatToFile(imdftfase_warp_mark,dim,"/home/bene/Scrivania/warp_wat_phase.txt");
 //    marking right view with warped mark   ********************
 
 
@@ -342,7 +341,7 @@ void FDTStereoWatermarking::warpMarkWatermarking(int*watermark,int wsize, float 
 //    }
 //    imwrite("/home/bene/ClionProjects/tesi_watermarking/img/norm_disp_syn.png",nkz_disp);
 
-    cv::Mat norm_disp_syn = imread("/home/miky/ClionProjects/tesi_watermarking/img/norm_disp_syn.png", CV_LOAD_IMAGE_GRAYSCALE);
+    cv::Mat norm_disp_syn = imread("/home/bene/ClionProjects/tesi_watermarking/img/norm_disp_syn.png", CV_LOAD_IMAGE_GRAYSCALE);
     cv::Mat norm_kzdisp = cv::Mat::zeros(480, 640, CV_8UC1);
 
 
@@ -367,7 +366,6 @@ void FDTStereoWatermarking::warpMarkWatermarking(int*watermark,int wsize, float 
     count=0;
     for (int j = 0; j < dim; j++)
         for (int i = 0; i < dim; i++) {
-
             mat_image5.at<Vec3b>(j, i)[0] = rcn_squared_left_synt[count];
             count++;
             mat_image5.at<Vec3b>(j, i)[1] = rcn_squared_left_synt[count];
@@ -391,6 +389,69 @@ void FDTStereoWatermarking::warpMarkWatermarking(int*watermark,int wsize, float 
     cout<<" syn_det    "<<synt_view_det <<endl;
  }
 
+void FDTStereoWatermarking::leftWatermarking(Mat image, int* watermark, int wsize, float power, std::string passwstr, std::string passwnum, bool gt, Mat marked_image){
+
+    int dim = 512;
+    unsigned char *left_uchar = image.data;
+    int squared_dim = dim * dim *3;
+    unsigned char *squared_left =  new unsigned char[squared_dim];
+    int nc = 640;
+    int nc_s = dim;
+    int offset = 127;
+    for (int i = 0; i < 480; i ++ )
+        for (int j = 0; j < nc_s; j++) {
+            for (int k =0; k<3;k++){
+                squared_left[(i * nc_s + j)*3 + k] = left_uchar[(i *nc + j + offset)*3 + k];
+            }
+        }
+    Watermarking image_watermarking;
+    image_watermarking.setParameters(watermark,wsize,power);
+    image_watermarking.setPassword(passwstr,passwnum);
+    float  **imidft_wat;
+    imidft_wat = AllocIm::AllocImFloat(dim, dim);
+    unsigned char *squared_marked_left = image_watermarking.insertWatermark(squared_left,dim,dim,dim,imidft_wat,false);
+    unsigned char *left_watermarked = new unsigned char [480*640*3];
+    left_watermarked = image.data;
+    for (int i = 0; i < 480; i ++ )
+        for (int j = 0; j < dim; j++) {
+            for (int k =0; k<3;k++){
+                left_watermarked[(i *nc + j + offset)*3 + k] = squared_marked_left[(i * nc_s + j)*3 + k];
+            }
+        }
+    int count = 0;
+    for (int j = 0; j < marked_image.rows; j++)
+        for (int i = 0; i < marked_image.cols; i++){
+
+            marked_image.at<Vec3b>(j,i) [0] = left_watermarked[count]; count++;
+            marked_image.at<Vec3b>(j,i) [1] = left_watermarked[count]; count++;
+            marked_image.at<Vec3b>(j,i) [2] = left_watermarked[count]; count++;
+
+        }
+
+}
+bool FDTStereoWatermarking::leftDetection(Mat marked_image, int* watermark, int wsize, float power, std::string passwstr, std::string passwnum,int dim){
+
+    Watermarking image_watermarking;
+    image_watermarking.setParameters(watermark,wsize,power);
+    image_watermarking.setPassword(passwstr,passwnum);
+    unsigned char *marked_image_uchar = marked_image.data;
+    int squared_dim = dim * dim *3;
+    unsigned char *squared_marked =  new unsigned char[squared_dim];
+    int nc = marked_image.cols;
+    int nc_s = dim;
+    int offset = 127;
+    for (int i = 0; i < marked_image.rows; i ++ )
+        for (int j = 0; j < nc_s; j++) {
+            for (int k =0; k<3;k++){
+                squared_marked[(i * nc_s + j)*3 + k] = marked_image_uchar[(i *nc + j + offset)*3 + k];
+            }
+        }
+    bool left_det = image_watermarking.extractWatermark(squared_marked,dim,dim, dim);
+    return left_det;
+}
+
+
+
 
 //void FDTStereoWatermarking::warpRightWatermarking(int wsize, int tilesize, float power, bool clipping,
 //                                                      bool flagResyncAll, int tilelistsize, std::string passwstr,
@@ -398,7 +459,7 @@ void FDTStereoWatermarking::warpMarkWatermarking(int*watermark,int wsize, float 
 //
 //    /*watermarking dft dim*256 + MSE    -> controllare watermarking.cpp : 256 e diag */
 //
-//    cv::Mat left = imread("/home/miky/ClionProjects/tesi_watermarking/img/l.png", CV_LOAD_IMAGE_COLOR);
+//    cv::Mat left = imread("/home/bene/ClionProjects/tesi_watermarking/img/l.png", CV_LOAD_IMAGE_COLOR);
 //
 //    int dim = dim;
 //
@@ -435,11 +496,11 @@ void FDTStereoWatermarking::warpMarkWatermarking(int*watermark,int wsize, float 
 //    stereo_watermarking::show_ucharImage(squared_marked_left, dim, dim, "squared_marked_left",3);
 //
 //
-//    cv::Mat right = imread("/home/miky/ClionProjects/tesi_watermarking/img/r.png",CV_LOAD_IMAGE_COLOR);
-//    cv::Mat occ_left = imread("/home/miky/ClionProjects/tesi_watermarking/img/occ_left.png", CV_LOAD_IMAGE_GRAYSCALE);
-//    cv::Mat disp = imread("/home/miky/ClionProjects/tesi_watermarking/img/gt_disp.png", CV_LOAD_IMAGE_GRAYSCALE);
-//    cv::Mat right_disp = imread("/home/miky/ClionProjects/tesi_watermarking/img/disp_right.png", CV_LOAD_IMAGE_GRAYSCALE);
-//    cv::Mat occ_right = imread("/home/miky/ClionProjects/tesi_watermarking/img/occ_right.png", CV_LOAD_IMAGE_GRAYSCALE);
+//    cv::Mat right = imread("/home/bene/ClionProjects/tesi_watermarking/img/r.png",CV_LOAD_IMAGE_COLOR);
+//    cv::Mat occ_left = imread("/home/bene/ClionProjects/tesi_watermarking/img/occ_left.png", CV_LOAD_IMAGE_GRAYSCALE);
+//    cv::Mat disp = imread("/home/bene/ClionProjects/tesi_watermarking/img/disp_left.png", CV_LOAD_IMAGE_GRAYSCALE);
+//    cv::Mat right_disp = imread("/home/bene/ClionProjects/tesi_watermarking/img/disp_right.png", CV_LOAD_IMAGE_GRAYSCALE);
+//    cv::Mat occ_right = imread("/home/bene/ClionProjects/tesi_watermarking/img/occ_right.png", CV_LOAD_IMAGE_GRAYSCALE);
 //
 //    Right_view rv;
 //

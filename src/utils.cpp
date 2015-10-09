@@ -987,7 +987,7 @@ void stereo_watermarking::writefloatMatToFile(float** m,int dim, std::string fil
     fout.close();
 }
 
-void stereo_watermarking::show_ucharImage(unsigned char * image, int width, int height, string nameImage){
+Mat stereo_watermarking::show_ucharImage(unsigned char * image, int width, int height, string nameImage){
 
     int count = 0;
     cv::Mat mat_image = cv::Mat::zeros(height, width, CV_8UC3);
@@ -1001,6 +1001,7 @@ void stereo_watermarking::show_ucharImage(unsigned char * image, int width, int 
         }
     imshow(nameImage, mat_image);
     waitKey(0);
+    return mat_image;
 }
 
 

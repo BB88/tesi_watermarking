@@ -41,7 +41,7 @@ namespace stereo_watermarking{
 //    void generatePointCloud(cv::Mat disp, cv::Mat img_left,cv::Mat img_right, int frame_num);
     void show_floatImage(float ** image, int width, int height, string nameImage);
     void show_doubleImage(double * image, int width, int height, string nameImage);
-    void show_ucharImage(unsigned char * image, int width, int height, string nameImage);
+    Mat show_ucharImage(unsigned char * image, int width, int height, string nameImage);
     void writefloatMatToFile(float** m,int dim, std::string filepath);
     void writeMatToFile(double** m,int dim, std::string filepath);
     void writeToFile(double* m,int lenght, std::string filepath);
