@@ -30,11 +30,9 @@ using namespace cv::datasets;
 
 void FDTStereoWatermarking::warpMarkWatermarking(int*watermark,int wsize, float power, std::string passwstr,
                                                  std::string passwnum, bool gt){
-
     Right_view rv;
     cv::Mat left = imread("/home/bene/ClionProjects/tesi_watermarking/img/l.png", CV_LOAD_IMAGE_COLOR);
     int dim = 512;
-
     unsigned char *left_uchar = left.data;
     int squared_dim = dim * dim *3;
     unsigned char *squared_left =  new unsigned char[squared_dim];
@@ -429,6 +427,7 @@ void FDTStereoWatermarking::leftWatermarking(Mat image, int* watermark, int wsiz
         }
 
 }
+
 bool FDTStereoWatermarking::leftDetection(Mat marked_image, int* watermark, int wsize, float power, std::string passwstr, std::string passwnum,int dim){
 
     Watermarking image_watermarking;

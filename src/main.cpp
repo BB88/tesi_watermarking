@@ -48,19 +48,20 @@ int main() {
 
 
     bool coding = false;
+    bool decoding = true;
     if (coding) {
         Watermarking_config::set_parameters_params pars = Watermarking_config::ConfigLoader::get_instance().loadSetParametersConfiguration();
         int wsize = pars.wsize;
-        float power=pars.power;
+        float power = pars.power;
         Watermarking_config::general_params generalPars = Watermarking_config::ConfigLoader::get_instance().loadGeneralParamsConfiguration();
         bool masking = generalPars.masking;
         std::string passwstr = generalPars.passwstr;
         std::string passwnum = generalPars.passwnum;
         //    random binary watermark   ********************
         int watermark[64];
-        for (int i = 0; i < 64; i++){
+        for (int i = 0; i < 64; i++) {
             int b = rand() % 2;
-            watermark[i]=b;
+            watermark[i] = b;
         }
 //        saving watermarking parameters
         string filepath = "/home/bene/ClionProjects/tesi_watermarking/img/marked_frames/parameters.txt";
@@ -102,10 +103,10 @@ int main() {
             FDTStereoWatermarking::leftWatermarking(frame, watermark, wsize, power, passwstr, passwnum, gt,
                                                     marked_frame);
             std::ostringstream path;
-            path << "/home/bene/ClionProjects/tesi_watermarking/img/marked_frames/frame_" << std::setw(3) << std::setfill('0') <<frame_number << ".png";
+            path << "/home/bene/ClionProjects/tesi_watermarking/img/marked_frames/0.3/frame_" << std::setw(3) << std::setfill('0') <<frame_number << ".png";
             imwrite(path.str(), marked_frame);
         }
-    } else {     //detection
+    }else if(decoding){     //detection
 //    read parameters file
         string filepath = "/home/bene/ClionProjects/tesi_watermarking/img/marked_frames/parameters.txt";
         string line;
@@ -138,27 +139,40 @@ int main() {
         stream_alpha >> d;
         power = d;
 //        read marked frames  ***********************
-        VideoCapture cap("/home/bene/ClionProjects/tesi_watermarking/img/output_L_marked.mp4"); // open the default camera
+     //   VideoCapture cap("/home/bene/ClionProjects/tesi_watermarking/img/output_L_marked.mp4"); // open the default camera
+        VideoCapture cap("/home/bene/ClionProjects/tesi_watermarking/video/output_L_marked_crf0.mp4"); // open the default camera
         if (!cap.isOpened())  // check if we succeeded
             return -1;
-        for (int i = 0; i < 0; i++) {
+        int first_frame = 200;
+        int last_frame = 300;
+        for (int i = 0; i < first_frame; i++) {
             Mat frame;
             cap >> frame;
         }
-        for (int i = 0; i < 50; i++) {
+        for (int i = first_frame; i < last_frame; i++) {
             Mat frame;
             cap >> frame; // get a new frame from camera
-            imshow("frame", frame);
-            waitKey(0);
             //        imshow("frames", frame);
             //        waitKey(0);
             Mat marked_frame;
             frame.copyTo(marked_frame);
             bool left_det = FDTStereoWatermarking::leftDetection(marked_frame, watermark, 64, 0.3, passwstr, passwnum, 512);
             cout << "left_det " << left_det<<endl;
-        }
-
+         }
     }
+
+    // decoding one single frame
+   /* cv::Mat left = imread("/home/bene/ClionProjects/tesi_watermarking/img/marked_frames/0.3/frame050.png",
+                          CV_LOAD_IMAGE_COLOR);
+    bool det = FDTStereoWatermarking::leftDetection(left, watermark, 64, 0.3, passwstr, passwnum, 512);
+    cout << det;*/
+
+
+  /*  cv::Mat left = imread("/home/bene/ClionProjects/tesi_watermarking/img/marked_frames/0.3/frame050.png",
+                          CV_LOAD_IMAGE_COLOR);
+    bool det = FDTStereoWatermarking::leftDetection(left, watermark, 64, 0.3, passwstr, passwnum, 512);
+    cout << det;*/
+
 
 /*   Mat edges;
    for(;;)
