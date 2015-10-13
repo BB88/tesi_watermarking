@@ -83,9 +83,8 @@ int main() {
     power = d;
     FDTStereoWatermarking::videoDetection(marked_left, marked_right, watermark, wsize, 0.3, passwstr, passwnum, 512);
 
-
     bool coding = false;
-    bool decoding = false;
+    bool decoding = true;
     if (coding) {
         Watermarking_config::set_parameters_params pars = Watermarking_config::ConfigLoader::get_instance().loadSetParametersConfiguration();
         int wsize = pars.wsize;
@@ -118,45 +117,32 @@ int main() {
         par_file << power;
         par_file.close();
         bool gt = true;
-//        read left video
-        VideoCapture cap("/home/bene/ClionProjects/tesi_watermarking/video/output.mp4"); // open the left camera
+//        read video
+        VideoCapture cap("/home/bene/ClionProjects/tesi_watermarking/img/output.mp4"); // open the default camera
         if (!cap.isOpened())  // check if we succeeded
-            return -1;
-        VideoCapture capright("/home/bene/ClionProjects/tesi_watermarking/video/outputRight.mp4"); // open the right camera
-        if (!capright.isOpened())  // check if we succeeded
             return -1;
         int frame_number = -1;
 //        double cycle to process 100 frames at a time
         int first_frame = 0;
-        int last_frame = 2;
+        int last_frame = 100;
         for (int i = 0; i < first_frame; i++) {
             frame_number++;
-            Mat left_frame;
-            cap >> left_frame;
-            Mat right_frame;
-            capright >> right_frame;
+            Mat frame;
+            cap >> frame;
         }
         for (int i = first_frame; i < last_frame; i++) {
             frame_number++;
-            Mat left_frame;
-            cap >> left_frame; // get a new frame from left camera
-            Mat right_frame;
-            capright >> right_frame; // get a new frame from right camera
-            Mat marked_left;
-            Mat marked_right;
-            FDTStereoWatermarking::videoWatermarking(left_frame, right_frame, watermark, wsize, power, passwstr, passwnum, gt, marked_left, marked_right);
-  /*          imshow("marked_left",marked_left);
-            imshow("marked_right",marked_right);
-            waitKey(0);*/
-            std::ostringstream path_left;
-            std::ostringstream path_right;
-            path_left << "/home/bene/ClionProjects/tesi_watermarking/img/marked_frames/0.3/left/frame_" << std::setw(3) << std::setfill('0') <<frame_number << ".png";
-            path_right << "/home/bene/ClionProjects/tesi_watermarking/img/marked_frames/0.3/right/frame_" << std::setw(3) << std::setfill('0') <<frame_number << ".png";
-            imwrite(path_left.str(), marked_left);
-            imwrite(path_right.str(), marked_right);
+            Mat frame;
+            cap >> frame; // get a new frame from camera
+            Mat marked_frame;
+            frame.copyTo(marked_frame);
+            FDTStereoWatermarking::leftWatermarking(frame, watermark, wsize, power, passwstr, passwnum, gt,
+                                                    marked_frame);
+            std::ostringstream path;
+            path << "/home/bene/ClionProjects/tesi_watermarking/img/marked_frames/0.3/frame_" << std::setw(3) << std::setfill('0') <<frame_number << ".png";
+            imwrite(path.str(), marked_frame);
         }
-    }
-    if(decoding){     //detection
+    }else if(decoding){     //detection
 //    read parameters file
         string filepath = "/home/bene/ClionProjects/tesi_watermarking/img/marked_frames/parameters.txt";
         string line;
@@ -193,34 +179,23 @@ int main() {
         VideoCapture cap("/home/bene/ClionProjects/tesi_watermarking/video/output_L_marked_crf0.mp4"); // open the default camera
         if (!cap.isOpened())  // check if we succeeded
             return -1;
-        VideoCapture capright("/home/bene/ClionProjects/tesi_watermarking/video/outputRight.mp4"); // open the right camera
-        if (!capright.isOpened())  // check if we succeeded
-            return -1;
-        int frame_number = -1;
-        int first_frame = 0;
-        int last_frame = 10;
+        int first_frame = 200;
+        int last_frame = 300;
         for (int i = 0; i < first_frame; i++) {
-            frame_number++;
-            Mat marked_Lframe;
-            cap >> marked_Lframe;
-            Mat marked_Rframe;
-            capright >> marked_Rframe;
+            Mat frame;
+            cap >> frame;
         }
         for (int i = first_frame; i < last_frame; i++) {
-            frame_number++;
-            Mat marked_Lframe;
-            cap >> marked_Lframe;
-            Mat marked_Rframe;
-            capright >> marked_Rframe;
-            FDTStereoWatermarking::videoDetection(marked_Lframe, marked_Rframe, watermark, 64, 0.3, passwstr, passwnum, 512);
+            Mat frame;
+            cap >> frame; // get a new frame from camera
+            //        imshow("frames", frame);
+            //        waitKey(0);
+            Mat marked_frame;
+            frame.copyTo(marked_frame);
+            bool left_det = FDTStereoWatermarking::leftDetection(marked_frame, watermark, 64, 0.3, passwstr, passwnum, 512);
+            cout << "left_det " << left_det<<endl;
          }
     }
-
-/*
-    cv::Mat disp = imread("/home/bene/ClionProjects/tesi_watermarking/dataset/NTSD-200/disparity_maps/left/frame_151.png",
-                          CV_LOAD_IMAGE_GRAYSCALE);
-imshow("disp",disp);
-    waitKey(0);*/
 
     // decoding one single frame
    /* cv::Mat left = imread("/home/bene/ClionProjects/tesi_watermarking/img/marked_frames/0.3/frame050.png",
@@ -234,14 +209,7 @@ imshow("disp",disp);
     bool det = FDTStereoWatermarking::leftDetection(left, watermark, 64, 0.3, passwstr, passwnum, 512);
     cout << det;*/
 
- /*   cv::Mat nkz_disp;
-    cv::Mat kz_disp = imread("/home/bene/Scrivania/disp.png", CV_LOAD_IMAGE_GRAYSCALE);
-    Disp_opt dp;
-    dp.disparity_normalization(kz_disp, nkz_disp);
-    imshow("nkzd", nkz_disp);
-    cv::Mat gt = imread("/home/bene//ClionProjects/tesi_watermarking/img/disp_left.png", CV_LOAD_IMAGE_GRAYSCALE);
-    imshow("gt", gt);
-    waitKey(0);*/
+
 /*   Mat edges;
    for(;;)
     {
@@ -257,37 +225,38 @@ imshow("disp",disp);
 
     //questo va ricontrollato
     //video processing
-/*    CvCapture* capture = 0;
-    IplImage *frame = 0;
-
-    if (!(capture = cvCaptureFromFile("/home/bene/ClionProjects/tesi_watermarking/img/output.mp4")))
-        printf("Cannot open video\n");
-
-    cvNamedWindow("tsukuba", CV_WINDOW_AUTOSIZE);
-
-    while (1) {
-
-        frame = cvQueryFrame(capture);
-        if (!frame)
-            break;
-
-        //non serve a nulla ma ti fa vedere che da un frame crea un'immagine e la mostra
-        IplImage *temp = cvCreateImage(cvSize(frame->width/2, frame->height/2), frame->depth, frame->nChannels); // A new Image half size
-        cvShowImage("temporary ", temp); // Display the frame
-
-        cvResize(frame, temp, CV_INTER_CUBIC); // Resize
-        cvShowImage("tsukuba", frame); // Display the frame
-        cvReleaseImage(&temp);
-        if (cvWaitKey(5000) == 27) // Escape key and wait, 5 sec per capture
-            break;
-    }
-
-    cvReleaseImage(&frame);
-    cvReleaseCapture(&capture);*/
+//
+//    CvCapture* capture = 0;
+//    IplImage *frame = 0;
+//
+//    if (!(capture = cvCaptureFromFile("/home/miky/ClionProjects/tesi_watermarking/img/output.mp4")))
+//        printf("Cannot open video\n");
+//
+//    cvNamedWindow("tsukuba", CV_WINDOW_AUTOSIZE);
+//
+//    while (1) {
+//
+//        frame = cvQueryFrame(capture);
+//        if (!frame)
+//            break;
+//
+//        //non serve a nulla ma ti fa vedere che da un frame crea un'immagine e la mostra
+//        IplImage *temp = cvCreateImage(cvSize(frame->width/2, frame->height/2), frame->depth, frame->nChannels); // A new Image half size
+//        cvShowImage("temporary ", temp); // Display the frame
+//
+//        cvResize(frame, temp, CV_INTER_CUBIC); // Resize
+//        cvShowImage("tsukuba", frame); // Display the frame
+//        cvReleaseImage(&temp);
+//        if (cvWaitKey(5000) == 27) // Escape key and wait, 5 sec per capture
+//            break;
+//    }
+//
+//    cvReleaseImage(&frame);
+//    cvReleaseCapture(&capture);
 
 //  spatialWatermarking::gaussianNoiseStereoWatermarking(gt);
-
-//   FDTStereoWatermarking::warpMarkWatermarking(wsize, tilesize, power, clipping, flagResyncAll, tilelistsize, passwstr, passwnum, gt);
+//
+   FDTStereoWatermarking::warpMarkWatermarking(wsize, power, passwstr, passwnum, gt);
 
     //questo va ricontrollato
 //   FDTStereoWatermarking::warpRightWatermarking(wsize, tilesize, power, clipping, flagResyncAll, tilelistsize, passwstr, passwnum,gt);
@@ -299,15 +268,15 @@ imshow("disp",disp);
 
 
 
-//////************WATERMARKING bene********************/////////////////////////
+//////************WATERMARKING MIKY********************/////////////////////////
 
 //    START COEFFICIENT ANALYSIS:  saving dft left coefficient   ********************
 //    double *coeff_left = image_watermarking.getCoeff_dft();
 //    int coeff_num = image_watermarking.getCoeff_number();
 //    double *wat = new double[coeff_num];
 //    wat = image_watermarking.getFinal_mark();
-//    stereo_watermarking::writeToFile(wat,coeff_num,"/home/bene/Scrivania/wat.txt");
-//    stereo_watermarking::writeToFile(coeff_left,coeff_num,"/home/bene/Scrivania/diag_coeff_left.txt");
+//    stereo_watermarking::writeToFile(wat,coeff_num,"/home/miky/Scrivania/wat.txt");
+//    stereo_watermarking::writeToFile(coeff_left,coeff_num,"/home/miky/Scrivania/diag_coeff_left.txt");
 //    decoding   ********************
 //    bool left_detection = image_watermarking.extractWatermark(squared_marked_left, 256, 256);
 //    cout<< "left_detection:    " << left_detection <<endl;
@@ -581,56 +550,6 @@ imshow("disp",disp);
 
 
 
-    /* GRAPH CUTS DISPARITY COMPUTATION*/
-////
-//    std::string img1_path =  "/home/bene/ClionProjects/tesi_watermarking/img/l.png";
-//    std::string img2_path =  "/home/bene/ClionProjects/tesi_watermarking/img/r.png";
-//
-//
-//    Match::Parameters params = { // Default parameters
-//            Match::Parameters::L2, 1, // dataCost, denominator
-//            8, -1, -1, // edgeThresh, lambda1, lambda2 (smoothness cost)
-//            -1,        // K (occlusion cost)
-//            4, false   // maxIter, bRandomizeEveryIteration
-//    };
-//    float K=-1, lambda=-1, lambda1=-1, lambda2=-1;
-//    params.dataCost = Match::Parameters::L1;
-////      params.dataCost = Match::Parameters::L2;
-//
-//    GeneralImage im1 = (GeneralImage)imLoad(IMAGE_GRAY, img1_path.c_str());
-//    GeneralImage im2 = (GeneralImage)imLoad(IMAGE_GRAY, img2_path.c_str());
-//    bool color = false;
-//    if(graph_cuts_utils::isGray((RGBImage)im1) && graph_cuts_utils::isGray((RGBImage)im2)) {
-//        color=false;
-//        graph_cuts_utils::convert_gray(im1);
-//        graph_cuts_utils::convert_gray(im2);
-//    }
-//
-//    Match m(im2, im1, color);
-////
-////////    // Disparity
-//    int dMin=19, dMax=77;
-////    int dMin=-77, dMax=-19;
-////    int dMin=8, dMax=33;
-////
-//    m.SetDispRange(dMin, dMax);
-//
-//    time_t seed = time(NULL);
-//    srand((unsigned int)seed);
-//
-//    graph_cuts_utils::fix_parameters(m, params, K, lambda, lambda1, lambda2);
-//
-//    m.KZ2();
-//
-////        m.SaveXLeft(argv[5]);
-//
-//    m.SaveScaledXLeft("/home/bene/ClionProjects/tesi_watermarking/img/disp_kz_rl.png", true);
-////    m.SaveScaledXLeft("/home/bene/ClionProjects/tesi_watermarking/img/disp_kz_syn.png", false);
-//
-//    cv::Mat disp = imread("/home/bene/ClionProjects/tesi_watermarking/img/disp_kz_rl.png");
-//    imshow("kz disp",disp);
-//    waitKey(0);
-////
 
     /*STEP 2: FILTER DISPARITY (OUTPUT OF KZ)*/
 

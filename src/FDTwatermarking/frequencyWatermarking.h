@@ -12,7 +12,8 @@
 using namespace cv;
 namespace FDTStereoWatermarking{
 
-    void warpMarkWatermarking(Mat left, Mat right, int* watermark, int wsize, float power, std::string passwstr, std::string passwnum, bool gt);
+    void warpMarkWatermarking(int wsize, float power, std::string passwstr, std::string passwnum, bool gt);
+
     void warpRightWatermarking(int wsize, int tilesize, float power, bool clipping,
                                                       bool flagResyncAll, int tilelistsize, std::string passwstr,
                                                       std::string passwnum, bool gt);
