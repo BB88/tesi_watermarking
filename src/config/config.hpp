@@ -17,7 +17,11 @@ namespace Watermarking_config {
 
     struct set_parameters_params {
         int wsize ;
+        int tilesize;
         float power;
+        bool clipping;
+        bool flagResyncAll;
+        int tilelistsize;
     };
 
     class ConfigLoader {
