@@ -997,8 +997,31 @@ Mat stereo_watermarking::show_ucharImage(unsigned char * image, int width, int h
             mat_image.at<Vec3b>(j,i) [2] = image[count]; count++;
 
         }
-    imshow(nameImage, mat_image);
-    waitKey(0);
+//    imshow(nameImage, mat_image);
+//    waitKey(0);
+    return mat_image;
+}
+
+Mat stereo_watermarking::unsignedToMat(unsigned char * squared_image, Mat original_image,  int width, int height, int dim){
+
+    int offset = width - dim - 1;
+    unsigned char *rect_image = new unsigned char [width*height*3];
+    rect_image = original_image.data;
+//    show_ucharImage(rect_image,width,height,"rect",3);
+    for (int i = 0; i < height; i ++ )
+        for (int j = 0; j < dim; j++) {
+            for (int k =0; k<3;k++){
+                rect_image[(i * width + j + offset)*3 + k] = squared_image[(i * dim + j)*3 + k];
+            }
+        }
+    int count = 0;
+    cv::Mat mat_image = cv::Mat::zeros(height, width, CV_8UC3);
+    for (int j = 0; j < height; j++)
+        for (int i = 0; i < width; i++){
+            mat_image.at<Vec3b>(j,i) [0] = rect_image[count]; count++;
+            mat_image.at<Vec3b>(j,i) [1] = rect_image[count]; count++;
+            mat_image.at<Vec3b>(j,i) [2] = rect_image[count]; count++;
+        }
     return mat_image;
 }
 

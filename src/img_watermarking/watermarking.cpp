@@ -19,7 +19,7 @@
 #include <opencv2/core/core.hpp>
 #include <highgui.h>
 
-#include </home/miky/ClionProjects/tesi_watermarking/src/utils.h>
+#include </home/bene/ClionProjects/tesi_watermarking/src/utils.h>
 
 
 using namespace cv;
@@ -453,7 +453,7 @@ void Watermarking::addmark(double *buff, double *mark, int coeff_number, double 
             }
         }
     }
-    cout << "#not marked coeff :   "<< count<<endl;
+ //   cout << "#not marked coeff :   "<< count<<endl;
 }
 
 

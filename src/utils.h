@@ -27,6 +27,7 @@ namespace stereo_watermarking{
     void histo_equalizer(Mat img, std::string window_name);
     double similarity_measures(double* wat, double* retrieve_wat, int coeff_num, std::string first_element, std::string second_element);
     void show_ucharImage(unsigned char * image, int width, int height, string nameImage, int channels);
+    Mat show_ucharImage(unsigned char * image, int width, int height, string nameImage);
     void show_doubleImage(double * image, int width, int height, string nameImage);
     double*  not_blind_extraction(double* original_coeff,double* marked_coeff, int coeff_num, double power);
 //    void writeToFile(double* m,int lenght, std::string filename);
@@ -40,7 +41,7 @@ namespace stereo_watermarking{
 //    void generatePointCloud(cv::Mat disp, cv::Mat img_left,cv::Mat img_right, int frame_num);
     void show_floatImage(float ** image, int width, int height, string nameImage);
     void show_doubleImage(double * image, int width, int height, string nameImage);
-    void show_ucharImage(unsigned char * image, int width, int height, string nameImage);
+    Mat show_ucharImage(unsigned char * image, int width, int height, string nameImage);
     void writefloatMatToFile(float** m,int dim, std::string filepath);
     void writeMatToFile(double** m,int dim, std::string filepath);
     void writeToFile(double* m,int lenght, std::string filepath);
@@ -49,5 +50,6 @@ namespace stereo_watermarking{
                                                 unsigned char **imb, float **imyout, float **imc2,float **imc3);
     void save_ucharImage(unsigned char * image, int width, int height, string nameImage);
     Mat unsignedToMat(unsigned char * squared_image, Mat original_image,  int width, int height, int dim);
+    void random_mark_detection(int number_of_marks, unsigned char* marked_image, int dim);
 
 }
