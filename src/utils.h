@@ -49,5 +49,6 @@ namespace stereo_watermarking{
     void compute_luminance(unsigned char* image, int dim, int flag, unsigned char **imr,unsigned char **img,
                                                 unsigned char **imb, float **imyout, float **imc2,float **imc3);
     void save_ucharImage(unsigned char * image, int width, int height, string nameImage);
+    Mat unsignedToMat(unsigned char * squared_image, Mat original_image,  int width, int height, int dim);
 
 }

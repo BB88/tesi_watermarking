@@ -52,6 +52,7 @@ imFree(gray);
 #define IMAGE_H
 
 #include <stdlib.h>
+#include <cv.h>
 
 typedef enum
 {
@@ -86,6 +87,7 @@ inline void imFree(void *im) {
     if(im) { free(GeneralImage(im)->data); free(imHeader(im)); }
 }
 void * imLoad(ImageType type, const char *filename);
+void* imLoadFromMat(ImageType type, cv::Mat image);
 int imSave(void *im, const char *filename);
 
 /// Pixel coordinates with basic operations.
