@@ -186,3 +186,24 @@ unsigned char* Right_view::left_rnc(unsigned char *right, cv::Mat disp, cv::Mat 
             }
         return rcn_left;
     }
+
+unsigned char* Right_view::left_rnc_no_occ(unsigned char *right, cv::Mat disp, int width, int height) {
+
+    int nc = width;
+    unsigned char d = 0;
+    unsigned char occ = 0;
+//      create general left image
+    int dim = width*height*3;
+    unsigned char * rcn_left = new unsigned char[dim];
+    for (int i = 0; i<dim; i ++)
+        rcn_left[i] = (unsigned char)0;
+    for (int i=0;i<height;i++)
+        for (int j= (width-1);j>=0;j--){
+            d = disp.at<uchar>(i,j);
+
+            if(static_cast<int>(d)!=0 && ((i*nc + j + static_cast<unsigned>(d))*3 + 2) < ((i+1)*nc*3))
+                for (int k=0; k<3; k++)
+                    rcn_left[(i*nc + j + static_cast<int>(d))*3 + k ] = right[(i*nc + j)*3 + k];
+        }
+    return rcn_left;
+}

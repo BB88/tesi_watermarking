@@ -19,7 +19,7 @@
 #include <opencv2/core/core.hpp>
 #include <highgui.h>
 
-#include </home/bene/ClionProjects/tesi_watermarking/src/utils.h>
+#include </home/miky/ClionProjects/tesi_watermarking/src/utils.h>
 
 
 using namespace cv;

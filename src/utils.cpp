@@ -1,5 +1,5 @@
 //
-// Created by bene on 16/08/15.
+// Created by miky on 16/08/15.
 //
 #include <iostream>
 #include <opencv2/core/core.hpp>
@@ -63,7 +63,7 @@ void stereo_watermarking::sobel_filtering(cv::Mat src, const char* window_name){
     addWeighted( abs_grad_x, 0.5, abs_grad_y, 0.5, 0, grad );
 
     std::ostringstream path ;
-    path << "/home/bene/ClionProjects/tesi_watermarking/img/"<< window_name<<".png";
+    path << "/home/miky/ClionProjects/tesi_watermarking/img/"<< window_name<<".png";
 //    cout<<path.str();
     cv::imwrite(path.str(),grad);
     imshow( window_name, grad );
@@ -381,7 +381,7 @@ double* stereo_watermarking::compute_coeff_function(unsigned char* image, int di
     while ( currDiag <= lastValue );
 
     std::ostringstream path ;
-    path <<"/home/bene/Scrivania/"<< filename<<".txt";
+    path <<"/home/miky/Scrivania/"<< filename<<".txt";
 
     stereo_watermarking::writeToFile(coeff_vector,j,path.str());
 
@@ -403,7 +403,7 @@ double* stereo_watermarking::compute_coeff_function(unsigned char* image, int di
 
 
 /*
-       cv::Mat right = imread("/home/bene/ClionProjects/tesi_watermarking/img/r.png", CV_LOAD_IMAGE_COLOR);
+       cv::Mat right = imread("/home/miky/ClionProjects/tesi_watermarking/img/r.png", CV_LOAD_IMAGE_COLOR);
        unsigned char *right_uchar = right.data;
        unsigned char *squared_right =  new unsigned char[squared_dim];
        for (int i = 0; i < 256; i ++ )
@@ -442,7 +442,7 @@ double* stereo_watermarking::compute_coeff_function(unsigned char* image, int di
 //        }
 //    }
 //    std::ostringstream path ;
-//    path <<"/home/bene/Scrivania/images/dft/"<< window_name<<".png";
+//    path <<"/home/miky/Scrivania/images/dft/"<< window_name<<".png";
 ////    cout<<path.str();
 //    cv::imwrite(path.str(),mat);
 //    imshow(window_name,mat);
@@ -468,7 +468,7 @@ void stereo_watermarking::histo_equalizer(Mat img, std::string window_name){
 //    namedWindow("Original Image", CV_WINDOW_AUTOSIZE);
 //    namedWindow(window_name.c_str(), CV_WINDOW_AUTOSIZE);
     std::ostringstream path ;
-    path <<"/home/bene/ClionProjects/tesi_watermarking/img/"<< window_name<<".png";
+    path <<"/home/miky/ClionProjects/tesi_watermarking/img/"<< window_name<<".png";
 //    cout<<path.str();
     cv::imwrite(path.str(),img_hist_equalized);
     //show the image
@@ -584,7 +584,7 @@ void stereo_watermarking::histo_equalizer(Mat img, std::string window_name){
 //}
 //void stereo_watermarking::generatePointCloud(cv::Mat disp, cv::Mat img_left,cv::Mat img_right, int frame_num){
 //
-//    string path("/home/bene/ClionProjects/tesi_watermarking/dataset/NTSD-200/");
+//    string path("/home/miky/ClionProjects/tesi_watermarking/dataset/NTSD-200/");
 //    Ptr<tsukuba_dataset> dataset = tsukuba_dataset::create();
 //    dataset->load(path);
 //
@@ -758,7 +758,7 @@ void stereo_watermarking::random_mark_detection(int number_of_marks, unsigned ch
             det[i] = 0;
 
     }
-    stereo_watermarking::writeToFile(det, number_of_marks, "/home/bene/Scrivania/detection.txt");
+    stereo_watermarking::writeToFile(det, number_of_marks, "/home/miky/Scrivania/detection.txt");
 
 }
 
@@ -923,7 +923,7 @@ void stereo_watermarking::show_double_mat(int width,int height,double** A,std::s
         }
     }
     std::ostringstream path ;
-    path <<"/home/bene/Scrivania/images/dft/"<< window_name<<".png";
+    path <<"/home/miky/Scrivania/images/dft/"<< window_name<<".png";
 //    cout<<path.str();
     cv::imwrite(path.str(),mat);
     imshow(window_name,mat);
@@ -1040,7 +1040,7 @@ void stereo_watermarking::save_ucharImage(unsigned char * image, int width, int 
         }
 
     std::ostringstream path ;
-    path <<"/home/bene/ClionProjects/tesi_watermarking/img/"<<nameImage<<".png";
+    path <<"/home/miky/ClionProjects/tesi_watermarking/img/"<<nameImage<<".png";
     cv::imwrite(path.str(), mat_image);
 }
 

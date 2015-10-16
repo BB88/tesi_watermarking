@@ -12,6 +12,11 @@
 using namespace cv;
 namespace FDTStereoWatermarking{
 
+    vector<cv::Mat> stereoWatermarking(cv::Mat frameL, cv::Mat frameR, int wsize, float power, std::string passwstr,
+                                                   std::string passwnum, int* watermark);
+    void stereoDetection(cv::Mat markedL, cv::Mat markedR, int wsize, float power, std::string passwstr,
+                                                std::string passwnum, int* watermark);
+
     void warpMarkWatermarking(int wsize, float power, std::string passwstr, std::string passwnum, bool gt);
 
     void warpRightWatermarking(int wsize, int tilesize, float power, bool clipping,

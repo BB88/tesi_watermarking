@@ -1,5 +1,5 @@
 //
-// Created by bene on 05/08/15.
+// Created by miky on 05/08/15.
 //
 
 #include "utils.h"
@@ -8,6 +8,7 @@
 #include <cv.h>
 #include <highgui.h>
 #include "../disparity_computation/stereo_matching.h"
+
 #include "../disparity_optimization/disp_opt.h"
 
 using namespace std;
@@ -100,7 +101,7 @@ void graph_cuts_utils::fix_parameters(Match& m, Match::Parameters& params,
     m.SetParameters(&params);
 }
 
-void graph_cuts_utils::kz_main(bool left_to_right, std::string img1_name, std::string img2_name, cv::Mat img1, cv::Mat img2 ) {
+cv::Mat graph_cuts_utils::kz_main(bool left_to_right, std::string img1_name, std::string img2_name, cv::Mat img1, cv::Mat img2 ) {
 
 /* kz_disp PARAMETERS */
 /*
@@ -152,10 +153,10 @@ void graph_cuts_utils::kz_main(bool left_to_right, std::string img1_name, std::s
 
     std::stringstream path_disp;
     if (left_to_right)
-        path_disp << "/home/bene/ClionProjects/tesi_watermarking/img/disp_" << img1_name << "_" << "to_" << img2_name <<
+        path_disp << "/home/miky/ClionProjects/tesi_watermarking/img/disp_" << img1_name << "_" << "to_" << img2_name <<
                      ".png";
     else
-        path_disp << "/home/bene/ClionProjects/tesi_watermarking/img/disp_" << img2_name << "_" << "to_" << img1_name <<
+        path_disp << "/home/miky/ClionProjects/tesi_watermarking/img/disp_" << img2_name << "_" << "to_" << img1_name <<
         ".png";
 
 
@@ -169,4 +170,12 @@ void graph_cuts_utils::kz_main(bool left_to_right, std::string img1_name, std::s
         m2.KZ2();
         m2.SaveScaledXLeft(path_disp.str().c_str(), true);
     }
+    
+    cv::Mat computed_disp = imread(path_disp.str().c_str(), CV_LOAD_IMAGE_COLOR);
+    cv::Mat norm_disp;
+    Disp_opt opt;
+    opt.disparity_normalization(computed_disp,norm_disp);
+    
+    return norm_disp;
+    
 }
