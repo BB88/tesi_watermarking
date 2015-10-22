@@ -29,8 +29,8 @@ using namespace graph_cuts_utils;
 
 
 
-vector<cv::Mat> FDTStereoWatermarking::stereoWatermarking(cv::Mat frameL, cv::Mat frameR, int wsize, float power, std::string passwstr,
-                                                 std::string passwnum, int* watermark){
+vector<cv::Mat> DFTStereoWatermarking::stereoWatermarking(cv::Mat frameL, cv::Mat frameR, int wsize, float power, std::string passwstr,
+                                                 std::string passwnum, int* watermark, int i){
 
 
     Right_view rv;
@@ -62,21 +62,21 @@ vector<cv::Mat> FDTStereoWatermarking::stereoWatermarking(cv::Mat frameL, cv::Ma
 
     bool left_to_right = true;
 //    cv::Mat disp_left = graph_cuts_utils::kz_main(left_to_right,"left","right",frameL,frameR);
-    cv::Mat disp_left = imread("/home/miky/ClionProjects/tesi_watermarking/img/disp_left.png", CV_LOAD_IMAGE_GRAYSCALE);
-
+    std::ostringstream pathL;
+    pathL << "/home/miky/ClionProjects/tesi_watermarking/dataset/NTSD-200/disparity_maps/left/tsukuba_disparity_L_" << std::setw(5) << std::setfill('0') << i+1 << ".png";
+    cv::Mat disp_left = imread(pathL.str().c_str(), CV_LOAD_IMAGE_GRAYSCALE);
 
     left_to_right = false;
 //    cv::Mat disp_right = graph_cuts_utils::kz_main(left_to_right,"right","left",frameR,frameL);
-    cv::Mat disp_right = imread("/home/miky/ClionProjects/tesi_watermarking/img/disp_right.png", CV_LOAD_IMAGE_GRAYSCALE);
-
+    std::ostringstream pathR;
+    pathR << "/home/miky/ClionProjects/tesi_watermarking/dataset/NTSD-200/disparity_maps/right/tsukuba_disparity_R_" << std::setw(5) << std::setfill('0') << i+1 << ".png";
+    cv::Mat disp_right = imread(pathR.str().c_str(), CV_LOAD_IMAGE_GRAYSCALE);
 
     cv::Mat squared_lDisp = cv::Mat::zeros(dim, dim, CV_8UC1);
     for (int i=0;i<480;i++)
         for (int j=0;j<dim;j++){
             squared_lDisp.at<uchar>(i,j) = disp_left.at<uchar>(i,j+offset);
         }
-
-
 
     cv::Mat squared_rDisp = cv::Mat::zeros(dim, dim, CV_8UC1);
 
@@ -243,8 +243,8 @@ vector<cv::Mat> FDTStereoWatermarking::stereoWatermarking(cv::Mat frameL, cv::Ma
 }
 
 
-void FDTStereoWatermarking::stereoDetection(cv::Mat markedL, cv::Mat markedR, int wsize, float power, std::string passwstr,
-                                            std::string passwnum, int* watermark){
+void DFTStereoWatermarking::stereoDetection(cv::Mat markedL, cv::Mat markedR, int wsize, float power, std::string passwstr,
+                                            std::string passwnum, int* watermark,int i){
 
 
     Watermarking image_watermarking;
@@ -281,7 +281,9 @@ void FDTStereoWatermarking::stereoDetection(cv::Mat markedL, cv::Mat markedR, in
     //    left view reconstruction   ********************
     bool left_to_right = false;
    //    cv::Mat disp_right = graph_cuts_utils::kz_main(left_to_right,"right","left",frameR,frameL);
-    cv::Mat disp_right = imread("/home/miky/ClionProjects/tesi_watermarking/img/disp_right.png", CV_LOAD_IMAGE_GRAYSCALE);
+    std::ostringstream pathR;
+    pathR << "/home/miky/ClionProjects/tesi_watermarking/dataset/NTSD-200/disparity_maps/right/tsukuba_disparity_R_" << std::setw(5) << std::setfill('0') << i+1 << ".png";
+    cv::Mat disp_right = imread(pathR.str().c_str(), CV_LOAD_IMAGE_GRAYSCALE);
 
     cv::Mat squared_rDisp = cv::Mat::zeros(dim, dim, CV_8UC1);
 
@@ -339,12 +341,12 @@ void FDTStereoWatermarking::stereoDetection(cv::Mat markedL, cv::Mat markedR, in
 
     cout<<" left_det    "<<left_det <<endl;
     cout<<" right_det   "<< right_det<<endl;
-    cout<<"rcnleft_det  "<< rcnleft_det<<endl;
+    cout<<"rcnleft_det  "<< rcnleft_det<<endl<<endl;
 }
 
 
 
-void FDTStereoWatermarking::videoDetection(Mat marked_left, Mat marked_right, int *watermark, int wsize, float power,
+void DFTStereoWatermarking::videoDetection(Mat marked_left, Mat marked_right, int *watermark, int wsize, float power,
                                            std::string passwstr, std::string passwnum, int dim) {
 
     Watermarking image_watermarking;
@@ -447,7 +449,7 @@ void FDTStereoWatermarking::videoDetection(Mat marked_left, Mat marked_right, in
 }
 
 
-void FDTStereoWatermarking::videoWatermarking(Mat left, Mat right, int*watermark,int wsize, float power, std::string passwstr,
+void DFTStereoWatermarking::videoWatermarking(Mat left, Mat right, int*watermark,int wsize, float power, std::string passwstr,
                                                  std::string passwnum, bool gt, Mat &marked_left, Mat &markedRight){
 
     int dim = 512;
@@ -596,7 +598,7 @@ void FDTStereoWatermarking::videoWatermarking(Mat left, Mat right, int*watermark
 
 
 
-void FDTStereoWatermarking::warpMarkWatermarking(int wsize, float power, std::string passwstr,
+void DFTStereoWatermarking::warpMarkWatermarking(int wsize, float power, std::string passwstr,
                                                  std::string passwnum, bool gt){
 
     Right_view rv;
@@ -970,7 +972,7 @@ void FDTStereoWatermarking::warpMarkWatermarking(int wsize, float power, std::st
 
 /*
 
-//void FDTStereoWatermarking::warpRightWatermarking(int wsize, int tilesize, float power, bool clipping,
+//void DFTStereoWatermarking::warpRightWatermarking(int wsize, int tilesize, float power, bool clipping,
 //                                                      bool flagResyncAll, int tilelistsize, std::string passwstr,
 //                                                      std::string passwnum, bool gt) {
 //

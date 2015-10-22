@@ -26,7 +26,7 @@
 
 #include "./spatialWatermarking/gaussianNoise.h"
 
-#include "FDTwatermarking/frequencyWatermarking.h"
+#include "DFTwatermarking/frequencyWatermarking.h"
 #include "utils.h"
 #include "disparity_optimization/disp_opt.h"
 
@@ -46,7 +46,7 @@ int main() {
 
 
     //costruisce frame stereo
-//
+
 //    for (int i = 1; i<=1800;i++){
 //
 //        std::stringstream frameLpath;
@@ -96,15 +96,18 @@ int main() {
         watermark[i] = b;
     }
 
-    bool gt = false;
+//    bool gt = true;
 //        read video
     VideoCapture capStereo("/home/miky/ClionProjects/tesi_watermarking/img/stereo_video_crf1_g60.mp4"); // open the left camera
-    if (!capStereo.isOpened())  // check if we succeeded
+    if (!capStereo.isOpened()) {  // check if we succeeded
+        cout << "Could not open the output video to read " << endl;
         return -1;
+    }
+
 
     int step = 60;
     int first_frame = 0;
-    int last_frame = 60;
+    int last_frame = 1800;
 
     cv::Mat frameStereo;
     cv::Mat frameL;
@@ -112,49 +115,79 @@ int main() {
     cv::Mat new_frameStereo;
     vector<cv::Mat> markedLR;
 
-//    const string NAME = "/home/miky/ClionProjects/tesi_watermarking/img/stereo_video_marked_crf1_g60.mp4";
-//    int ex = static_cast<int>(capStereo.get(CV_CAP_PROP_FOURCC));
+    // non funziona pare ci sia un bug in ffmpeg
 
+//    std::string NAME = "/home/miky/ClionProjects/tesi_watermarking/img/stereo_video_marked_crf1_g60.mp4";
+//    int ex = static_cast<int>(capStereo.get(CV_CAP_PROP_FOURCC));
+//    // Transform from int to char via Bitwise operators
+//    char EXT[] = { (char) (ex & 0XFF), (char) ((ex & 0XFF00) >> 8),
+//                   (char) ((ex & 0XFF0000) >> 16), (char) ((ex & 0XFF000000)
+//                                                           >> 24), 0 };
+//    cout << "Input codec type: " << EXT << endl;
 //    Size S = Size((int) capStereo.get(CV_CAP_PROP_FRAME_WIDTH),    // Acquire input size
 //                  (int) capStereo.get(CV_CAP_PROP_FRAME_HEIGHT));
-
-//    const bool askOutputType = false;
-
-//    VideoWriter outputVideo;                                        // Open the output
-//    if (askOutputType)
-//        outputVideo.open(NAME, ex=-1, capStereo.get(CV_CAP_PROP_FPS), S, true);
-//    else
-//        outputVideo.open(NAME, ex, capStereo.get(CV_CAP_PROP_FPS), S, true);
-
-
-    for(int i = first_frame; i < last_frame; i++) //Show the image captured in the window and repeat
-    {
-        if(i%step==0){
-            capStereo >> frameStereo;
-            if (frameStereo.empty()) break;
-            frameStereo(Rect(0,0,640,480)).copyTo(frameL);
-            frameStereo(Rect(640,0,640,480)).copyTo(frameR);
-            markedLR = FDTStereoWatermarking::stereoWatermarking(frameL,frameR,wsize,power,passwstr,passwnum,watermark);
-//            new_frameStereo = cv::Mat::zeros(left.rows,left.cols, CV_8UC3);//
-            hconcat(markedLR[0],markedLR[1],new_frameStereo);
-
-//            outputVideo << res;
-        }
-    }
-
-
-//    for (int i = first_frame; i < last_frame; i+=step) {
-//        capStereo >> frameStereo;
-//        frameStereo(Rect(0,0,640,480)).copyTo(frameL);
-//        frameStereo(Rect(640,0,640,480)).copyTo(frameR);
-//        FDTStereoWatermarking::stereoWatermarking(frameL,frameR,wsize,power,passwstr,passwnum,watermark);
-////      FDTStereoWatermarking::stereoDetection(frameL,frameR,wsize,power,passwstr,passwnum,watermark);
 //
+//
+//
+//    VideoWriter outputVideo(NAME, ex, capStereo.get(CV_CAP_PROP_FPS), S, true);
+////    outputVideo.open(NAME, ex=-1, capStereo.get(CV_CAP_PROP_FPS), S, true);
+//
+//    if (!outputVideo.isOpened())
+//    {
+//        cout  << "Could not open the output video to write " << endl;
+//        return -1;
+//    }
+
+//    for(int i = first_frame; i < last_frame; i++) //Show the image captured in the window and repeat
+//    {
+//        if(i%step==0){
+//            capStereo >> frameStereo;
+//            if (frameStereo.empty()) break;
+//            frameStereo(Rect(0,0,640,480)).copyTo(frameL);
+//            frameStereo(Rect(640,0,640,480)).copyTo(frameR);
+//            markedLR = DFTStereoWatermarking::stereoWatermarking(frameL,frameR,wsize,power,passwstr,passwnum,watermark, i);
+//            hconcat(markedLR[0],markedLR[1],new_frameStereo);
+//            std::ostringstream pathL;
+//            pathL << "/home/miky/ClionProjects/tesi_watermarking/img/marked_frames_06/stereo_marked_frame_" << std::setw(5) << std::setfill('0') << i << ".png";
+//            imwrite(pathL.str(), new_frameStereo);
+//        }
+//        else {
+//            capStereo >> frameStereo;
+//            if (frameStereo.empty()) break;
+//            std::ostringstream pathL;
+//            pathL << "/home/miky/ClionProjects/tesi_watermarking/img/marked_frames_06/stereo_marked_frame_" << std::setw(5) << std::setfill('0') << i << ".png";
+//            imwrite(pathL.str(), frameStereo);
+//
+//        }
 //    }
 
 
+
+
+    for (int i = first_frame; i < last_frame; i++) {
+        if(i%step==0){
+            capStereo >> frameStereo;
+            if (frameStereo.empty()) break;
+
+            frameStereo(Rect(0,0,640,480)).copyTo(frameL);
+            frameStereo(Rect(640,0,640,480)).copyTo(frameR);
+
+//            DFTStereoWatermarking::stereoWatermarking(frameL,frameR,wsize,power,passwstr,passwnum,watermark,i);
+//            imshow("left ", frameL);
+//            imshow("right ", frameR);
+//            waitKey(0);
+
+            DFTStereoWatermarking::stereoDetection(frameL,frameR,wsize,power,passwstr,passwnum,watermark,i);
+        }
+        else {
+                capStereo >> frameStereo;
+                if (frameStereo.empty()) break;
+             }
+    }
+
+
 //
-//        FDTStereoWatermarking::videoWatermarking(frameL,frameR, watermark, wsize, power, passwstr, passwnum, gt,
+//        DFTStereoWatermarking::videoWatermarking(frameL,frameR, watermark, wsize, power, passwstr, passwnum, gt,
 //                                                 marked_frameL, marked_frameR);
 //        std::ostringstream pathL;
 //        pathL << "/home/miky/ClionProjects/tesi_watermarking/img/marked_frames/0.3/left/frame_" << std::setw(3) << std::setfill('0') <<frame_number << ".png";
@@ -238,7 +271,7 @@ int main() {
 //            Mat marked_frameL;
 //            Mat marked_frameR;
 //
-//            FDTStereoWatermarking::videoWatermarking(frameL,frameR, watermark, wsize, power, passwstr, passwnum, gt,
+//            DFTStereoWatermarking::videoWatermarking(frameL,frameR, watermark, wsize, power, passwstr, passwnum, gt,
 //                                                     marked_frameL, marked_frameR);
 //            std::ostringstream pathL;
 //            pathL << "/home/miky/ClionProjects/tesi_watermarking/img/marked_frames/0.3/left/frame_" << std::setw(3) << std::setfill('0') <<frame_number << ".png";
@@ -286,8 +319,8 @@ int main() {
 //            double d = 0.3;
 //            stream_alpha >> d;
 //            power = d;
-////            FDTStereoWatermarking::warpMarkWatermarking(64,0.3, passwstr, passwnum,true);
-//            FDTStereoWatermarking::videoDetection(marked_left, marked_right, watermark, 64, 0.3, passwstr, passwnum, 512);
+////            DFTStereoWatermarking::warpMarkWatermarking(64,0.3, passwstr, passwnum,true);
+//            DFTStereoWatermarking::videoDetection(marked_left, marked_right, watermark, 64, 0.3, passwstr, passwnum, 512);
 //        }else {
 ////    read parameters file
 //            string filepath = "/home/miky/ClionProjects/tesi_watermarking/img/marked_frames/parameters.txt";
@@ -345,13 +378,13 @@ int main() {
 //                capL >> marked_frameL;
 //                Mat marked_frameR;
 //                capR >> marked_frameR;
-//                FDTStereoWatermarking::videoDetection(marked_frameL, marked_frameR, watermark, 64, 0.3, passwstr,passwnum, 512);
+//                DFTStereoWatermarking::videoDetection(marked_frameL, marked_frameR, watermark, 64, 0.3, passwstr,passwnum, 512);
 //            }
 //        }
 //    }
 
     //questo ritrova tutto con disp NON di ground
-//    FDTStereoWatermarking::warpMarkWatermarking(64,0.3, "flskdjsuyiajcens", "12578965" ,false);
+//    DFTStereoWatermarking::warpMarkWatermarking(64,0.3, "flskdjsuyiajcens", "12578965" ,false);
     //  spatialWatermarking::gaussianNoiseStereoWatermarking(gt);
 
 
