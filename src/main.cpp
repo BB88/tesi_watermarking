@@ -22,6 +22,7 @@
 
 //libconfig
 #include <libconfig.h++>
+#include <bits/stream_iterator.h>
 #include "./config/config.hpp"
 
 #include "./spatialWatermarking/gaussianNoise.h"
@@ -39,45 +40,9 @@ using namespace qm;
 using namespace RRQualityMetrics;
 using namespace spatialWatermarking;
 
+const int STEP = 60; //this is the watermarking step, meaning only one frame every STEP will be watermarked, in this case we are only marking the I frames
 
-
-
-int main() {
-
-
-    //costruisce frame stereo
-
-//    for (int i = 1; i<=1800;i++){
-//
-//        std::stringstream frameLpath;
-//        std::stringstream frameRpath;
-//        std::stringstream joinPath;
-//        cv::Mat left;
-//        cv::Mat right;
-//        cv::Mat joinLR;
-//
-//        frameLpath << "/home/miky/ClionProjects/tesi_watermarking/dataset/NTSD-200/daylight/left/tsukuba_daylight_L_" << std::setw(5) << std::setfill('0') << i << ".png";
-//        frameRpath << "/home/miky/ClionProjects/tesi_watermarking/dataset/NTSD-200/daylight/right/tsukuba_daylight_R_" << std::setw(5) << std::setfill('0') << i << ".png";
-//
-//        joinPath << "/home/miky/ClionProjects/tesi_watermarking/img/stereo_frames/stereo_frame_" << std::setw(5) << std::setfill('0') << i << ".png";
-//
-//        left =  cv::Mat::zeros(480,640, CV_8UC3);
-//        right = cv::Mat::zeros(480,640, CV_8UC3);
-//
-//        left = imread(frameLpath.str().c_str(),CV_LOAD_IMAGE_COLOR);
-//        right = imread(frameRpath.str().c_str(),CV_LOAD_IMAGE_COLOR);
-//
-////        imshow("left",left);
-////        imshow("right",right);
-////        waitKey(0);
-//        joinLR = cv::Mat::zeros(left.rows,left.cols, CV_8UC3);
-//
-//        hconcat(left,right,joinLR);
-//
-//        imwrite (joinPath.str(),joinLR);
-//
-//    }
-// CODING MIKY
+int stereovideoCoding(std::string videoPath ){
 
     Watermarking_config::set_parameters_params pars = Watermarking_config::ConfigLoader::get_instance().loadSetParametersConfiguration();
 
@@ -89,23 +54,45 @@ int main() {
     std::string passwstr = generalPars.passwstr;
     std::string passwnum = generalPars.passwnum;
 
-    //    random binary watermark   ********************
+    //    random binary watermark generation and saving to the config file  ********************
     int watermark[64];
     for (int i = 0; i < 64; i++) {
         int b = rand() % 2;
         watermark[i] = b;
     }
+    std::ifstream in("/home/miky/ClionProjects/tesi_watermarking/config/config.cfg");
+    std::ofstream out("/home/miky/ClionProjects/tesi_watermarking/config/config.cfg.tmp");
+    string data;
+    string dataw;
+    if (in.is_open() && out.is_open()) {
+        while (!in.eof()) {
+            getline(in, data);
+            if (!data.find("watermark")) {
+                dataw.append("watermark = \"");
+                for (int i = 0; i < 64; i++) {
+                    dataw.append(std::to_string(watermark[i]));
+                }
+                dataw.append("\";");
+                out << dataw << "\n";
+            }
+            else out << data << "\n";
 
-//    bool gt = true;
-//        read video
-    VideoCapture capStereo("/home/miky/ClionProjects/tesi_watermarking/img/stereo_video_crf1_g60.mp4"); // open the left camera
+            if (0 != std::rename("/home/miky/ClionProjects/tesi_watermarking/config/config.cfg.tmp", "/home/miky/ClionProjects/tesi_watermarking/config/config.cfg"))
+            {
+                // Handle failure.
+            }
+        }
+        in.close();
+        out.close();
+    }
+
+    // load the video to watermark
+    VideoCapture capStereo(videoPath);
     if (!capStereo.isOpened()) {  // check if we succeeded
         cout << "Could not open the output video to read " << endl;
         return -1;
     }
 
-
-    int step = 60;
     int first_frame = 0;
     int last_frame = 1800;
 
@@ -115,288 +102,110 @@ int main() {
     cv::Mat new_frameStereo;
     vector<cv::Mat> markedLR;
 
-    // non funziona pare ci sia un bug in ffmpeg
-
-//    std::string NAME = "/home/miky/ClionProjects/tesi_watermarking/img/stereo_video_marked_crf1_g60.mp4";
-//    int ex = static_cast<int>(capStereo.get(CV_CAP_PROP_FOURCC));
-//    // Transform from int to char via Bitwise operators
-//    char EXT[] = { (char) (ex & 0XFF), (char) ((ex & 0XFF00) >> 8),
-//                   (char) ((ex & 0XFF0000) >> 16), (char) ((ex & 0XFF000000)
-//                                                           >> 24), 0 };
-//    cout << "Input codec type: " << EXT << endl;
-//    Size S = Size((int) capStereo.get(CV_CAP_PROP_FRAME_WIDTH),    // Acquire input size
-//                  (int) capStereo.get(CV_CAP_PROP_FRAME_HEIGHT));
-//
-//
-//
-//    VideoWriter outputVideo(NAME, ex, capStereo.get(CV_CAP_PROP_FPS), S, true);
-////    outputVideo.open(NAME, ex=-1, capStereo.get(CV_CAP_PROP_FPS), S, true);
-//
-//    if (!outputVideo.isOpened())
-//    {
-//        cout  << "Could not open the output video to write " << endl;
-//        return -1;
-//    }
-
-//    for(int i = first_frame; i < last_frame; i++) //Show the image captured in the window and repeat
-//    {
-//        if(i%step==0){
-//            capStereo >> frameStereo;
-//            if (frameStereo.empty()) break;
-//            frameStereo(Rect(0,0,640,480)).copyTo(frameL);
-//            frameStereo(Rect(640,0,640,480)).copyTo(frameR);
-//            markedLR = DFTStereoWatermarking::stereoWatermarking(frameL,frameR,wsize,power,passwstr,passwnum,watermark, i);
-//            hconcat(markedLR[0],markedLR[1],new_frameStereo);
-//            std::ostringstream pathL;
-//            pathL << "/home/miky/ClionProjects/tesi_watermarking/img/marked_frames_06/stereo_marked_frame_" << std::setw(5) << std::setfill('0') << i << ".png";
-//            imwrite(pathL.str(), new_frameStereo);
-//        }
-//        else {
-//            capStereo >> frameStereo;
-//            if (frameStereo.empty()) break;
-//            std::ostringstream pathL;
-//            pathL << "/home/miky/ClionProjects/tesi_watermarking/img/marked_frames_06/stereo_marked_frame_" << std::setw(5) << std::setfill('0') << i << ".png";
-//            imwrite(pathL.str(), frameStereo);
-//
-//        }
-//    }
-
-
-
-
-    for (int i = first_frame; i < last_frame; i++) {
-        if(i%step==0){
+    //marking and saving stereo frames
+    for(int i = first_frame; i < last_frame; i++)
+    {
+        if(i%STEP==0){
             capStereo >> frameStereo;
             if (frameStereo.empty()) break;
-
             frameStereo(Rect(0,0,640,480)).copyTo(frameL);
             frameStereo(Rect(640,0,640,480)).copyTo(frameR);
-
-//            DFTStereoWatermarking::stereoWatermarking(frameL,frameR,wsize,power,passwstr,passwnum,watermark,i);
-//            imshow("left ", frameL);
-//            imshow("right ", frameR);
-//            waitKey(0);
-
-            DFTStereoWatermarking::stereoDetection(frameL,frameR,wsize,power,passwstr,passwnum,watermark,i);
+            markedLR = DFTStereoWatermarking::stereoWatermarking(frameL,frameR,wsize,power,passwstr,passwnum,watermark, i);
+            hconcat(markedLR[0],markedLR[1],new_frameStereo);
+            std::ostringstream pathL;
+            pathL << "/home/miky/ClionProjects/tesi_watermarking/img/marked_frames_06/stereo_marked_frame_" << std::setw(5) << std::setfill('0') << i << ".png";
+            imwrite(pathL.str(), new_frameStereo);
         }
         else {
-                capStereo >> frameStereo;
-                if (frameStereo.empty()) break;
-             }
+            capStereo >> frameStereo;
+            if (frameStereo.empty()) break;
+            std::ostringstream pathL;
+            pathL << "/home/miky/ClionProjects/tesi_watermarking/img/marked_frames_06/stereo_marked_frame_" << std::setw(5) << std::setfill('0') << i << ".png";
+            imwrite(pathL.str(), frameStereo);
+
+        }
     }
 
 
-//
-//        DFTStereoWatermarking::videoWatermarking(frameL,frameR, watermark, wsize, power, passwstr, passwnum, gt,
-//                                                 marked_frameL, marked_frameR);
-//        std::ostringstream pathL;
-//        pathL << "/home/miky/ClionProjects/tesi_watermarking/img/marked_frames/0.3/left/frame_" << std::setw(3) << std::setfill('0') <<frame_number << ".png";
-//        imwrite(pathL.str(), marked_frameL);
-//        std::ostringstream pathR;
-//        pathR << "/home/miky/ClionProjects/tesi_watermarking/img/marked_frames/0.3/right/frame_" << std::setw(3) << std::setfill('0') <<frame_number << ".png";
-//        imwrite(pathR.str(), marked_frameR);
+}
+int stereovideoDecoding(std::string videoPath){
+
+    Watermarking_config::set_parameters_params pars = Watermarking_config::ConfigLoader::get_instance().loadSetParametersConfiguration();
+
+    int wsize = pars.wsize;
+    float power = pars.power;
+    std::string watermark = pars.watermark;
+
+    int mark[wsize];
+    for(int i=0;i<wsize;i++){
+        mark[i] = watermark.at(i)-48; //codifica ASCII dei caratteri
+    }
+
+    Watermarking_config::general_params generalPars = Watermarking_config::ConfigLoader::get_instance().loadGeneralParamsConfiguration();
+
+    std::string passwstr = generalPars.passwstr;
+    std::string passwnum = generalPars.passwnum;
+
+    VideoCapture capStereo(videoPath);
+    if (!capStereo.isOpened()) {  // check if we succeeded
+        cout << "Could not open the output video to read " << endl;
+        return -1;
+    }
+
+    int first_frame = 0;
+    int last_frame = 1800;
+
+    cv::Mat frameStereo;
+    cv::Mat frameL;
+    cv::Mat frameR;
+
+    int decoded_both_frames = 0; //conto in quati frame è rilevato il marchio
+    int decoded_one_frame = 0;
+
+    for (int i = first_frame; i < last_frame; i++) {
+
+    if(i%STEP==0){
+
+        capStereo >> frameStereo;
+        if (frameStereo.empty()) break;
+        frameStereo(Rect(0,0,640,480)).copyTo(frameL);
+        frameStereo(Rect(640,0,640,480)).copyTo(frameR);
+        int det = DFTStereoWatermarking::stereoDetection(frameL,frameR,wsize,power,passwstr,passwnum,mark,i);
+        if (det == 1)
+            decoded_one_frame++;
+        if (det == 2)
+            decoded_both_frames++;
+    }
+    else {
+            capStereo >> frameStereo;
+            if (frameStereo.empty()) break;
+         }
+    }
+
+    cout<<"processed stereo frames: "<<1800/60<<endl;
+    cout<<"decoded in both frames: "<<decoded_both_frames<<endl;
+    cout<<"decoded in one frame: "<<decoded_one_frame<<endl;
 
 
+}
+void videoMaker(){
 
-    /*CONFIG SETTINGS*/
+}
+int main() {
 
+//    std::string videoPath = "/home/miky/ClionProjects/tesi_watermarking/img/stereo_video_crf1_g60.mp4";
+//    stereovideoCoding(videoPath);
 
+    std::string videoPath = "/home/miky/Scrivania/Tesi/marked_videos/stereo_marked_video_crf25_g60.mp4";
+    stereovideoDecoding(videoPath);
+    //costruisce frame stereo
 
-//    bool coding = false;
-//    bool decoding = false;
-//    bool gotVideo = false;
-//
-//    if (coding) {
-//
-//        Watermarking_config::set_parameters_params pars = Watermarking_config::ConfigLoader::get_instance().loadSetParametersConfiguration();
-//        int wsize = pars.wsize;
-//        float power = pars.power;
-//        Watermarking_config::general_params generalPars = Watermarking_config::ConfigLoader::get_instance().loadGeneralParamsConfiguration();
-//        bool masking = generalPars.masking;
-//        std::string passwstr = generalPars.passwstr;
-//        std::string passwnum = generalPars.passwnum;
-//        //    random binary watermark   ********************
-//        int watermark[64];
-//        for (int i = 0; i < 64; i++) {
-//            int b = rand() % 2;
-//            watermark[i] = b;
-//        }
-////        saving watermarking parameters
-//        string filepath = "/home/miky/ClionProjects/tesi_watermarking/img/marked_frames/parameters.txt";
-//        ofstream par_file(filepath);
-//        if (!par_file) {
-//            cout << "File Not Opened" << endl;
-//        }
-//        for (int i = 0; i < 64; i++) {
-//            par_file << watermark[i] << " ";
-//            //     par_file<<endl;
-//        }
-//        par_file << endl;
-//        par_file << passwstr;
-//        par_file << endl;
-//        par_file << passwnum;
-//        par_file << endl;
-//        par_file << power;
-//        par_file.close();
-//
-//        bool gt = true;
-////        read video
-//        VideoCapture capL("/home/miky/ClionProjects/tesi_watermarking/video/output.mp4"); // open the left camera
-//        if (!capL.isOpened())  // check if we succeeded
-//            return -1;
-//        VideoCapture capR("/home/miky/ClionProjects/tesi_watermarking/video/outputRight.mp4"); // open the right camera
-//        if (!capR.isOpened())  // check if we succeeded
-//            return -1;
-//        int frame_number = -1;
-////        double cycle to process 100 frames at a time
-//        int first_frame = 0;
-//        int last_frame = 2;
-//
-//        //se voglio saltare i primi #first_frame
-//        for (int i = 0; i < first_frame; i++) {
-//            frame_number++;
-//            Mat frameL;
-//            capL >> frameL;
-//            Mat frameR;
-//            capR >> frameR;
-//        }
-//
-//        for (int i = first_frame; i < last_frame; i++) {
-//            frame_number++;
-//            Mat frameL;
-//            capL >> frameL;
-//            Mat frameR;
-//            capR >> frameR;
-//
-//            Mat marked_frameL;
-//            Mat marked_frameR;
-//
-//            DFTStereoWatermarking::videoWatermarking(frameL,frameR, watermark, wsize, power, passwstr, passwnum, gt,
-//                                                     marked_frameL, marked_frameR);
-//            std::ostringstream pathL;
-//            pathL << "/home/miky/ClionProjects/tesi_watermarking/img/marked_frames/0.3/left/frame_" << std::setw(3) << std::setfill('0') <<frame_number << ".png";
-//            imwrite(pathL.str(), marked_frameL);
-//            std::ostringstream pathR;
-//            pathR << "/home/miky/ClionProjects/tesi_watermarking/img/marked_frames/0.3/right/frame_" << std::setw(3) << std::setfill('0') <<frame_number << ".png";
-//            imwrite(pathR.str(), marked_frameR);
-//        }
-//    }
-//    if(decoding){ //detection
-//
-//        if (!gotVideo){
-//
-//            Mat marked_left = imread("/home/miky/ClionProjects/tesi_watermarking/img/marked_frames/0.3/left/frame_000.png",CV_LOAD_IMAGE_COLOR);
-//            Mat marked_right = imread("/home/miky/ClionProjects/tesi_watermarking/img/marked_frames/0.3/right/frame_000.png",CV_LOAD_IMAGE_COLOR);
-//
-//
-//            string filepath = "/home/miky/ClionProjects/tesi_watermarking/img/marked_frames/parameters.txt";
-//            string line;
-//            std::string passwstr;
-//            std::string passwnum;
-//            double power;
-//            ifstream myfile(filepath);
-//            getline(myfile, line);
-//            string wat = line;
-//            int wsize = wat.length() / 2;
-//            int watermark[wsize];
-//            stringstream stream(wat);
-//            int count = 0;
-//            while (1) {
-//                int n;
-//                stream >> n;
-//                if (!stream)
-//                    break;
-//                watermark[count] = n;
-//                count++;
-//            }
-//            getline(myfile, line);
-//            passwstr = line;
-//            getline(myfile, line);
-//            passwnum = line;
-//            getline(myfile, line);
-//            string alpha = line;
-//            stringstream stream_alpha(alpha);
-//            double d = 0.3;
-//            stream_alpha >> d;
-//            power = d;
-////            DFTStereoWatermarking::warpMarkWatermarking(64,0.3, passwstr, passwnum,true);
-//            DFTStereoWatermarking::videoDetection(marked_left, marked_right, watermark, 64, 0.3, passwstr, passwnum, 512);
-//        }else {
-////    read parameters file
-//            string filepath = "/home/miky/ClionProjects/tesi_watermarking/img/marked_frames/parameters.txt";
-//            string line;
-//            std::string passwstr;
-//            std::string passwnum;
-//            double power;
-//            ifstream myfile(filepath);
-//            getline(myfile, line);
-//            string wat = line;
-//            int wsize = wat.length() / 2;
-//            int watermark[wsize];
-//            stringstream stream(wat);
-//            int count = 0;
-//            while (1) {
-//                int n;
-//                stream >> n;
-//                if (!stream)
-//                    break;
-//                watermark[count] = n;
-//                count++;
-//            }
-//            getline(myfile, line);
-//            passwstr = line;
-//            getline(myfile, line);
-//            passwnum = line;
-//            getline(myfile, line);
-//            string alpha = line;
-//            stringstream stream_alpha(alpha);
-//            double d;
-//            stream_alpha >> d;
-//            power = d;
-////        read marked frames  ***********************
-//            //   VideoCapture cap("/home/miky/ClionProjects/tesi_watermarking/img/output_L_marked.mp4"); // open the default camera
-//            VideoCapture capL("/home/miky/ClionProjects/tesi_watermarking/video/output.mp4"); // open the default camera
-//            if (!capL.isOpened())  // check if we succeeded
-//                return -1;
-//
-//            VideoCapture capR("/home/miky/ClionProjects/tesi_watermarking/video/outputRight.mp4"); // open the default camera
-//            if (!capR.isOpened())  // check if we succeeded
-//                return -1;
-//            int frame_number = -1;
-//            int first_frame = 200;
-//            int last_frame = 300;
-//            for (int i = 0; i < first_frame; i++) {
-//                frame_number++;
-//                Mat marked_frameL;
-//                capL >> marked_frameL;
-//                Mat marked_frameR;
-//                capR >> marked_frameR;
-//            }
-//            for (int i = first_frame; i < last_frame; i++) {
-//                frame_number++;
-//                Mat marked_frameL;
-//                capL >> marked_frameL;
-//                Mat marked_frameR;
-//                capR >> marked_frameR;
-//                DFTStereoWatermarking::videoDetection(marked_frameL, marked_frameR, watermark, 64, 0.3, passwstr,passwnum, 512);
-//            }
-//        }
-//    }
-
-    //questo ritrova tutto con disp NON di ground
-//    DFTStereoWatermarking::warpMarkWatermarking(64,0.3, "flskdjsuyiajcens", "12578965" ,false);
-    //  spatialWatermarking::gaussianNoiseStereoWatermarking(gt);
-
-
-//   bool left_to_right = false;
-//      graph_cuts_utils::kz_main(left_to_right,"left_watermarked","right_watermarked");
-
-//    RRQualityMetrics::compute_metrics();
 
 
     return 0;
 
 }
+
 
 
 

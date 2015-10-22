@@ -243,7 +243,7 @@ vector<cv::Mat> DFTStereoWatermarking::stereoWatermarking(cv::Mat frameL, cv::Ma
 }
 
 
-void DFTStereoWatermarking::stereoDetection(cv::Mat markedL, cv::Mat markedR, int wsize, float power, std::string passwstr,
+int DFTStereoWatermarking::stereoDetection(cv::Mat markedL, cv::Mat markedR, int wsize, float power, std::string passwstr,
                                             std::string passwnum, int* watermark,int i){
 
 
@@ -339,9 +339,18 @@ void DFTStereoWatermarking::stereoDetection(cv::Mat markedL, cv::Mat markedR, in
     bool rcnleft_det = image_watermarking.extractWatermark(rcn_left_mat.data,dim,dim,dim);
 
 
-    cout<<" left_det    "<<left_det <<endl;
-    cout<<" right_det   "<< right_det<<endl;
-    cout<<"rcnleft_det  "<< rcnleft_det<<endl<<endl;
+//    cout<<" left_det    "<<left_det <<endl;
+//    cout<<" right_det   "<< right_det<<endl;
+//    cout<<"rcnleft_det  "<< rcnleft_det<<endl<<endl;
+
+    if(left_det)
+        if (rcnleft_det)
+            return 2;
+        else return 1;
+    if(rcnleft_det)
+        return 1;
+    else return 0;
+
 }
 
 

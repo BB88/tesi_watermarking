@@ -14,7 +14,7 @@ namespace DFTStereoWatermarking {
 
     vector<cv::Mat> stereoWatermarking(cv::Mat frameL, cv::Mat frameR, int wsize, float power, std::string passwstr,
                                                    std::string passwnum, int* watermark,int i);
-    void stereoDetection(cv::Mat markedL, cv::Mat markedR, int wsize, float power, std::string passwstr,
+    int stereoDetection(cv::Mat markedL, cv::Mat markedR, int wsize, float power, std::string passwstr,
                                                 std::string passwnum, int* watermark,int i);
 
     void warpMarkWatermarking(int wsize, float power, std::string passwstr, std::string passwnum, bool gt);
