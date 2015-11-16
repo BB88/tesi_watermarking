@@ -9,6 +9,6 @@
 
 namespace RRQualityMetrics{
 
-    void compute_metrics();
+    void compute_metrics(int step, std::string video,  std::string wat_video, std::string disp, std::string wat_disp);
 
 }

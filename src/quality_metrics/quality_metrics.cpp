@@ -180,11 +180,13 @@ namespace qm
             double mqd = 0;
             cv::Mat depth_o,depth_w,depth_e,depth_ew;
 
+//            cout<< "convert: "<<endl;
             depth_original.convertTo(depth_o, CV_64F);
             depth_wat.convertTo(depth_w, CV_64F);
             depth_edge.convertTo(depth_e, CV_64F);
             depth_w_edge.convertTo(depth_ew, CV_64F);
 
+//            cout << "depth_original.rows / block_size " <<depth_original.rows <<" - " << block_size<<endl;
             int nbBlockPerHeight 	= depth_original.rows / block_size;
             int nbBlockPerWidth 	= depth_original.cols / block_size;
 
@@ -207,17 +209,18 @@ namespace qm
 
                 }
                 // Progress
-                if (show_progress)
-                    cout << "\r>>MQdepth [" << (int) ((( (double)k) / nbBlockPerHeight) * 100) << "%]";
+//                if (show_progress)
+//                    cout << "\r>>MQdepth [" << (int) ((( (double)k) / nbBlockPerHeight) * 100) << "%]";
             }
             mqd /= nbBlockPerHeight * nbBlockPerWidth;
 
-            if (show_progress)
-            {
-                cout << "\r>>MQdepth [100%]" << endl;
-                cout << "MQdepth : " << mqd << endl;
-            }
+//            if (show_progress)
+//            {
+////                cout << "\r>>MQdepth [100%]" << endl;
+//                cout << "MQdepth : " << mqd << endl;
+//            }
 
+//            cout<<" depth return "<<endl;
             return mqd;
 
     }
@@ -226,7 +229,9 @@ namespace qm
 
         double mqc = 0;
 
+
         cv::Mat color_o,color_w,color_e,depth_e,color_ew;
+
 
         color_original.convertTo(color_o, CV_64F);
         color_wat.convertTo(color_w, CV_64F);
@@ -237,8 +242,10 @@ namespace qm
         int nbBlockPerHeight 	= color_original.rows / block_size;
         int nbBlockPerWidth 	= color_original.cols / block_size;
 
+
         for (int k = 0; k < nbBlockPerHeight; k++)
         {
+
             for (int l = 0; l < nbBlockPerWidth; l++)
             {
                 int m = k * block_size;
@@ -256,16 +263,16 @@ namespace qm
 
             }
             // Progress
-            if (show_progress)
-                cout << "\r>>MQcolor [" << (int) ((( (double)k) / nbBlockPerHeight) * 100) << "%]";
+//            if (show_progress)
+//                cout << "\r>>MQcolor [" << (int) ((( (double)k) / nbBlockPerHeight) * 100) << "%]";
         }
         mqc /= nbBlockPerHeight * nbBlockPerWidth;
 
-        if (show_progress)
-        {
-            cout << "\r>>MQcolor [100%]" << endl;
-            cout << "MQcolor : " << mqc << endl;
-        }
+//        if (show_progress)
+//        {
+////            cout << "\r>>MQcolor [100%]" << endl;
+//            cout << "MQcolor : " << mqc << endl;
+//        }
 
         return mqc;
 

@@ -101,7 +101,7 @@ void graph_cuts_utils::fix_parameters(Match& m, Match::Parameters& params,
     m.SetParameters(&params);
 }
 
-cv::Mat graph_cuts_utils::kz_main(bool left_to_right, std::string img1_name, std::string img2_name, cv::Mat img1, cv::Mat img2 ) {
+cv::Mat graph_cuts_utils::kz_main(bool left_to_right, std::string img1_name, std::string img2_name, cv::Mat img1, cv::Mat img2, int dmin, int dmax ) {
 
 /* kz_disp PARAMETERS */
 /*
@@ -112,6 +112,12 @@ cv::Mat graph_cuts_utils::kz_main(bool left_to_right, std::string img1_name, std
 * dispMin dispMax = -77 -19
 
 */
+
+    cv::cvtColor(img1, img1, CV_BGR2GRAY);
+    cv::cvtColor(img2, img2, CV_BGR2GRAY);
+
+//    img1.convertTo(img1,CV_8UC1);
+//    img2.convertTo(img2,CV_8UC1);
 
 
     Match::Parameters params = { // Default parameters
@@ -124,14 +130,14 @@ cv::Mat graph_cuts_utils::kz_main(bool left_to_right, std::string img1_name, std
     params.dataCost = Match::Parameters::L1;
 // params.dataCost = Match::Parameters::L2;
 
-// GeneralImage im1 = (GeneralImage)imLoad(IMAGE_GRAY, path1.str().c_str());
-// GeneralImage im2 = (GeneralImage)imLoad(IMAGE_GRAY, path2.str().c_str());
+// GeneralImage im1 = (GeneralImage)imLoad(IMAGE_GRAY,"/home/miky/ClionProjects/tesi_watermarking/img/left.png");
+// GeneralImage im2 = (GeneralImage)imLoad(IMAGE_GRAY, "/home/miky/ClionProjects/tesi_watermarking/img/right.png");
     GeneralImage im1 = (GeneralImage) imLoadFromMat(IMAGE_GRAY, img1);
     GeneralImage im2 = (GeneralImage) imLoadFromMat(IMAGE_GRAY, img2);
 
     bool color = false;
     if (graph_cuts_utils::isGray((RGBImage) im1) && graph_cuts_utils::isGray((RGBImage) im2)) {
-        color = false;
+//        color = false;
         graph_cuts_utils::convert_gray(im1);
         graph_cuts_utils::convert_gray(im2);
     }
@@ -140,24 +146,25 @@ cv::Mat graph_cuts_utils::kz_main(bool left_to_right, std::string img1_name, std
     Match m1(im1, im2, color);
     Match m2(im2, im1, color);
 ////// // Disparity
-    int dMinr = 19, dMaxr = 77; //r-l
-    int dMinl = -77, dMaxl = -19; //l-r
+//    int dMinr = 19, dMaxr = 77; //r-l
+//    int dMinl = -77, dMaxl = -19; //l-r
 // int dMin=8, dMax=33; // r-l syn
 
     if (left_to_right)
-        m1.SetDispRange(dMinl, dMaxl);
-    else m2.SetDispRange(dMinr, dMaxr);
+        m1.SetDispRange(dmin, dmax);
+    else m2.SetDispRange(dmin, dmax);
+//    if (left_to_right)
+//        m1.SetDispRange(dMinl, dMaxl);
+//    else m2.SetDispRange(dMinr, dMaxr);
 
     time_t seed = time(NULL);
     srand((unsigned int) seed);
 
     std::stringstream path_disp;
     if (left_to_right)
-        path_disp << "/home/miky/ClionProjects/tesi_watermarking/img/disp_" << img1_name << "_" << "to_" << img2_name <<
-                     ".png";
+        path_disp << "./disp_" << img1_name << "_" << "to_" << img2_name << ".png";
     else
-        path_disp << "/home/miky/ClionProjects/tesi_watermarking/img/disp_" << img2_name << "_" << "to_" << img1_name <<
-        ".png";
+        path_disp << "./disp_" << img2_name << "_" << "to_" << img1_name << ".png";
 
 
     if (left_to_right) {
@@ -172,9 +179,10 @@ cv::Mat graph_cuts_utils::kz_main(bool left_to_right, std::string img1_name, std
     }
     
     cv::Mat computed_disp = imread(path_disp.str().c_str(), CV_LOAD_IMAGE_COLOR);
+    cv::cvtColor(computed_disp,computed_disp,CV_BGR2GRAY);
     cv::Mat norm_disp;
     Disp_opt opt;
-    opt.disparity_normalization(computed_disp,norm_disp);
+    opt.disparity_normalization(computed_disp,dmin,dmax,norm_disp);
     
     return norm_disp;
     

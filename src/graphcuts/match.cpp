@@ -20,6 +20,7 @@
 #include "nan.h"
 #include <limits>
 #include <iostream>
+#include <fstream>
 
 const int Match::OCCLUDED = std::numeric_limits<int>::max();
 
@@ -109,22 +110,30 @@ void Match::SaveScaledXLeft(const char *fileName, bool flag) {
     }
 
     const int dispSize = dispMax-dispMin+1;
+    int d_new;
+//    std::ofstream dispFile;
+//    dispFile.open("/home/miky/Scrivania/dispMat.txt");
 
     end=rectEnd(imSizeL);
     for(RectIterator p=rectBegin(imSizeL); p!=end; ++p) {
         int d = IMREF(d_left,*p), c;
         if (d==OCCLUDED) {
             IMREF(im,*p).c[0]=0; IMREF(im,*p).c[1]=IMREF(im,*p).c[2]=255;
+//            dispFile << "X" << std::endl;
         } else {
             if (dispSize == 0) c = 255;
             else if (flag) c = 255 - (255-64)*(dispMax - d)/dispSize;
 //            else if (flag) c =  (255-64)*(dispMax - d)/dispSize;
-            else           c = 255 - (255-64)*(d - dispMin)/dispSize;
+            else {
+                c = 255 - (255 - 64) * (d - dispMin) / dispSize;
+                d_new = (c - 255) * dispSize / -(255 - 64) + dispMin + 1 ;
+//                dispFile << d << "m" << " " << c << " " << d_new << std::endl;
+            }
 //            else           c =  (255-64)*(d - dispMin)/dispSize;
             IMREF(im,*p).c[0]=IMREF(im,*p).c[1]=IMREF(im,*p).c[2] = c;
         }
     }
-
+//    dispFile.close();
     imSave(im, fileName);
     imFree(im);
 }

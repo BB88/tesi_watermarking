@@ -6,9 +6,16 @@
 #define TESI_WATERMARKING_GAUSSIANNOISE_H
 
 #endif //TESI_WATERMARKING_GAUSSIANNOISE_H
+#include <cv.h>
+#include <cstdint>
+#include <fstream>
+
+using namespace cv;
+using namespace std;
 
 namespace spatialWatermarking{
 
-void gaussianNoiseStereoWatermarking(bool gt);
+    vector<cv::Mat> gaussianNoiseStereoWatermarking(cv::Mat left, cv::Mat right,cv::Mat noise, bool gt, int img_num);
+    vector<float> gaussianNoiseStereoDetection(cv::Mat left_w, cv::Mat right_w,cv::Mat noise, bool gt, int img_num);
 
 }

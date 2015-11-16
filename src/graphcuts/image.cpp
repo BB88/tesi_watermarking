@@ -95,6 +95,43 @@ void SwapBytes(GeneralImage im)
     }
 }
 
+void* imLoadFromMat(ImageType type, cv::Mat image){
+
+    unsigned char * image_uchar = 0;
+    size_t xsize = image.cols;
+    size_t ysize = image.rows;
+
+    int stepColor=1; // Distance between color planes of same pixel
+    int stepPixel=3; // Distance between consecutive pixels
+
+
+    if(type == IMAGE_GRAY){
+        image_uchar = new unsigned char [xsize*ysize];
+    }
+    else if(type == IMAGE_RGB){
+        image_uchar = new unsigned char [xsize*ysize*3];
+
+    }
+    image_uchar= image.data;
+
+    GeneralImage im = (GeneralImage) imNew(type, xsize, ysize);
+    const size_t size = xsize*ysize;
+    if(type == IMAGE_GRAY)
+        for(size_t i=0; i<size; i++)
+            imRef((GrayImage)im,i,0) = image_uchar[i];
+    if(type == IMAGE_RGB) {
+        const size_t r=0*stepColor, g=1*stepColor, b=2*stepColor;
+        for(size_t i=0, j=0; i<size; i++, j+=stepPixel) {
+            imRef((RGBImage)im,i,0).c[0] = image_uchar[j+r];
+            imRef((RGBImage)im,i,0).c[1] = image_uchar[j+g];
+            imRef((RGBImage)im,i,0).c[2] = image_uchar[j+b];
+        }
+    }
+// free(image_uchar);
+    return im;
+
+}
+
 /// Load image
 void* imLoad(ImageType type, const char *filename)
 {
@@ -276,39 +313,3 @@ int imSave(void *im, const char *filename)
     return 0;
 }
 
-void* imLoadFromMat(ImageType type, cv::Mat image){
-
-    unsigned char * image_uchar;
-    size_t xsize = image.cols;
-    size_t ysize = image.rows;
-
-    int stepColor=1; // Distance between color planes of same pixel
-    int stepPixel=3; // Distance between consecutive pixels
-
-
-    if(type == IMAGE_GRAY){
-        image_uchar = new unsigned char [xsize*ysize];
-    }
-    else if(type == IMAGE_RGB){
-        image_uchar = new unsigned char [xsize*ysize*3];
-    }
-
-    image_uchar= image.data;
-
-    GeneralImage im = (GeneralImage) imNew(type, xsize, ysize);
-    const size_t size = xsize*ysize;
-    if(type == IMAGE_GRAY)
-        for(size_t i=0; i<size; i++)
-            imRef((GrayImage)im,i,0) = image_uchar[i];
-    if(type == IMAGE_RGB) {
-        const size_t r=0*stepColor, g=1*stepColor, b=2*stepColor;
-        for(size_t i=0, j=0; i<size; i++, j+=stepPixel) {
-            imRef((RGBImage)im,i,0).c[0] = image_uchar[j+r];
-            imRef((RGBImage)im,i,0).c[1] = image_uchar[j+g];
-            imRef((RGBImage)im,i,0).c[2] = image_uchar[j+b];
-        }
-    }
-// free(image_uchar);
-    return im;
-
-}
