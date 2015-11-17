@@ -42,6 +42,7 @@ namespace Watermarking_config {
 
             pars.wsize = (int) ConfigSettings["wsize"];
             pars.power = (float) ConfigSettings["power"];
+            pars.watermark = (std::string) ConfigSettings["watermark"].c_str();
 
 
         }

@@ -16,7 +16,7 @@ using namespace std;
 
 namespace graph_cuts_utils{
 
-    cv::Mat kz_main(bool left_to_right, std::string img1_name, std::string img2_name, cv::Mat img1, cv::Mat img2 );
+    cv::Mat kz_main(bool left_to_right, std::string img1_name, std::string img2_name, cv::Mat img1, cv::Mat img2, int dmin, int dmax );
     void convert_gray(GeneralImage& im);
     bool isGray(RGBImage im);
     void set_fractions(Match::Parameters& params,float K, float lambda1, float lambda2);

@@ -108,6 +108,12 @@ int Watermarking::WatCod(unsigned char *ImageOut, int width, int height, const c
     double  **imdftfase;
     float   **imidft;
 
+    float   **img_map_flt;	// immagine maschera
+    float   **impic;		// immagine finale marchiata
+
+    img_map_flt = AllocImFloat(dim, dim);
+    impic = AllocImFloat(dim, dim);
+
     imyout = AllocImFloat(dim, dim);
     imdft = AllocImDouble(dim, dim);
     imdftfase = AllocImDouble(dim, dim);
@@ -138,31 +144,35 @@ int Watermarking::WatCod(unsigned char *ImageOut, int width, int height, const c
     rgb_to_crom(imr, img, imb, dim, dim, 1, imyout, imc2, imc3);
 //    stereo_watermarking::show_floatImage(imyout,dim,dim,"left_lum");
 //    dft computation: magnitude and phase
+
+
+    //per la maschera
+//    DecimVarfloat(imyout, dim, dim, WINDOW, img_map_flt);
+
+//    int mmedio = 0;
+//
+//    for(int i = 0; i < dim; i++)
+//        for(int j = 0; j < dim; j++)
+//            mmedio += (double)img_map_flt[i][j];
+//
+//    mmedio = mmedio/(double)(dim * dim);
+//    mmedio = 1.0 - mmedio;
+
+//     Si calcola il valore massimo di alfa
+    double alfamax = power;//mmedio;
+
     FFT2D::dft2d(imyout, imdft, imdftfase, dim, dim);
     int coefficient_number;
     double *coefficient_vector = NULL;
 //    coefficients extraction
     coefficient_vector = zones_to_watermark(imdft, dim, dim, diag0, ndiag, 0, &coefficient_number);
-//    stereo_watermarking::writeToFile(coefficient_vector,coefficient_number,"/home/miky/Scrivania/wm_coff_mark.txt");
-//    saving coefficients
-    coeff_dft = new double [coefficient_number];
-    for (int k = 0; k < coefficient_number; k++ )
-        coeff_dft[k] = coefficient_vector[k];
-    coeff_number = coefficient_number;
+
 //    mark generation
     double * mark;
     mark = new double[coefficient_number];
     generate_mark(watermark,wsize,passw_str,passw_num,coefficient_number, mark,false);
-    //mette marchio in range (0,1)
-//     for(int i=0;i<coefficient_number;i++){
-//       mark[i]+=1;
-//       mark[i]/=2;
-//      }
-//    saving mark
-    final_mark = new double [coefficient_number];
-    for (int k = 0; k < coefficient_number; k++ ) {
-        final_mark[k] = mark[k];
-    }
+
+
 //    generate dft of the watermark
     double** dft_wat = AllocImDouble(dim, dim);
     for (int i=0;i<dim;i++)
@@ -177,27 +187,38 @@ int Watermarking::WatCod(unsigned char *ImageOut, int width, int height, const c
     for (int i=0;i<dim;i++)
         for (int j=0;j<dim;j++)
             if (dft_wat[i][j]<0){
-                imdft_wat[i][j] = power*abs(dft_wat[i][j])*imdft[i][j];
+                imdft_wat[i][j] = alfamax*abs(dft_wat[i][j])*imdft[i][j];
                 imdftfase_wat[i][j] = imdftfase[i][j] + PI;
             } else if (dft_wat[i][j]>0){
-                imdft_wat[i][j] = power*abs(dft_wat[i][j])*imdft[i][j];
+                imdft_wat[i][j] = alfamax*abs(dft_wat[i][j])*imdft[i][j];
                 imdftfase_wat[i][j] = imdftfase[i][j] + 0.0;
             } else {
                 imdft_wat[i][j] = 0.0;
                 imdftfase_wat[i][j] = 0.0;
             }
+
     FFT2D::idft2d(imdft_wat, imdftfase_wat, imidft_wat, dim, dim);
-//    stereo_watermarking::writefloatMatToFile(imidft_wat,dim,"/home/miky/Scrivania/wat_lum.txt");
+
 //    add mark to coefficients: 1 if add_mult
-    addmark(coefficient_vector, mark, coefficient_number, power,1);
+    addmark(coefficient_vector, mark, coefficient_number, alfamax,1);
 //    put back the marked coefficients
     antizone(imdft, dim, dim, diag0, ndiag, coefficient_vector);
 //    idft->back to the luminance
     FFT2D::idft2d(imdft, imdftfase, imidft, dim, dim);
 //    stereo_watermarking::show_floatImage(imidft,256,256,"squared_marked_left");
 //    back to chrominance
-    rgb_to_crom(imr, img, imb, dim, dim, -1, imidft, imc2, imc3);
+
+
+//    for(int i=0;i<dim;i++)
+//        for(int j=0;j<dim;j++)
+//            img_map_flt[i][j] = 255.0f*img_map_flt[i][j];
+
+//    PicRoutfloat(imyout, dim, dim, imidft, img_map_flt, impic);
+
+    rgb_to_crom(imr, img, imb, dim, dim, -1, imidft, imc2, imc3); // se maschera mettere impic al posto di imidft
+
 //    back to image
+
     offset = 0;
     for (int i=0; i<dim; i++)
         for (int j=0; j<dim; j++)
@@ -1237,7 +1258,6 @@ bool Watermarking::extractWatermark(unsigned char *image, int w, int h, int dim)
 
     const char *passw_str = passwstr.c_str();
     const char *passw_num = passwnum.c_str();
-
     // image after resynchronization
     unsigned char *imrsinc = new unsigned char[w * h * 3];
 
@@ -1335,6 +1355,7 @@ bool Watermarking::extractWatermark(unsigned char *image, int w, int h, int dim)
 
 int Watermarking::WatDec(unsigned char *ImageIn, const char *campolett, const char *camponum, float power,int dim )
 {
+
 
     int diag0;
     int ndiag;
@@ -1439,14 +1460,30 @@ int Watermarking::WatDec(unsigned char *ImageIn, const char *campolett, const ch
 //    int nouniforme=0;		// Controllo ver vedere se ho una zona uniforme
 
 
-
-
 //    double *coefficient_vector = NULL;
 //    coefficient_vector = zones_to_watermark(imdftout, 256, 256, diag0, ndiag, 0, &coefficient_number);
 //
 */
+//
+//    float   **img_map_flt;	// immagine maschera
+//
+//    img_map_flt = AllocImFloat(dim, dim);
+//
+//    DecimVarfloat(imyout, dim, dim, WINDOW, img_map_flt);
+//
+//    int mmedio = 0;
+//
+//    for(int i = 0; i < dim; i++)
+//        for(int j = 0; j < dim; j++)
+//            mmedio += (double)img_map_flt[i][j];
+//
+//    mmedio = mmedio/(double)(dim * dim);
+//    mmedio = 1.0 - mmedio;
 
-    decoale(imdftout, dim, dim, diag0, ndiag, seed, power ,BitLetti, length_BCH);
+//     Si calcola il valore massimo di alfa
+    double alfamax = power;//mmedio;
+
+    bool dec_res = decoale(imdftout, dim, dim, diag0, ndiag, seed, alfamax ,BitLetti, length_BCH);
 
   /*  for (int i=0;i<200;i++)
         cout<<BitLetti[i]<<" ";
@@ -1456,44 +1493,49 @@ int Watermarking::WatDec(unsigned char *ImageIn, const char *campolett, const ch
 
 //    for (int i=0; i<200; i++)
 //        nouniforme += BitLetti[i];
-   bool res= BCH::decode_bch(m_BCH,length_BCH,t_BCH,BitLetti);
-
-    if (res)
-    {
- /*       // THE WATERMARK HAS BEEN DETECTED
-//        FreeIm(imy);
-//        FreeIm(imc2);
-//        FreeIm(imc3);
-//        FreeIm(imyout);
+//   bool res= BCH::decode_bch(m_BCH,length_BCH,t_BCH,BitLetti);
 //
-//        FreeIm(imdft);
-//        FreeIm(imdftfase);
-//        FreeIm(imdftout);
-//        FreeIm(imdftoutfase);
-//        FreeIm(im1dft);
-//        FreeIm(im1dftfase);
-
-
-        // NOTA: I bit decodificati vengono salvati alla fine
-        //		 di BitLetti, ossia a partire dalla posizione
-        //		 (BCH length)-(information message)
-
-//        int offs;
-//        offs = length_BCH - nbit;
-//        for (int i=0; i<nbit; i++)
-//            bit[i] = BitLetti[i+offs];
-
-
-//                    // LOG
-//                    fclose(flog);*/
-
-        return 0;	// OK! Marchio rivelato
-    }
+//    if (res)
+//    {
+// /*       // THE WATERMARK HAS BEEN DETECTED
+////        FreeIm(imy);
+////        FreeIm(imc2);
+////        FreeIm(imc3);
+////        FreeIm(imyout);
+////
+////        FreeIm(imdft);
+////        FreeIm(imdftfase);
+////        FreeIm(imdftout);
+////        FreeIm(imdftoutfase);
+////        FreeIm(im1dft);
+////        FreeIm(im1dftfase);
+//
+//
+//        // NOTA: I bit decodificati vengono salvati alla fine
+//        //		 di BitLetti, ossia a partire dalla posizione
+//        //		 (BCH length)-(information message)
+//
+////        int offs;
+////        offs = length_BCH - nbit;
+////        for (int i=0; i<nbit; i++)
+////            bit[i] = BitLetti[i+offs];
+//
+//
+////                    // LOG
+////                    fclose(flog);*/
+//
+//        return 0;	// OK! Marchio rivelato
+//    }
 
 
     FreeIm(imyout);
 
-    return -5;
+//    return -5;
+
+    if (dec_res)
+        return 0;
+    else return -5;
+
 }
 
 
@@ -1512,7 +1554,7 @@ int Watermarking::WatDec(unsigned char *ImageIn, const char *campolett, const ch
 	La funzione ritorna L(x) - la soglia
 */
 
-void Watermarking::decoale(double **imr, int nre, int nce, int d1, int nd,
+bool Watermarking::decoale(double **imr, int nre, int nce, int d1, int nd,
                      LONG8BYTE *seed, double alpha,int *bit, int nbit)
 {
     int i,k,n;
@@ -1533,15 +1575,13 @@ void Watermarking::decoale(double **imr, int nre, int nce, int d1, int nd,
     // e restituisce la lunghezza del marchio (ossia il numero
     // di coefficienti selezionati)
 
+
+
     appbuff = zones_to_watermark(imr, nre, nce, d1, nd, 1, &marklen);
-//    marked_coeff = new double [marklen];
-//    for (int k = 0; k < marklen; k++ )
-//        marked_coeff[k] = appbuff[k];
-////    stereo_watermarking::writeMatToFile(marked_coeff,marklen,"/home/miky/Scrivania/Tesi/dec_marked_coeff.txt");
-//    marked_coeff_number = marklen;
 
 
-//
+
+
     // Studio della statistica delle MAX zone (si calcolano i beta
     // e gli alfa dell'immagine con il criterio della Massima Verosimiglianza)
 
@@ -1558,15 +1598,107 @@ void Watermarking::decoale(double **imr, int nre, int nce, int d1, int nd,
 
         aweib[k]=z[2];
         bweib[k]=z[1];
+
+
     }
 
 
+
     // Si genera il marchio seed  e si calcola L(X) e soglia
+
 
     mark = new double [marklen];
     aw = new double [marklen];
     bw = new double [marklen];
 
+    appbuff -= tot;
+    double Ly = 0.0;
+    double lambda = 0.0;
+    double first_term = 0.0;
+    double second_term = 0.0;
+    double lambda_first_term = 0.0;
+    double lambda_second_term = 0.0;
+    double lambda_third_term = 0.0;
+
+    int	c1 ;
+
+    double  e1,e2,e3;      /* var. di appoggio per calcolo della soglia */
+    double  veros ;         /* rapporto di verosimiglianza */
+    double  beta,alfa;     /* alfa e beta della zona considerata */
+    double  inte;
+    double  prod[MAXZONE];
+    double  s,s1,s2,s3;    /* var. di appoggio per calcolo della soglia */
+    double  som1,som2,som3;/* var. di appoggio per calcolo della soglia */
+    double soglia= 0.0;
+
+    generate_mark(watermark,wsize,passwstr.c_str(),passwnum.c_str(),marklen, mark,false);
+
+//    seed_initialization(seed);
+//
+//    for(i = 0; i < marklen; i++)
+//        mark[i] = 2.0 * (pseudo_random_generator() - 0.5);
+
+
+    c1=0;
+    veros=0;
+    som1=som2=som3=0.0;
+
+    for(k=0;k<MAXZONE;k++)
+    {
+        prod[k]=1.;
+
+        alfa=aweib[k];
+        beta=bweib[k];
+
+        if (alfa == 0.0)
+        {
+            alfa = 0.000001;
+        }
+
+
+        for(i=0;i<cont[k];i++)
+        {
+            //e1=-beta*log(1+alpha*mark[c1+i]);
+            e2=-pow((appbuff[i]/(alfa*(1+alpha*mark[c1+i]))),beta);
+            e3=+pow((appbuff[i]/alfa),beta);
+            //prod[k]+=e1+e2+e3;
+            prod[k]+=e2+e3;
+
+            /* e1=pow((1.0/(1+alpha*mark[c1+i])),beta);
+                    e2=exp(-pow((buff[i]/(alfa*(1+alpha*mark[c1+i]))),beta));
+            e3=exp(-pow((buff[i]/alfa),beta));
+            inte=e1*e2/e3;
+            prod[k]*=inte;
+                if(inte!=0.0)
+            prod[k]+=log(inte); */
+        }
+
+        s1=s2=s3=0.0;
+        for(i=0;i<cont[k];i++)
+        {
+            s=(pow(1+alpha*mark[c1+i],beta)-1)/pow(1+alpha*mark[c1+i],beta);
+            //s1+=beta*log(1+alpha*mark[c1+i]);
+            s2+=s;
+            s3+=pow(s,2.0);
+        }
+        //som1+=s1;
+        som2+=s2;
+        som3+=s3;
+        c1 += cont[k];
+
+        appbuff += cont[k];
+
+        veros+=prod[k];   /* rapporto di verosimiglianza */
+        /*	veros+=log(prod[k]);    rapporto di verosimiglianza */
+    }
+    soglia=3.3*sqrt(2.0)*sqrt(som3)+som2; /* soglia */
+
+
+
+//    if ( veros > soglia )
+//        return true;
+//    else if ( veros < soglia )
+//        return false;
     appbuff -= tot;
 
     n=0;
@@ -1577,17 +1709,41 @@ void Watermarking::decoale(double **imr, int nre, int nce, int d1, int nd,
             aw[i]=aweib[k];
             if (aw[i]==0) aw[i]=0.000001;
             bw[i]=bweib[k];
+
+            first_term += (-bw[i]*log(1.0 + alpha*mark[i]));
+            second_term += -pow((appbuff[i]/(aw[i]*(1.0+alpha*mark[i]))),bw[i])+pow(appbuff[i]/aw[i],bw[i]);
+
+            lambda_first_term += pow(((pow(1.0+alpha*mark[i],bw[i])-1)/(pow((1.0+alpha*mark[i]),bw[i]))),2);
+            lambda_second_term += ((pow(1.0+alpha*mark[i],bw[i]))-1)/(pow((1+alpha*mark[i]),bw[i]));
+            lambda_third_term += bw[i]*log(1.0+alpha*mark[i]);
         }
 
         n+=cont[k];
     }
 
-    seed_initialization(seed);
+    //la loro implementazione leva il terzo termine da lambda e il primo da L
 
-    for(i = 0; i < marklen; i++)
-        mark[i] = 2.0 * (pseudo_random_generator() - 0.5);
+    lambda_first_term = 3.3 *sqrt(2.0)* sqrt(lambda_first_term);
+//    cout<< "l 1 : "<<lambda_first_term<<endl<<"l 2: "<<lambda_second_term<<"l 3: "<<lambda_third_term<<endl;
+    Ly =   second_term;
+    lambda = lambda_first_term + lambda_second_term  ;
 
+//    cout<< "veros  :"<< veros<<endl<<"soglia : "<< soglia<<endl;
+//    cout<< "L :"<< Ly<<endl<<"lambda: "<< lambda<<endl<<endl;
+//    cout<< " prima sub: "<<veros-soglia<<endl;
+//    cout<< " seconda sub: "<<Ly-lambda<<endl;
 
+    delete [] mark;
+    delete [] aw;
+    delete [] bw;
+
+    if (appbuff != NULL)
+        delete [] appbuff;
+
+    if ( veros>soglia )
+        return true;
+    else if ( veros<soglia )
+        return false;
 
 
        // Calcolo della soglia del rivelatore
@@ -1603,49 +1759,53 @@ void Watermarking::decoale(double **imr, int nre, int nce, int d1, int nd,
 
     // DECODIFICA (LETTURA)
     ////////////////////////
-
-    n=0;
-    L=marklen/nbit;
-    soma=somb=0.0;
-    for (k=nbit-1;k>0;k--)
-    {
-        v1=v2=0;
-
-        for (i=n;i<n+L;i++)
-        {
-            v1-=pow((appbuff[i]/(aw[i]*(1.0+alpha*mark[i]))),bw[i]);
-            v2-=pow((appbuff[i]/(aw[i]*(1.0-alpha*mark[i]))),bw[i]);
-        }
-
-        if (v1>v2)
-        {
-            bit[k]=1;
-        }
-        else bit[k]=0;
-
-        n+=L;
-    }
-
-    // Ultimo bit
-    v1=v2=0;
-    for (i=n;i<marklen;i++)
-    {
-        v1-=pow((appbuff[i]/(aw[i]*(1.0+alpha*mark[i]))),bw[i]);
-        v2-=pow((appbuff[i]/(aw[i]*(1.0-alpha*mark[i]))),bw[i]);
-    }
-
-    if (v1>v2)
-    {
-        bit[k]=1;
-    }
-    else bit[k]=0;
-
-    delete [] mark;
-    delete [] aw;
-    delete [] bw;
-
-    if (appbuff != NULL)
-        delete [] appbuff;
+//
+//    n=0;
+//    L=marklen/nbit;
+//    soma=somb=0.0;
+//
+//    for (k=nbit-1;k>0;k--)
+//    {
+//        v1=v2=0;
+//
+//
+//
+//        for (i=n;i<n+L;i++)
+//        {
+//            v1-=pow((appbuff[i]/(aw[i]*(1.0+alpha*mark[i]))),bw[i]);
+//            v2-=pow((appbuff[i]/(aw[i]*(1.0-alpha*mark[i]))),bw[i]);
+//
+//        }
+//
+//        if (v1>v2)
+//        {
+//            bit[k]=1;
+//        }
+//        else bit[k]=0;
+//
+//        n+=L;
+//    }
+//
+//    // Ultimo bit
+//    v1=v2=0;
+//    for (i=n;i<marklen;i++)
+//    {
+//        v1-=pow((appbuff[i]/(aw[i]*(1.0+alpha*mark[i]))),bw[i]);
+//        v2-=pow((appbuff[i]/(aw[i]*(1.0-alpha*mark[i]))),bw[i]);
+//    }
+//
+//    if (v1>v2)
+//    {
+//        bit[k]=1;
+//    }
+//    else bit[k]=0;
+//
+//    delete [] mark;
+//    delete [] aw;
+//    delete [] bw;
+//
+//    if (appbuff != NULL)
+//        delete [] appbuff;
 
 }
 

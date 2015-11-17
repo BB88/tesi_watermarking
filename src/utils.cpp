@@ -21,7 +21,7 @@ using namespace std;
 using namespace cv;
 using namespace cv::datasets;
 
-void stereo_watermarking::sobel_filtering(cv::Mat src, const char* window_name){
+cv::Mat stereo_watermarking::sobel_filtering(cv::Mat src, const char* window_name){
     /* SOBEL */
 
     cv::Mat  src_gray;
@@ -31,9 +31,9 @@ void stereo_watermarking::sobel_filtering(cv::Mat src, const char* window_name){
     int ddepth = CV_16S;
 
     /// Load an image
-
-    if( src.empty() )
-    { return ; }
+//
+//    if( src.empty() )
+//    { return NULL; }
 
     GaussianBlur( src, src, Size(3,3), 0, 0, BORDER_DEFAULT );
 
@@ -43,7 +43,7 @@ void stereo_watermarking::sobel_filtering(cv::Mat src, const char* window_name){
     else src.copyTo(src_gray);
 
     /// Create window
-    namedWindow( window_name, WINDOW_AUTOSIZE );
+//    namedWindow( window_name, WINDOW_AUTOSIZE );
 
     /// Generate grad_x and grad_y
     cv::Mat grad_x, grad_y;
@@ -62,13 +62,13 @@ void stereo_watermarking::sobel_filtering(cv::Mat src, const char* window_name){
     /// Total Gradient (approximate)
     addWeighted( abs_grad_x, 0.5, abs_grad_y, 0.5, 0, grad );
 
-    std::ostringstream path ;
-    path << "/home/miky/ClionProjects/tesi_watermarking/img/"<< window_name<<".png";
+//    std::ostringstream path ;
+//    path << "/home/miky/ClionProjects/tesi_watermarking/img/"<< window_name<<".png";
 //    cout<<path.str();
-    cv::imwrite(path.str(),grad);
-    imshow( window_name, grad );
-
-    waitKey(0);
+//    cv::imwrite(path.str(),grad);
+//    imshow( window_name, grad );
+//    waitKey(0);
+    return grad;
 }
 void stereo_watermarking::show_difference(cv::Mat img1,cv::Mat img2,std::string window){
 
@@ -89,8 +89,8 @@ void stereo_watermarking::show_difference(cv::Mat img1,cv::Mat img2,std::string 
             difference_cv.at<cv::Vec3b>(j, i) [1] = difference[count]; count++;
             difference_cv.at<cv::Vec3b>(j, i) [2] = difference[count]; count++;
         }
-    cv::imshow(window.c_str(), difference_cv);
-    cv::waitKey(0);
+//    cv::imshow(window.c_str(), difference_cv);
+//    cv::waitKey(0);
 }
 
 

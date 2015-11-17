@@ -248,7 +248,7 @@ private:
 
     int WatDec(unsigned char *ImageIn, const char *campolett, const char *camponum, float power,int dim );
 
-    void decoale(double **imr, int nre, int nce, int d1, int nd,
+    bool decoale(double **imr, int nre, int nce, int d1, int nd,
                                LONG8BYTE *seed, double alpha,int *bit, int nbit);
 
     void mlfunc(double *buff,int nrfile,int niteraz);
