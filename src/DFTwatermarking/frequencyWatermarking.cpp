@@ -1,5 +1,5 @@
 //
-// Created by miky on 02/10/15.
+// Created by bene on 02/10/15.
 //
 
 #include "frequencyWatermarking.h"
@@ -20,7 +20,7 @@
 #include "../utils.h"
 #include "../img_watermarking/fft2d.h"
 #include "../graphcuts/utils.h"
-#include <boost/algorithm/string.hpp>
+//#include <boost/algorithm/string.hpp>
 
 using namespace std;
 using namespace cv;
@@ -66,7 +66,7 @@ vector<cv::Mat> DFTStereoWatermarking::stereoWatermarking(cv::Mat frameL, cv::Ma
     std::string disp_data;
     std::vector<std::string> disprange;
     char sep = ' ';
-    std::ifstream in("/home/miky/Scrivania/Tesi/dispRange.txt");
+    std::ifstream in("/home/bene/Scrivania/Tesi/dispRange.txt");
     if (in.is_open()) {
         int j=0;
         while (!in.eof()){
@@ -101,16 +101,16 @@ vector<cv::Mat> DFTStereoWatermarking::stereoWatermarking(cv::Mat frameL, cv::Ma
 
     //queste tre righe servono per prendere la disparità di ground truth
     std::ostringstream pathL;
-    pathL << "/home/miky/ClionProjects/tesi_watermarking/dataset/NTSD-200/disparity_maps/left/tsukuba_disparity_L_" << std::setw(5) << std::setfill('0') << img_num +1 << ".png";
-//    pathL << "/home/miky/ClionProjects/tesi_watermarking/img/kz_norm_from_video/left_" << std::setw(2) << std::setfill('0') << img_num/60 << ".png";
+    pathL << "/home/bene/ClionProjects/tesi_watermarking/dataset/NTSD-200/disparity_maps/left/tsukuba_disparity_L_" << std::setw(5) << std::setfill('0') << img_num +1 << ".png";
+//    pathL << "/home/bene/ClionProjects/tesi_watermarking/img/kz_norm_from_video/left_" << std::setw(2) << std::setfill('0') << img_num/60 << ".png";
     cv::Mat disp_left = imread(pathL.str().c_str(), CV_LOAD_IMAGE_GRAYSCALE);
 
 
     left_to_right = false;
 //    cv::Mat disp_right = graph_cuts_utils::kz_main(left_to_right,"right","left",frameR,frameL);
     std::ostringstream pathR;
-    pathR << "/home/miky/ClionProjects/tesi_watermarking/dataset/NTSD-200/disparity_maps/right/tsukuba_disparity_R_" << std::setw(5) << std::setfill('0') << img_num +1 << ".png";
-//    pathR << "/home/miky/ClionProjects/tesi_watermarking/img/kz_norm_from_video/right_" << std::setw(2) << std::setfill('0') << img_num/60 << ".png";
+    pathR << "/home/bene/ClionProjects/tesi_watermarking/dataset/NTSD-200/disparity_maps/right/tsukuba_disparity_R_" << std::setw(5) << std::setfill('0') << img_num +1 << ".png";
+//    pathR << "/home/bene/ClionProjects/tesi_watermarking/img/kz_norm_from_video/right_" << std::setw(2) << std::setfill('0') << img_num/60 << ".png";
     cv::Mat disp_right = imread(pathR.str().c_str(), CV_LOAD_IMAGE_GRAYSCALE);
 
     int dminr = -dmaxl;
@@ -333,11 +333,11 @@ int DFTStereoWatermarking::stereoDetection(cv::Mat markedL, cv::Mat markedR, int
    //    cv::Mat disp_right = graph_cuts_utils::kz_main(left_to_right,"right","left",frameR,frameL);
     std::ostringstream pathR;
     //path per kz
-//    pathR << "/home/miky/ClionProjects/tesi_watermarking/img/kz_norm_from_video/right_" << std::setw(2) << std::setfill('0') << img_num/60 << ".png";
+//    pathR << "/home/bene/ClionProjects/tesi_watermarking/img/kz_norm_from_video/right_" << std::setw(2) << std::setfill('0') << img_num/60 << ".png";
     //path per gt
-//    pathR << "/home/miky/ClionProjects/tesi_watermarking/dataset/NTSD-200/disparity_maps/right/tsukuba_disparity_R_" << std::setw(5) << std::setfill('0') << img_num +1 << ".png";
+//    pathR << "/home/bene/ClionProjects/tesi_watermarking/dataset/NTSD-200/disparity_maps/right/tsukuba_disparity_R_" << std::setw(5) << std::setfill('0') << img_num +1 << ".png";
     //path per quelle sitetizzate
-    pathR << "/home/miky/ClionProjects/tesi_watermarking/img/kz_disp_synt_75/norm_disp_75_synt_to_left_" << img_num +1 << ".png";
+    pathR << "/home/bene/ClionProjects/tesi_watermarking/img/kz_disp_synt_75/norm_disp_75_synt_to_left_" << img_num +1 << ".png";
     cv::Mat disp_right = imread(pathR.str().c_str(), CV_LOAD_IMAGE_GRAYSCALE);
 //    imshow("disp_right",disp_right);
 //    waitKey(0);
@@ -419,7 +419,7 @@ void DFTStereoWatermarking::warpMarkWatermarking(int wsize, float power, std::st
                                                  std::string passwnum, bool gt){
 
     Right_view rv;
-    cv::Mat left = imread("/home/miky/ClionProjects/tesi_watermarking/img/left.png", CV_LOAD_IMAGE_COLOR);
+    cv::Mat left = imread("/home/bene/ClionProjects/tesi_watermarking/img/left.png", CV_LOAD_IMAGE_COLOR);
     int dim = 512;
 
     unsigned char *left_uchar = left.data;
@@ -450,7 +450,7 @@ void DFTStereoWatermarking::warpMarkWatermarking(int wsize, float power, std::st
 
 //     generate watermark's magnitude and phase   ********************
 //    stereo_watermarking::show_floatImage(imidft_wat,dim,dim,"mark");
-//    stereo_watermarking::writefloatMatToFile(imidft_wat,dim,"/home/miky/Scrivania/wat_lum.txt");
+//    stereo_watermarking::writefloatMatToFile(imidft_wat,dim,"/home/bene/Scrivania/wat_lum.txt");
 
 //    double  **imdft_mark;
 //    double  **imdftfase_mark;
@@ -458,17 +458,17 @@ void DFTStereoWatermarking::warpMarkWatermarking(int wsize, float power, std::st
 //    imdftfase_mark = AllocIm::AllocImDouble(dim, dim);
 //    FFT2D::dft2d(imidft_wat, imdft_mark, imdftfase_mark, dim, dim);
 
-//    stereo_watermarking::writeMatToFile(imdft_mark,dim,"/home/miky/Scrivania/wat_mag.txt");
-//    stereo_watermarking::writeMatToFile(imdftfase_mark,dim,"/home/miky/Scrivania/wat_phase.txt");
+//    stereo_watermarking::writeMatToFile(imdft_mark,dim,"/home/bene/Scrivania/wat_mag.txt");
+//    stereo_watermarking::writeMatToFile(imdftfase_mark,dim,"/home/bene/Scrivania/wat_phase.txt");
 
 //     generate squared disp and occ map   ********************
     cv::Mat disp_left;
     if (gt)
-        disp_left = imread("/home/miky/ClionProjects/tesi_watermarking/img/disp_left.png", CV_LOAD_IMAGE_GRAYSCALE);
-    else  disp_left = imread("/home/miky/ClionProjects/tesi_watermarking/img/norm_disp_left_to_right.png", CV_LOAD_IMAGE_GRAYSCALE);
+        disp_left = imread("/home/bene/ClionProjects/tesi_watermarking/img/disp_left.png", CV_LOAD_IMAGE_GRAYSCALE);
+    else  disp_left = imread("/home/bene/ClionProjects/tesi_watermarking/img/norm_disp_left_to_right.png", CV_LOAD_IMAGE_GRAYSCALE);
 
 
-    cv::Mat occ_left = imread("/home/miky/ClionProjects/tesi_watermarking/img/occ_left.png", CV_LOAD_IMAGE_GRAYSCALE);
+    cv::Mat occ_left = imread("/home/bene/ClionProjects/tesi_watermarking/img/occ_left.png", CV_LOAD_IMAGE_GRAYSCALE);
     cv::Mat squared_lDisp = cv::Mat::zeros(dim, dim, CV_8UC1);
     cv::Mat squared_lOcc = cv::Mat::zeros(dim, dim, CV_8UC1);
     for (int i=0;i<480;i++)
@@ -479,11 +479,11 @@ void DFTStereoWatermarking::warpMarkWatermarking(int wsize, float power, std::st
 
     cv::Mat disp_right;
     if (gt)
-        disp_right = imread("/home/miky/ClionProjects/tesi_watermarking/img/disp_right.png", CV_LOAD_IMAGE_GRAYSCALE);
-    else  disp_right = imread("/home/miky/ClionProjects/tesi_watermarking/img/norm_disp_right_to_left.png", CV_LOAD_IMAGE_GRAYSCALE);
+        disp_right = imread("/home/bene/ClionProjects/tesi_watermarking/img/disp_right.png", CV_LOAD_IMAGE_GRAYSCALE);
+    else  disp_right = imread("/home/bene/ClionProjects/tesi_watermarking/img/norm_disp_right_to_left.png", CV_LOAD_IMAGE_GRAYSCALE);
 
 
-    cv::Mat occ_right = imread("/home/miky/ClionProjects/tesi_watermarking/img/occ_right.png", CV_LOAD_IMAGE_GRAYSCALE);
+    cv::Mat occ_right = imread("/home/bene/ClionProjects/tesi_watermarking/img/occ_right.png", CV_LOAD_IMAGE_GRAYSCALE);
     cv::Mat squared_rDisp = cv::Mat::zeros(dim, dim, CV_8UC1);
     cv::Mat squared_rOcc = cv::Mat::zeros(dim, dim, CV_8UC1);
 
@@ -493,7 +493,7 @@ void DFTStereoWatermarking::warpMarkWatermarking(int wsize, float power, std::st
             squared_rOcc.at<uchar>(i,j) = occ_right.at<uchar>(i,j+offset);
         }
 
-    cv::Mat right = imread("/home/miky/ClionProjects/tesi_watermarking/img/right.png",CV_LOAD_IMAGE_COLOR);
+    cv::Mat right = imread("/home/bene/ClionProjects/tesi_watermarking/img/right.png",CV_LOAD_IMAGE_COLOR);
     unsigned char *right_uchar = right.data;
     unsigned char *squared_right =  new unsigned char[squared_dim];
     for (int i = 0; i < 480; i ++ )
@@ -574,8 +574,8 @@ void DFTStereoWatermarking::warpMarkWatermarking(int wsize, float power, std::st
 //    imdft_warp_mark = AllocIm::AllocImDouble(dim, dim);
 //    imdftfase_warp_mark = AllocIm::AllocImDouble(dim, dim);
 //    FFT2D::dft2d(warp_mark, imdft_warp_mark, imdftfase_warp_mark, dim, dim);
-//    stereo_watermarking::writeMatToFile(imdft_warp_mark,dim,"/home/miky/Scrivania/warp_wat_mag.txt");
-//    stereo_watermarking::writeMatToFile(imdftfase_warp_mark,dim,"/home/miky/Scrivania/warp_wat_phase.txt");
+//    stereo_watermarking::writeMatToFile(imdft_warp_mark,dim,"/home/bene/Scrivania/warp_wat_mag.txt");
+//    stereo_watermarking::writeMatToFile(imdftfase_warp_mark,dim,"/home/bene/Scrivania/warp_wat_phase.txt");
 //    marking right view with warped mark   ********************
 
 
@@ -710,7 +710,7 @@ void DFTStereoWatermarking::warpMarkWatermarking(int wsize, float power, std::st
         }
     stereo_watermarking::show_ucharImage(right_watermarked,640,480,"right_watermarked");
     stereo_watermarking::save_ucharImage(right_watermarked,640,480,"right_watermarked");
-    cv::Mat synt_view = imread("/home/miky/ClionProjects/tesi_watermarking/img/synt.png", CV_LOAD_IMAGE_COLOR);
+    cv::Mat synt_view = imread("/home/bene/ClionProjects/tesi_watermarking/img/synt.png", CV_LOAD_IMAGE_COLOR);
     unsigned char *synt_view_uchar = synt_view.data;
     unsigned char *squared_synt_view =  new unsigned char[squared_dim];
     for (int j = 0; j < dim*dim*3; j++) {
@@ -727,7 +727,7 @@ void DFTStereoWatermarking::warpMarkWatermarking(int wsize, float power, std::st
 //    bool synt_view_det = image_watermarking.extractWatermark(squared_synt_view,dim,dim,dim);
 //    cout<<" syn_det    "<<synt_view_det <<endl;
 
-//    cv::Mat disp_synt = imread("/home/miky/ClionProjects/tesi_watermarking/img/disp_kz_syn.png", CV_LOAD_IMAGE_COLOR);
+//    cv::Mat disp_synt = imread("/home/bene/ClionProjects/tesi_watermarking/img/disp_kz_syn.png", CV_LOAD_IMAGE_COLOR);
 //    cv::Mat nkz_disp;
 //    if (disp_synt.rows == 0){
 //        cout << "Empty image";
@@ -735,9 +735,9 @@ void DFTStereoWatermarking::warpMarkWatermarking(int wsize, float power, std::st
 //        Disp_opt dp;
 //        dp.disparity_normalization(disp_synt, nkz_disp);
 //    }
-//    imwrite("/home/miky/ClionProjects/tesi_watermarking/img/norm_disp_syn.png",nkz_disp);
+//    imwrite("/home/bene/ClionProjects/tesi_watermarking/img/norm_disp_syn.png",nkz_disp);
 
-    cv::Mat norm_disp_syn = imread("/home/miky/ClionProjects/tesi_watermarking/img/norm_disp_syn.png", CV_LOAD_IMAGE_GRAYSCALE);
+    cv::Mat norm_disp_syn = imread("/home/bene/ClionProjects/tesi_watermarking/img/norm_disp_syn.png", CV_LOAD_IMAGE_GRAYSCALE);
     cv::Mat norm_kzdisp = cv::Mat::zeros(480, 640, CV_8UC1);
 
 

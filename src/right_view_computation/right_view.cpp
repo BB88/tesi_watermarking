@@ -1,5 +1,5 @@
 //
-// Created by miky on 05/06/15.
+// Created by bene on 05/06/15.
 //
 
 #include "right_view.h"
@@ -21,7 +21,7 @@ using namespace cv;
         printf("Matrix: %s %dx%d \n", ty.c_str(), disp.cols, disp.rows );*/
         int d, xr;
         // original right view
-        cv::Mat o_right = cv::imread("/home/miky/ClionProjects/tesi_watermarking/img/r.png", CV_LOAD_IMAGE_COLOR);
+        cv::Mat o_right = cv::imread("/home/bene/ClionProjects/tesi_watermarking/img/r.png", CV_LOAD_IMAGE_COLOR);
         /*
         string ty =  type2str( o_right.type() );
         printf("Matrix: %s %dx%d \n", ty.c_str(), o_right.cols, o_right.rows);
@@ -44,7 +44,7 @@ using namespace cv;
                 n_right.at<Vec3b>(j,xr) [2] = left.at<Vec3b>(j,i) [2];
             }
         }
-        imwrite("/home/miky/ClionProjects/tesi_watermarking/img/nkz_right.png", n_right);
+        imwrite("/home/bene/ClionProjects/tesi_watermarking/img/nkz_right.png", n_right);
         /*imshow*/
 /*
         cv::imshow("Left",left);
@@ -102,7 +102,7 @@ unsigned char* Right_view::left_uchar_reconstruction(unsigned char *marked_right
             left_marked.at<Vec3b>(j,i) [1] = left_uchar[count]; count++;
             left_marked.at<Vec3b>(j,i) [2] = left_uchar[count]; count++;
         }
-    imwrite("/home/miky/ClionProjects/tesi_watermarking/img/left_reconstructed_uchar.png", left_marked);
+    imwrite("/home/bene/ClionProjects/tesi_watermarking/img/left_reconstructed_uchar.png", left_marked);
     return left_uchar;
 
 }
@@ -134,7 +134,7 @@ unsigned char* Right_view::right_uchar_reconstruction(unsigned char *marked_left
             right_marked.at<Vec3b>(j,i) [1] = right_uchar[count]; count++;
             right_marked.at<Vec3b>(j,i) [2] = right_uchar[count]; count++;
         }
-    imwrite("/home/miky/ClionProjects/tesi_watermarking/img/left_reconstructed_uchar.png", right_marked);
+    imwrite("/home/bene/ClionProjects/tesi_watermarking/img/left_reconstructed_uchar.png", right_marked);
     return right_uchar;
 
 }

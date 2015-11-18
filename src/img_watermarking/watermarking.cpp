@@ -1,5 +1,5 @@
 //
-// Created by miky on 22/07/15.
+// Created by bene on 22/07/15.
 //
 #include <stdio.h>
 #include <string.h>
@@ -19,7 +19,7 @@
 #include <opencv2/core/core.hpp>
 #include <highgui.h>
 
-#include </home/miky/ClionProjects/tesi_watermarking/src/utils.h>
+#include </home/bene/ClionProjects/tesi_watermarking/src/utils.h>
 
 
 using namespace cv;
@@ -286,14 +286,14 @@ int Watermarking::warpedWatCod(unsigned char *ImageOut, int width, int height, c
         }
 
     rgb_to_crom(imr, img, imb, dim, dim, 1, imyout, imc2, imc3);
-    stereo_watermarking::writefloatMatToFile(imyout,256,"/home/miky/Scrivania/right_lum.txt");
+    stereo_watermarking::writefloatMatToFile(imyout,256,"/home/bene/Scrivania/right_lum.txt");
 //    dft computation: magnitude and phase
     FFT2D::dft2d(imyout, imdft, imdftfase, dim, dim);
     int coefficient_number;
     double *coefficient_vector = NULL;
 //    coefficients extraction
     coefficient_vector = zones_to_watermark(imdft, dim, dim, diag0, ndiag, 0, &coefficient_number);
-//    stereo_watermarking::writeToFile(coefficient_vector,coefficient_number,"/home/miky/Scrivania/wm_coff_mark.txt");
+//    stereo_watermarking::writeToFile(coefficient_vector,coefficient_number,"/home/bene/Scrivania/wm_coff_mark.txt");
 //    compute magnitude and phase of the watermark
     double  **imdft_wat;
     double  **imdftfase_wat;
@@ -309,7 +309,7 @@ int Watermarking::warpedWatCod(unsigned char *ImageOut, int width, int height, c
     antizone(imdft, dim, dim, diag0, ndiag, coefficient_vector);
 //    idft->back to the luminance
     FFT2D::idft2d(imdft, imdftfase, imidft, dim, dim);
-//    stereo_watermarking::writefloatMatToFile(imidft,256,"/home/miky/Scrivania/marked_right_lum.txt");
+//    stereo_watermarking::writefloatMatToFile(imidft,256,"/home/bene/Scrivania/marked_right_lum.txt");
     stereo_watermarking::show_floatImage(imidft,dim,dim,"marked_right_dft");
 //    back to chrominance
     rgb_to_crom(imr, img, imb, dim, dim, -1, imidft, imc2, imc3);

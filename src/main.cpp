@@ -30,9 +30,9 @@
 #include "DFTwatermarking/frequencyWatermarking.h"
 #include "utils.h"
 #include "disparity_optimization/disp_opt.h"
-#include <boost/algorithm/string.hpp>
+//#include <boost/algorithm/string.hpp>
 
-#include "./roc/roc.h"
+//#include "./roc/roc.h"
 
 using namespace std;
 using namespace cv;
@@ -64,8 +64,8 @@ int stereovideoCoding(std::string videoPath ){
         watermark[i] = b;
     }
 
-    std::ifstream in("/home/miky/ClionProjects/tesi_watermarking/config/config.cfg");
-    std::ofstream out("/home/miky/ClionProjects/tesi_watermarking/config/config.cfg.tmp");
+    std::ifstream in("/home/bene/ClionProjects/tesi_watermarking/config/config.cfg");
+    std::ofstream out("/home/bene/ClionProjects/tesi_watermarking/config/config.cfg.tmp");
     string data;
     string dataw;
     if (in.is_open() && out.is_open()) {
@@ -81,7 +81,7 @@ int stereovideoCoding(std::string videoPath ){
             }
             else out << data << "\n";
 
-            if (0 != std::rename("/home/miky/ClionProjects/tesi_watermarking/config/config.cfg.tmp", "/home/miky/ClionProjects/tesi_watermarking/config/config.cfg"))
+            if (0 != std::rename("/home/bene/ClionProjects/tesi_watermarking/config/config.cfg.tmp", "/home/bene/ClionProjects/tesi_watermarking/config/config.cfg"))
             {
                 // Handle failure.
             }
@@ -118,14 +118,14 @@ int stereovideoCoding(std::string videoPath ){
             markedLR = DFTStereoWatermarking::stereoWatermarking(frameL,frameR,wsize,power,passwstr,passwnum,watermark, i);
             hconcat(markedLR[0],markedLR[1],new_frameStereo);
             std::ostringstream pathL;
-            pathL << "/home/miky/ClionProjects/tesi_watermarking/img/marked_frames_08/stereo_marked_frame_" << std::setw(5) << std::setfill('0') << i << ".png";
+            pathL << "/home/bene/ClionProjects/tesi_watermarking/img/marked_frames_08/stereo_marked_frame_" << std::setw(5) << std::setfill('0') << i << ".png";
             imwrite(pathL.str(), new_frameStereo);
         }
         else {
             capStereo >> frameStereo;
             if (frameStereo.empty()) break;
             std::ostringstream pathL;
-            pathL << "/home/miky/ClionProjects/tesi_watermarking/img/marked_frames_08/stereo_marked_frame_" << std::setw(5) << std::setfill('0') << i << ".png";
+            pathL << "/home/bene/ClionProjects/tesi_watermarking/img/marked_frames_08/stereo_marked_frame_" << std::setw(5) << std::setfill('0') << i << ".png";
             imwrite(pathL.str(), frameStereo);
 
         }
@@ -202,10 +202,10 @@ void videoMaker(){
 }
 void transparent_check(){
 
-    std::string video = "/home/miky/ClionProjects/tesi_watermarking/video/video_left.mp4";
-    std::string wat_video = "/home/miky/ClionProjects/tesi_watermarking/video/video_left_marked.mp4";
-    std::string disp_video = "/home/miky/ClionProjects/tesi_watermarking/video/video_disp.mp4";
-    std::string wat_disp_video = "/home/miky/ClionProjects/tesi_watermarking/video/video_disp_marked.mp4";
+    std::string video = "/home/bene/ClionProjects/tesi_watermarking/video/video_left.mp4";
+    std::string wat_video = "/home/bene/ClionProjects/tesi_watermarking/video/video_left_marked.mp4";
+    std::string disp_video = "/home/bene/ClionProjects/tesi_watermarking/video/video_disp.mp4";
+    std::string wat_disp_video = "/home/bene/ClionProjects/tesi_watermarking/video/video_disp_marked.mp4";
 
     RRQualityMetrics::compute_metrics(STEP, video, wat_video, disp_video, wat_disp_video );
 
@@ -224,7 +224,7 @@ void disparity_saving(){
         std::string disp_data;
         std::vector<std::string> disprange;
         char sep = ' ';
-        std::ifstream in("/home/miky/Scrivania/Tesi/dispRange.txt");
+        std::ifstream in("/home/bene/Scrivania/Tesi/dispRange.txt");
         if (in.is_open()) {
             int j=0;
             while (!in.eof()){
@@ -247,9 +247,9 @@ void disparity_saving(){
         int dminr = -dmaxl;
 
         std::ostringstream pathInL;
-        pathInL << "/home/miky/ClionProjects/tesi_watermarking/img/kz_disp_synt/disp_synt_" << i <<"_to_left_"<<i<< ".png";
+        pathInL << "/home/bene/ClionProjects/tesi_watermarking/img/kz_disp_synt/disp_synt_" << i <<"_to_left_"<<i<< ".png";
         std::ostringstream pathInR;
-        pathInR << "/home/miky/ClionProjects/tesi_watermarking/img/kz_disp_synt/disp_synt_" << i <<"_to_left_"<<i<< ".png";
+        pathInR << "/home/bene/ClionProjects/tesi_watermarking/img/kz_disp_synt/disp_synt_" << i <<"_to_left_"<<i<< ".png";
 
         dispInL = imread(pathInL.str().c_str(),CV_LOAD_IMAGE_COLOR);
         dispInR = imread(pathInR.str().c_str(),CV_LOAD_IMAGE_COLOR);
@@ -268,10 +268,10 @@ void disparity_saving(){
 //          waitKey(0);
 //
         std::ostringstream pathOutL;
-        pathOutL << "/home/miky/ClionProjects/tesi_watermarking/img/kz_norm_from_video/left_" << std::setw(2) << std::setfill('0') << i/60 << ".png";
+        pathOutL << "/home/bene/ClionProjects/tesi_watermarking/img/kz_norm_from_video/left_" << std::setw(2) << std::setfill('0') << i/60 << ".png";
 
         std::ostringstream pathOutR;
-        pathOutR <<  "/home/miky/ClionProjects/tesi_watermarking/img/kz_norm_from_video/right_" << std::setw(2) << std::setfill('0') << i/60 << ".png";
+        pathOutR <<  "/home/bene/ClionProjects/tesi_watermarking/img/kz_norm_from_video/right_" << std::setw(2) << std::setfill('0') << i/60 << ".png";
 
 //          cout<<pathOutL.str()<<endl<<pathOutR.str()<<endl;
         imwrite(pathOutL.str(),dispOutL);
@@ -313,13 +313,13 @@ void synthetized_decoding(){
     for (int i = first_frame; i < last_frame; i++) {
 
         std::ostringstream pathL;
-        pathL << "/home/miky/ClionProjects/tesi_watermarking/img/VS/left/left_" << std::setw(5) << std::setfill('0') << i +1 << ".png";
+        pathL << "/home/bene/ClionProjects/tesi_watermarking/img/VS/left/left_" << std::setw(5) << std::setfill('0') << i +1 << ".png";
         frameL = imread(pathL.str().c_str(), CV_LOAD_IMAGE_COLOR);
 //        imshow("frameL",frameL);
 //        waitKey(0);
 
         std::ostringstream pathSynt;
-        pathSynt << "/home/miky/ClionProjects/tesi_watermarking/img/VS/synth_view_75/synth_view"<<i+1<<".png";
+        pathSynt << "/home/bene/ClionProjects/tesi_watermarking/img/VS/synth_view_75/synth_view"<<i+1<<".png";
         frameSynt = imread(pathSynt.str().c_str(), CV_LOAD_IMAGE_COLOR);
 
 //        imshow("frameSynt",frameSynt);
@@ -379,7 +379,7 @@ void spatialMarking(std::string videoPath,cv::Mat noise){
 //            waitKey(0);
 
             std::ostringstream pathL;
-            pathL << "/home/miky/ClionProjects/tesi_watermarking/img/marked_frames_gaussian_1_kz/stereo_marked_frame_" << std::setw(5) << std::setfill('0') << i << ".png";
+            pathL << "/home/bene/ClionProjects/tesi_watermarking/img/marked_frames_gaussian_1_kz/stereo_marked_frame_" << std::setw(5) << std::setfill('0') << i << ".png";
             imwrite(pathL.str(), new_frameStereo);
 
         }
@@ -387,7 +387,7 @@ void spatialMarking(std::string videoPath,cv::Mat noise){
             capStereo >> frameStereo;
             if (frameStereo.empty()) break;
             std::ostringstream pathL;
-            pathL << "/home/miky/ClionProjects/tesi_watermarking/img/marked_frames_gaussian_1_kz/stereo_marked_frame_" << std::setw(5) << std::setfill('0') << i << ".png";
+            pathL << "/home/bene/ClionProjects/tesi_watermarking/img/marked_frames_gaussian_1_kz/stereo_marked_frame_" << std::setw(5) << std::setfill('0') << i << ".png";
             imwrite(pathL.str(), frameStereo);
 
         }
@@ -412,7 +412,7 @@ void spatialDecoding(std::string videoPath,cv::Mat noise){
     int decoded_left_frame = 0;
     int decoded_right_frame = 0;
 
-    ofstream fout("/home/miky/Scrivania/Tesi/gaussDetection3_30.txt");
+    ofstream fout("/home/bene/Scrivania/Tesi/gaussDetection3_30.txt");
 
     for (int i = first_frame; i < last_frame; i++) {
 
@@ -560,13 +560,13 @@ int main() {
 //    randn(noise,0,m_NoiseStdDev);
 
 
-//    std::string videoPath = "/home/miky/ClionProjects/tesi_watermarking/img/stereo_video_crf1_g60.mp4";
+//    std::string videoPath = "/home/bene/ClionProjects/tesi_watermarking/img/stereo_video_crf1_g60.mp4";
 //    stereovideoCoding(videoPath);
 
 //    spatialMarking(videoPath,noise);
 
 
-//    std::string videoPath = "/home/miky/Scrivania/Tesi/marked_videos/marked_video_gaussian_3_crf30_g60.mp4";
+//    std::string videoPath = "/home/bene/Scrivania/Tesi/marked_videos/marked_video_gaussian_3_crf30_g60.mp4";
 //    stereovideoDecoding(videoPath);
 
 //    spatialDecoding(videoPath,noise);
@@ -575,11 +575,19 @@ int main() {
 //   transparent_check();
 
     //ROC curve
-    ROC roc("/home/miky/Scrivania/Tesi/gaussDetection3_30.txt");
+/*    ROC roc("/home/bene/Scrivania/Tesi/gaussDetection3_30.txt");
     // the format of the output file is
     // column 0 -> False positive points in curve
     // column 1 -> True positive points in curve
-    roc.writeToFile("/home/miky/Scrivania/Tesi/ROC_gauss_3_30.txt");
+    roc.writeToFile("/home/bene/Scrivania/Tesi/ROC_gauss_3_30.txt");*/
+
+ /* PSNR measures" */
+/*
+    std::string origVideo = "/home/bene/Scrivania/video_PSNR/original.mp4" ;
+    std::string compressVideo = "/home/bene/Scrivania/video_PSNR/compr25.mp4" ;
+    double psnr = qm::avg_psnr(origVideo, compressVideo);
+    std::cout << psnr;*/
+
 
 //    synthetized_decoding();
 

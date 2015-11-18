@@ -1,5 +1,5 @@
 //
-// Created by miky on 06/10/15.
+// Created by bene on 06/10/15.
 #include <iostream>
 #include <opencv2/core/core.hpp>
 #include <cv.h>
@@ -131,8 +131,8 @@ void RRQualityMetrics::compute_metrics(int step, std::string video,  std::string
     }
 
 
-    stereo_watermarking::writeToFile(MQcolor_array,count,"/home/miky/Scrivania/MQColor.txt");
-    stereo_watermarking::writeToFile(MQdisp_array,count,"/home/miky/Scrivania/MQDisp.txt");
+    stereo_watermarking::writeToFile(MQcolor_array,count,"/home/bene/Scrivania/MQColor.txt");
+    stereo_watermarking::writeToFile(MQdisp_array,count,"/home/bene/Scrivania/MQDisp.txt");
 
 
 }

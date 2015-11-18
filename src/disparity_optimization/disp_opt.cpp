@@ -1,5 +1,5 @@
 //
-// Created by miky on 18/06/15.
+// Created by bene on 18/06/15.
 //
 
 #include <iostream>
@@ -20,12 +20,12 @@ void Disp_opt::disparity_filtering(cv::Mat kz_disp) {
     cv::medianBlur(kz_disp, output, 7);
     imshow("Filtered disparity", output);
     //save filtered colored image
-    imwrite("/home/miky/ClionProjects/tesi_watermarking/img/f_disp_synt.png", output);
+    imwrite("/home/bene/ClionProjects/tesi_watermarking/img/f_disp_synt.png", output);
     cv::Mat greyMat;
     //convert filtered colored disparity to greyscale
     cv::cvtColor(output, greyMat, CV_BGR2GRAY);
     //save filtered greyscale image
-    imwrite("/home/miky/ClionProjects/tesi_watermarking/img/fg_disp_synt.png", greyMat);
+    imwrite("/home/bene/ClionProjects/tesi_watermarking/img/fg_disp_synt.png", greyMat);
     imshow("Filtered greyscale disparity", greyMat);
 
 }
@@ -36,7 +36,7 @@ void Disp_opt::disparity_normalization(cv::Mat kz_disp,int dMin,int dMax, cv::Ma
 
 
 //    std::ofstream dispFile;
-//    dispFile.open("/home/miky/Scrivania/dispMat2.txt");
+//    dispFile.open("/home/bene/Scrivania/dispMat2.txt");
 
 //    cv::Mat kz_disp_gray;
 //    cv::cvtColor(kz_disp,kz_disp_gray,CV_BGR2GRAY);
@@ -98,5 +98,5 @@ void Disp_opt::occlusions_enhancing(cv::Mat f_disp) {
     }
     namedWindow("Modified pixel", CV_WINDOW_AUTOSIZE);
     imshow("Modified pixel", f_disp);
-    imwrite("/home/miky/ClionProjects/tesi_watermarking/img/fbw_disp.png", f_disp);
+    imwrite("/home/bene/ClionProjects/tesi_watermarking/img/fbw_disp.png", f_disp);
 }
