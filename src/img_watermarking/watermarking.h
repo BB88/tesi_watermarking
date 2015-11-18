@@ -7,6 +7,8 @@
 
 #endif //TESI_WATERMARKING_WATERMARKING_H
 #include <math.h>
+#include <fstream>
+#include <iostream>
 
 #define PI  3.14159265358979323846
 
@@ -187,7 +189,7 @@ public:
      *
      * This method wrap the original image watermarking decoding algorithm (WatDec).
      */
-    bool extractWatermark(unsigned char *image, int w, int h,int dim);
+    bool extractWatermark(unsigned char *image, int w, int h,int dim, std::string fileLikelihood);
 
     void rgb_to_crom(unsigned char **imr, unsigned char **img,
                      unsigned char **imb, int nr, int nc, int flag,
@@ -246,10 +248,10 @@ private:
 
     void antizone(double **imdft,int nr, int nc, int diag0, int ndiag, double *buff);
 
-    int WatDec(unsigned char *ImageIn, const char *campolett, const char *camponum, float power,int dim );
+    int WatDec(unsigned char *ImageIn, const char *campolett, const char *camponum, float power,int dim , std::string fileLikelihood);
 
     bool decoale(double **imr, int nre, int nce, int d1, int nd,
-                               LONG8BYTE *seed, double alpha,int *bit, int nbit);
+                               LONG8BYTE *seed, double alpha,int *bit, int nbit,  std::string fileLikelihood);
 
     void mlfunc(double *buff,int nrfile,int niteraz);
     double dgamma(double x);

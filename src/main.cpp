@@ -281,7 +281,7 @@ void disparity_saving(){
     }
 
 }
-void synthetized_decoding(){
+void synthetized_DFT_decoding(){
 
     Watermarking_config::set_parameters_params pars = Watermarking_config::ConfigLoader::get_instance().loadSetParametersConfiguration();
 
@@ -344,7 +344,41 @@ void synthetized_decoding(){
 
 }
 
+void synthetized_spatial_decoding(cv::Mat noise){
 
+    int first_frame = 0;
+    int last_frame = 30;
+
+    cv::Mat frameL;
+    cv::Mat frameStereo;
+    cv::Mat frameSynt;
+
+    ofstream fout("/home/miky/Scrivania/Tesi/gaussDetection3_075_synt.txt");
+
+    for (int i = first_frame; i < last_frame; i++) {
+
+
+        std::ostringstream pathL;
+        pathL << "/home/miky/ClionProjects/tesi_watermarking/img/marked_frames_gaussian_3_kz/stereo_marked_frame_" << std::setw(5) << std::setfill('0') << i*60 << ".png";
+        frameStereo = imread(pathL.str().c_str(), CV_LOAD_IMAGE_COLOR);
+        frameStereo(Rect(0,0,640,480)).copyTo(frameL);
+
+        std::ostringstream pathSynt;
+
+        pathSynt << "/home/miky/ClionProjects/tesi_watermarking/img/gauss3_viewSyn/0.75/synth_view"<<i+1<<".png";
+        frameSynt = imread(pathSynt.str().c_str(), CV_LOAD_IMAGE_COLOR);
+
+        vector<float> det = spatialWatermarking::gaussianNoiseStereoDetection(frameL,frameSynt,noise,true,i);
+        fout<<det[0]<<"\t1"<<endl<<det[1]<<"\t0"<<endl<<det[2]<<"\t1"<<endl<<det[3]<<"\t1"<<endl;
+
+        }
+
+
+
+    fout.close();
+
+
+}
 void spatialMarking(std::string videoPath,cv::Mat noise){
 
     // load the video to watermark
@@ -444,13 +478,12 @@ void spatialDecoding(std::string videoPath,cv::Mat noise){
 void disparity_computation(){
 
 
-    cv::Mat dispInR;
-    cv::Mat dispOutR = cv::Mat::zeros(480,640,CV_8UC1);
+    cv::Mat dispOutL = cv::Mat::zeros(480,640,CV_8UC1);
 
 
     Disp_opt opt;
 
-    bool left_to_right = false;
+    bool left_to_right = true;
 
     for (int i = 0; i<30;i++){
 
@@ -485,27 +518,27 @@ void disparity_computation(){
         int dmaxr_50 = -dminl_50;
         int dminr_50 = -dmaxl_50;
 
-        std::cout<<dminr_50<<endl<<dmaxr_50<<endl;
+//        std::cout<<dminl_50<<endl<<dmaxl_50<<endl;
 
         std::ostringstream pathSynt_50;
         pathSynt_50 << "./VS/synth_view_50/synth_view"<< i+1 << ".png";
         cv::Mat synt_50 = imread(pathSynt_50.str(),CV_LOAD_IMAGE_COLOR);
 
-        graph_cuts_utils::kz_main(left_to_right,"left","synt",frameL, synt_50 ,dminr_50,dmaxr_50);
-        cv::Mat disp_right_50 = imread("./disp_synt_to_left.png",CV_LOAD_IMAGE_COLOR);
+        graph_cuts_utils::kz_main(left_to_right,"left","synt",frameL, synt_50 ,dminl_50,dmaxl_50);
+        cv::Mat disp_left_50 = imread("./disp_left_to_synt.png",CV_LOAD_IMAGE_COLOR);
 
-        std::ostringstream pathInR_50;
-        pathInR_50 << "./norm_disparities/norm_disp_50_synt_to_left_"<< i+1 << ".png";
+        std::ostringstream pathInL_50;
+        pathInL_50 << "./norm_disp_left_to_synt/norm_disp_50_left_to_synt_"<< i+1 << ".png";
 
-        cv::cvtColor(disp_right_50,disp_right_50,CV_BGR2GRAY);
-        opt.disparity_normalization(disp_right_50,dminl_50,dmaxl_50,dispOutR);
-
+        cv::cvtColor(disp_left_50,disp_left_50,CV_BGR2GRAY);
+        opt.disparity_normalization(disp_left_50,dminl_50,dmaxl_50,dispOutL);
+//
 //        imshow(" frameL",frameL);
 //        imshow("synt_50 ",synt_50);
-//        imshow("dispOutR ",dispOutR);
+//        imshow("dispOutR ",dispOutL);
 //        waitKey(0);
 
-        imwrite(pathInR_50.str(),dispOutR);
+        imwrite(pathInL_50.str(),dispOutL);
 
         int dminl_25 = atoi(disprange[0].c_str())/4;
         int dmaxl_25 = atoi(disprange[1].c_str())/4;
@@ -517,16 +550,16 @@ void disparity_computation(){
         pathSynt_25 << "./VS/synth_view_25/synth_view"<< i+1 << ".png";
         cv::Mat synt_25 = imread(pathSynt_25.str(),CV_LOAD_IMAGE_COLOR);
 
-        graph_cuts_utils::kz_main(left_to_right,"left","synt",frameL, synt_25 ,dminr_25,dmaxr_25);
-        cv::Mat disp_right_25 = imread("./disp_synt_to_left.png",CV_LOAD_IMAGE_COLOR);
+        graph_cuts_utils::kz_main(left_to_right,"left","synt",frameL, synt_25 ,dminl_25,dmaxl_25);
+        cv::Mat disp_left_25 = imread("./disp_left_to_synt.png",CV_LOAD_IMAGE_COLOR);
 
-        std::ostringstream pathInR_25;
-        pathInR_25 << "./norm_disparities/norm_disp_25_synt_to_left_"<< i+1 << ".png";
+        std::ostringstream pathInL_25;
+        pathInL_25 << "./norm_disp_left_to_synt/norm_disp_25_left_to_synt_"<< i+1 << ".png";
 
-        cv::cvtColor(disp_right_25,disp_right_25,CV_BGR2GRAY);
-        opt.disparity_normalization(disp_right_25,dminl_25,dmaxl_25,dispOutR);
+        cv::cvtColor(disp_left_25,disp_left_25,CV_BGR2GRAY);
+        opt.disparity_normalization(disp_left_25,dminl_25,dmaxl_25,dispOutL);
 
-        imwrite(pathInR_25.str(),dispOutR);
+        imwrite(pathInL_25.str(),dispOutL);
 
         int dminl_75 = atoi(disprange[0].c_str())*3/4;
         int dmaxl_75 = atoi(disprange[1].c_str())*3/4;
@@ -538,27 +571,128 @@ void disparity_computation(){
         pathSynt_75 << "./VS/synth_view_75/synth_view"<< i+1 << ".png";
         cv::Mat synt_75 = imread(pathSynt_75.str(),CV_LOAD_IMAGE_COLOR);
 
-        graph_cuts_utils::kz_main(left_to_right,"left","synt",frameL, synt_75 ,dminr_75,dmaxr_75);
-        cv::Mat disp_right_75 = imread("./disp_synt_to_left.png",CV_LOAD_IMAGE_COLOR);
+        graph_cuts_utils::kz_main(left_to_right,"left","synt",frameL, synt_75 ,dminl_75,dmaxl_75);
+        cv::Mat disp_left_75 = imread("./disp_left_to_synt.png",CV_LOAD_IMAGE_COLOR);
 
-        std::ostringstream pathInR_75;
-        pathInR_75 << "./norm_disparities/norm_disp_75_synt_to_left_"<< i+1 << ".png";
+        std::ostringstream pathInL_75;
+        pathInL_75 << "./norm_disp_left_to_synt/norm_disp_75_left_to_synt_"<< i+1 << ".png";
 
-        cv::cvtColor(disp_right_75,disp_right_75,CV_BGR2GRAY);
-        opt.disparity_normalization(disp_right_75,dminl_75,dmaxl_75,dispOutR);
+        cv::cvtColor(disp_left_75,disp_left_75,CV_BGR2GRAY);
+        opt.disparity_normalization(disp_left_75,dminl_75,dmaxl_75,dispOutL);
 
-        imwrite(pathInR_75.str(),dispOutR);
+        imwrite(pathInL_75.str(),dispOutL);
     }
 
 }
 
+int correlation_graph(std::string videoPath){
+
+    Watermarking_config::set_parameters_params pars = Watermarking_config::ConfigLoader::get_instance().loadSetParametersConfiguration();
+
+    int wsize = pars.wsize;
+    float power = pars.power;
+    std::string watermark = pars.watermark;
+
+    int mark[wsize];
+    for(int i=0;i<wsize;i++){
+        mark[i] = watermark.at(i)-48; //codifica ASCII dei caratteri
+    }
+
+    Watermarking_config::general_params generalPars = Watermarking_config::ConfigLoader::get_instance().loadGeneralParamsConfiguration();
+
+    std::string passwstr = generalPars.passwstr;
+    std::string passwnum = generalPars.passwnum;
+
+    VideoCapture capStereo(videoPath);
+    if (!capStereo.isOpened()) {  // check if we succeeded
+        cout << "Could not open the output video to read " << endl;
+        return -1;
+    }
+
+//    int first_frame = 0;
+//    int last_frame = 1800;
+
+    cv::Mat frameStereo;
+    cv::Mat frameL;
+    cv::Mat frameR;
+
+    capStereo >> frameStereo;
+
+    frameStereo(Rect(0,0,640,480)).copyTo(frameL);
+    frameStereo(Rect(640,0,640,480)).copyTo(frameR);
+    int det = DFTStereoWatermarking::stereoDetection(frameL,frameR,wsize,power,passwstr,passwnum,mark,0);
+
+    static const char alpha_char[] = "abcdefghijklmnopqrstuvwxyz";
+    static const char num_char [] =  "0123456789";
+
+
+
+    for (int i = 0; i < 100; i++) {
+
+        char *string_pswd = new char[16];
+        char *num_pswd = new char[8];
+        for (int i = 0; i < 16; i++) {
+            string_pswd[i] = alpha_char[rand() % (sizeof(alpha_char) - 1)];
+        }
+        for (int i = 0; i < 8; i++) {
+            num_pswd[i] = num_char[rand() % (sizeof(num_char) - 1)];
+        }
+
+        int det = DFTStereoWatermarking::stereoDetection(frameL,frameR,wsize,power,string_pswd,num_pswd,mark,0);
+
+
+    }
+
+
+
+}
 int main() {
 
 //    double m_NoiseStdDev=1;
 //
 //    Mat noise = cv::Mat::zeros(480, 640 , CV_8UC3);
 //    randn(noise,0,m_NoiseStdDev);
+//    std::ostringstream path_noise;
+//    path_noise << "/home/miky/ClionProjects/tesi_watermarking/img/noise_gauss1.png";
+//    imwrite(path_noise.str(),noise);
+//    noise = imread(path_noise.str(),CV_LOAD_IMAGE_COLOR);
 
+
+//    std::string videoPath = "/home/miky/ClionProjects/tesi_watermarking/img/stereo_video_crf1_g60.mp4";
+
+
+//    std::string markedvideoPath = "/home/miky/Scrivania/Tesi/marked_videos/marked_video_gaussian_1_kz_crf1_g60.mp4";
+//
+//    VideoCapture capStereo(videoPath);
+//    VideoCapture markedcapStereo(markedvideoPath);
+//
+//
+//    int first_frame = 0;
+//    int last_frame = 1;
+//
+//    cv::Mat frameStereo;
+//    cv::Mat frameL;
+//    cv::Mat frameLmarked;
+//    cv::Mat marked_frameStereo;
+//
+//    cv::Mat difference_noise;
+//    //marking and saving stereo frames
+//    for(int i = first_frame; i < last_frame; i++)
+//    {
+//
+//            capStereo >> frameStereo;
+//            markedcapStereo >> marked_frameStereo;
+//
+//            frameStereo(Rect(0, 0, 640, 480)).copyTo(frameL);
+//            marked_frameStereo(Rect(0, 0, 640, 480)).copyTo(frameLmarked);
+//
+//            difference_noise = stereo_watermarking::show_difference(frameL, frameLmarked, "diff");
+//            std::ostringstream path_noise;
+//            path_noise << "/home/miky/ClionProjects/tesi_watermarking/img/noise_gauss1.png";
+//            imwrite(path_noise.str(),difference_noise);
+//
+//
+//    }
 
 //    std::string videoPath = "/home/bene/ClionProjects/tesi_watermarking/img/stereo_video_crf1_g60.mp4";
 //    stereovideoCoding(videoPath);
@@ -567,8 +701,9 @@ int main() {
 
 
 //    std::string videoPath = "/home/bene/Scrivania/Tesi/marked_videos/marked_video_gaussian_3_crf30_g60.mp4";
+    std::string videoPath = "/home/miky/Scrivania/Tesi/marked_videos/stereo_marked_03_video_crf1_g60_gt.mp4";
 //    stereovideoDecoding(videoPath);
-
+    correlation_graph(videoPath);
 //    spatialDecoding(videoPath,noise);
 
     //RR metrics
@@ -589,7 +724,8 @@ int main() {
     std::cout << psnr;*/
 
 
-//    synthetized_decoding();
+//    synthetized_DFT_decoding();
+//    synthetized_spatial_decoding(noise);
 
 //    disparity_computation();
 

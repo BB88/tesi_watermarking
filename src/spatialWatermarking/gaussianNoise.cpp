@@ -108,10 +108,10 @@ vector<float> spatialWatermarking::gaussianNoiseStereoDetection(cv::Mat left_w, 
 //        cout << "row " << i << endl;
         for (int j = 0; j < left_correl.cols; j++)
         {
-//            cout << "correlation btw left watermarked and watermark " << (left_correl.at<float>(i,j));
+            cout << "correlation btw left watermarked and watermark " << (left_correl.at<float>(i,j));
             correlations.push_back(left_correl.at<float>(i,j));
         }
-//        cout << endl;
+        cout << endl;
     }
 
     Mat right_correl;
@@ -125,10 +125,10 @@ vector<float> spatialWatermarking::gaussianNoiseStereoDetection(cv::Mat left_w, 
 //        cout << "row " << i << endl;
         for (int j = 0; j < right_correl.cols; j++)
         {
-//            cout << "correlation btw right with not warped watermarked and watermark " << (right_correl.at<float>(i,j));
+            cout << "correlation btw right with not warped watermarked and watermark " << (right_correl.at<float>(i,j));
             correlations.push_back(right_correl.at<float>(i,j));
         }
-//        cout << endl;
+        cout << endl;
     }
 
 //    Mat right_correl;
@@ -154,8 +154,15 @@ vector<float> spatialWatermarking::gaussianNoiseStereoDetection(cv::Mat left_w, 
 //
 //    cv::waitKey(0);
     std::ostringstream pathL;
+    //ground truth
 //    pathL << "/home/bene/ClionProjects/tesi_watermarking/dataset/NTSD-200/disparity_maps/left/tsukuba_disparity_L_" << std::setw(5) << std::setfill('0') << img_num +1 << ".png";
+    //kz disp
     pathL << "/home/bene/ClionProjects/tesi_watermarking/img/kz_norm_from_video/left_" << std::setw(2) << std::setfill('0') << img_num/60 << ".png";
+    //disp for synthetized
+//    pathL << "/home/bene/ClionProjects/tesi_watermarking/img/kz_disp_synt_75/norm_disp_75_left_to_synt_" << img_num +1 << ".png";
+
+
+
     cv::Mat disp_left = imread(pathL.str().c_str(), CV_LOAD_IMAGE_GRAYSCALE);
 
     cv::Mat warped_mark = cv::Mat::zeros(left_w.rows, left_w.cols , CV_8UC3);
@@ -181,16 +188,18 @@ vector<float> spatialWatermarking::gaussianNoiseStereoDetection(cv::Mat left_w, 
 //        cout << "row " << i << endl;
         for (int j = 0; j < right_warped_correl.cols; j++)
         {
-//            cout << "correlation btw right with warped watermark and warped watermark " << (right_warped_correl.at<float>(i,j));
+            cout << "correlation btw right with warped watermark and warped watermark " << (right_warped_correl.at<float>(i,j));
             correlations.push_back(right_warped_correl.at<float>(i,j));
         }
-//        cout << endl;
+        cout << endl;
     }
 
 
     std::ostringstream pathR;
 //    pathR << "/home/bene/ClionProjects/tesi_watermarking/dataset/NTSD-200/disparity_maps/right/tsukuba_disparity_R_" << std::setw(5) << std::setfill('0') << img_num +1 << ".png";
     pathR << "/home/bene/ClionProjects/tesi_watermarking/img/kz_norm_from_video/right_" << std::setw(2) << std::setfill('0') << img_num/60 << ".png";
+//    pathR << "/home/bene/ClionProjects/tesi_watermarking/img/kz_disp_synt_75/norm_disp_75_synt_to_left_" << img_num +1 << ".png";
+
     cv::Mat disp_right = imread(pathR.str().c_str(), CV_LOAD_IMAGE_GRAYSCALE);
 
     cv::Mat occ_right = imread("/home/bene/ClionProjects/tesi_watermarking/img/occ_right.png", CV_LOAD_IMAGE_GRAYSCALE);
@@ -225,10 +234,10 @@ vector<float> spatialWatermarking::gaussianNoiseStereoDetection(cv::Mat left_w, 
     {
         for (int j = 0; j < left_rec_correl.cols; j++)
         {
-//            cout << "correlation btw left reconstructed with watermark and watermark " << (left_rec_correl.at<float>(i,j));
+            cout << "correlation btw left reconstructed with watermark and watermark " << (left_rec_correl.at<float>(i,j));
             correlations.push_back(left_rec_correl.at<float>(i,j));
         }
-//        cout << endl;
+        cout << endl;
     }
 
 //ricerca nella sintetizzata

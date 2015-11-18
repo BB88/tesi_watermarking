@@ -8,6 +8,7 @@
 #endif //TESI_WATERMARKING_FREQUENCYWATERMARKING_H
 #include <iostream>
 #include <cv.h>
+#include <fstream>
 
 using namespace cv;
 namespace DFTStereoWatermarking {

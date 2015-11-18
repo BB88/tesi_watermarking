@@ -70,7 +70,7 @@ cv::Mat stereo_watermarking::sobel_filtering(cv::Mat src, const char* window_nam
 //    waitKey(0);
     return grad;
 }
-void stereo_watermarking::show_difference(cv::Mat img1,cv::Mat img2,std::string window){
+cv::Mat stereo_watermarking::show_difference(cv::Mat img1,cv::Mat img2,std::string window){
 
     unsigned char *difference =  new unsigned char[img1.rows * img1.cols *3];
     unsigned char *img1_uchar =  img1.data;
@@ -89,8 +89,10 @@ void stereo_watermarking::show_difference(cv::Mat img1,cv::Mat img2,std::string 
             difference_cv.at<cv::Vec3b>(j, i) [1] = difference[count]; count++;
             difference_cv.at<cv::Vec3b>(j, i) [2] = difference[count]; count++;
         }
-//    cv::imshow(window.c_str(), difference_cv);
-//    cv::waitKey(0);
+    cv::imshow(window.c_str(), difference_cv);
+    cv::waitKey(0);
+
+    return difference_cv;
 }
 
 
@@ -724,43 +726,43 @@ double stereo_watermarking::similarity_measures(double* wat, double* retrieve_wa
 
 
 }
-void stereo_watermarking::random_mark_detection(int number_of_marks, unsigned char* marked_image, int dim){
-    static const char alpha_char[] = "abcdefghijklmnopqrstuvwxyz";
-    static const char num_char [] =  "0123456789";
-    bool * detection = new bool [number_of_marks];
-    double * det = new double [number_of_marks];
-    Watermarking image_watermarking;
-    int wsize = 64;
-    for (int i = 0; i < number_of_marks; i++){
-        int mark[wsize];
-        // generate another 64random bit watermark
-        for (int i = 0; i < 64; i++) {
-            int b = rand() % 2;
-            mark[i] = b;
-        }
-        char *string_pswd = new char[16];
-        char *num_pswd = new char[8];
-        for (int i = 0; i < 16; i++) {
-            string_pswd[i] = alpha_char[rand() % (sizeof(alpha_char) - 1)];
-        }
-        for (int i = 0; i < 8; i++) {
-            num_pswd[i] = num_char[rand() % (sizeof(num_char) - 1)];
-        }
-        double power = 0.3;
-        image_watermarking.setParameters(mark,wsize,power);
-        image_watermarking.setPassword(string_pswd,num_pswd);
-        detection[i] =  image_watermarking.extractWatermark(marked_image,dim ,dim, dim);
-    }
-    for (int i = 0; i < number_of_marks; i++){
-        if(detection[i] == true ){
-            det[i] = 1;
-        } else
-            det[i] = 0;
-
-    }
-    stereo_watermarking::writeToFile(det, number_of_marks, "/home/miky/Scrivania/detection.txt");
-
-}
+//void stereo_watermarking::random_mark_detection(int number_of_marks, unsigned char* marked_image, int dim){
+//    static const char alpha_char[] = "abcdefghijklmnopqrstuvwxyz";
+//    static const char num_char [] =  "0123456789";
+//    bool * detection = new bool [number_of_marks];
+//    double * det = new double [number_of_marks];
+//    Watermarking image_watermarking;
+//    int wsize = 64;
+//    for (int i = 0; i < number_of_marks; i++){
+//        int mark[wsize];
+//        // generate another 64random bit watermark
+//        for (int i = 0; i < 64; i++) {
+//            int b = rand() % 2;
+//            mark[i] = b;
+//        }
+//        char *string_pswd = new char[16];
+//        char *num_pswd = new char[8];
+//        for (int i = 0; i < 16; i++) {
+//            string_pswd[i] = alpha_char[rand() % (sizeof(alpha_char) - 1)];
+//        }
+//        for (int i = 0; i < 8; i++) {
+//            num_pswd[i] = num_char[rand() % (sizeof(num_char) - 1)];
+//        }
+//        double power = 0.3;
+//        image_watermarking.setParameters(mark,wsize,power);
+//        image_watermarking.setPassword(string_pswd,num_pswd);
+//        detection[i] =  image_watermarking.extractWatermark(marked_image,dim ,dim, dim);
+//    }
+//    for (int i = 0; i < number_of_marks; i++){
+//        if(detection[i] == true ){
+//            det[i] = 1;
+//        } else
+//            det[i] = 0;
+//
+//    }
+//    stereo_watermarking::writeToFile(det, number_of_marks, "/home/miky/Scrivania/detection.txt");
+//
+//}
 
 
 
