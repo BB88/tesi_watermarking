@@ -20,6 +20,8 @@
 #include <highgui.h>
 
 #include </home/miky/ClionProjects/tesi_watermarking/src/utils.h>
+#include <fstream>
+#include <iostream>
 
 
 using namespace cv;
@@ -1252,7 +1254,7 @@ double* Watermarking::zones_to_watermark(double **imdft, int height, int width, 
 //////////watermark estraction//////////////////
 
 
-bool Watermarking::extractWatermark(unsigned char *image, int w, int h, int dim)
+bool Watermarking::extractWatermark(unsigned char *image, int w, int h, int dim,  std::string fileLikelihood)
 {
     bool flagOk = false;
 
@@ -1265,7 +1267,7 @@ bool Watermarking::extractWatermark(unsigned char *image, int w, int h, int dim)
     // (see inside WatDec(.) for further details)
     double *datiuscita = new double[32000];
 //    cout<<fixed<<power<<endl;
-    int result = WatDec(image, passw_str, passw_num, power,dim);
+    int result = WatDec(image, passw_str, passw_num, power,dim,fileLikelihood);
 
 
     if (result == -3)
@@ -1353,7 +1355,7 @@ bool Watermarking::extractWatermark(unsigned char *image, int w, int h, int dim)
 
 
 
-int Watermarking::WatDec(unsigned char *ImageIn, const char *campolett, const char *camponum, float power,int dim )
+int Watermarking::WatDec(unsigned char *ImageIn, const char *campolett, const char *camponum, float power,int dim,  std::string fileLikelihood )
 {
 
 
@@ -1483,7 +1485,7 @@ int Watermarking::WatDec(unsigned char *ImageIn, const char *campolett, const ch
 //     Si calcola il valore massimo di alfa
     double alfamax = power;//mmedio;
 
-    bool dec_res = decoale(imdftout, dim, dim, diag0, ndiag, seed, alfamax ,BitLetti, length_BCH);
+    bool dec_res = decoale(imdftout, dim, dim, diag0, ndiag, seed, alfamax ,BitLetti, length_BCH,  fileLikelihood);
 
   /*  for (int i=0;i<200;i++)
         cout<<BitLetti[i]<<" ";
@@ -1555,7 +1557,7 @@ int Watermarking::WatDec(unsigned char *ImageIn, const char *campolett, const ch
 */
 
 bool Watermarking::decoale(double **imr, int nre, int nce, int d1, int nd,
-                     LONG8BYTE *seed, double alpha,int *bit, int nbit)
+                     LONG8BYTE *seed, double alpha,int *bit, int nbit, std::string fileLikelihood)
 {
     int i,k,n;
     int	tot;
@@ -1739,6 +1741,11 @@ bool Watermarking::decoale(double **imr, int nre, int nce, int d1, int nd,
 
     if (appbuff != NULL)
         delete [] appbuff;
+
+    ofstream out(fileLikelihood.c_str(),std::ios_base::app);
+
+    out<<veros<< "\n";
+    out.close();
 
     if ( veros>soglia )
         return true;

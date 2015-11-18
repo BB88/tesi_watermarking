@@ -16,7 +16,7 @@
 
 using namespace cv;
 namespace stereo_watermarking{
-    void show_difference(cv::Mat img1,cv::Mat img2,std::string window);
+    cv::Mat show_difference(cv::Mat img1,cv::Mat img2,std::string window);
     cv::Mat sobel_filtering(cv::Mat src,const char* window_name);
 
     void histo (cv::Mat image, std::string window_name);
