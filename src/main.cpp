@@ -131,14 +131,14 @@ int stereovideoCoding(std::string videoPath ){
             markedLR = DFTStereoWatermarking::stereoWatermarking(frameL,frameR,wsize,power,passwstr,passwnum,watermark, i);
             hconcat(markedLR[0],markedLR[1],new_frameStereo);
             std::ostringstream pathL;
-            pathL << "./img/KITTI_marked_03/KITTI_marked_" << std::setw(3) << std::setfill('0') << i << ".png";
+            pathL << "./img/marked_frames_03_kz/stereo_marked_frame_" << std::setw(3) << std::setfill('0') << i << ".png";
             imwrite(pathL.str(), new_frameStereo);
         }
         else {
             capStereo >> frameStereo;
             if (frameStereo.empty()) break;
             std::ostringstream pathL;
-            pathL << "./img/KITTI_marked_03/KITTI_marked_" << std::setw(3) << std::setfill('0') << i << ".png";
+            pathL << "./img/marked_frames_03_kz/stereo_marked_frame_" << std::setw(3) << std::setfill('0') << i << ".png";
             imwrite(pathL.str(), frameStereo);
         }
     }
