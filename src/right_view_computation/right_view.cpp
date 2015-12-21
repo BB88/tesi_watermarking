@@ -1,5 +1,5 @@
 //
-// Created by miky on 05/06/15.
+// Created by bene on 05/06/15.
 //
 
 #include "right_view.h"
@@ -25,6 +25,7 @@ using namespace cv;
  * @params height: view height
  * @return rcn_left: reconstructed left view
  */
+
 unsigned char* Right_view::left_rnc_no_occ(unsigned char *right, cv::Mat disp, int width, int height) {
 
     int nc = width;

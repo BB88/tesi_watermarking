@@ -28,7 +28,7 @@
 #include "DFTwatermarking/frequencyWatermarking.h"
 #include "utils.h"
 #include "disparity_optimization/disp_opt.h"
-#include <boost/algorithm/string.hpp>
+//#include <boost/algorithm/string.hpp>
 
 #include "./roc/roc.h"
 
@@ -80,8 +80,10 @@ int stereovideoCoding(std::string videoPath ){
         int b = rand() % 2;
         watermark[i] = b;
     }
+
     std::ifstream in("./config/config.cfg");
     std::ofstream out("./config/config.cfg.tmp");
+
     string data;
     string dataw;
     if (in.is_open() && out.is_open()) {
@@ -97,6 +99,7 @@ int stereovideoCoding(std::string videoPath ){
             }
             else out << data << "\n";
             if (0 != std::rename("./config/config.cfg.tmp", "./config/config.cfg"))
+
             {
                 // Handle failure.
             }
@@ -132,6 +135,7 @@ int stereovideoCoding(std::string videoPath ){
             hconcat(markedLR[0],markedLR[1],new_frameStereo);
             std::ostringstream pathL;
             pathL << "./img/marked_frames_03_kz/stereo_marked_frame_" << std::setw(3) << std::setfill('0') << i << ".png";
+
             imwrite(pathL.str(), new_frameStereo);
         }
         else {
@@ -209,6 +213,7 @@ int stereovideoDecoding(std::string videoPath){
     cout<<"decoded in both frames: "<<decoded_both_frames<<endl;
     cout<<"decoded in left frame: "<<decoded_left_frame<<endl;
     cout<<"decoded in right frame: "<<decoded_right_frame<<endl;
+
 }
 
 
@@ -217,6 +222,7 @@ int stereovideoDecoding(std::string videoPath){
  *
  * open the synthetized views and look for the watermark in the frequency domain
  */
+
 void synthetized_DFT_decoding(){
 
     //load the watermark configuration parameters, specified in the .cfg file
@@ -336,6 +342,7 @@ int spatialMarking(std::string videoPath,cv::Mat noise){
             if (frameStereo.empty()) break;
             std::ostringstream pathL;
             pathL << "./img/marked_frames_gaussian_10_kz/stereo_marked_frame_" << std::setw(5) << std::setfill('0') << i << ".png";
+
             imwrite(pathL.str(), frameStereo);
         }
     }
@@ -366,9 +373,7 @@ int spatialDecoding(std::string videoPath,cv::Mat noise){
     cv::Mat frameStereo;
     cv::Mat frameL;
     cv::Mat frameR;
-
     ofstream fout("./gauss3_30_detection.txt",std::ios_base::app);
-
     for (int i = first_frame; i < last_frame; i++) {
         if(i%STEP==0){
             capStereo >> frameStereo;
@@ -538,6 +543,7 @@ int main(int argc, char* argv[]) {
         exit(1);
     }
 
+
     string videoPath = argv[1];
     const char* tmp = argv[2];
     if (strcmp(tmp,"-h")==0){showhelpinfo(argv[0]);}
@@ -581,10 +587,5 @@ int main(int argc, char* argv[]) {
     }
 
 
-//    correlation_graph(videoPath);
-//    synthetized_DFT_decoding();
-//    synthetized_spatial_decoding(noise);
-
-    return 0;
-
 }
+

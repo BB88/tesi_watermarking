@@ -125,6 +125,8 @@ message(${OpenCV_INCLUDE_DIRS})
 set(LIBS ${LIBS} ${OpenCV_LIBS})
 
 message(${LIBS})
+
 add_executable(tesi_watermarking ${SOURCE_FILES} src/dataset/tsukuba_dataset.cpp src/dataset/tsukuba_dataset.h  src/right_view_computation/right_view.cpp src/right_view_computation/right_view.h src/disparity_optimization/disp_opt.cpp src/disparity_optimization/disp_opt.h src/img_watermarking/bch.h src/img_watermarking/bch.cpp src/img_watermarking/fft2d.h src/img_watermarking/fft2d.cpp src/img_watermarking/allocim.h src/img_watermarking/allocim.cpp src/img_watermarking/watermarking.h src/img_watermarking/watermarking.cpp src/graphcuts/utils.h src/graphcuts/utils.cpp src/utils.h src/utils.cpp src/quality_metrics/quality_metrics.h src/quality_metrics/quality_metrics.cpp  src/spatialWatermarking/gaussianNoise.h src/spatialWatermarking/gaussianNoise.cpp src/DFTwatermarking/frequencyWatermarking.h src/DFTwatermarking/frequencyWatermarking.cpp src/quality_metrics/RRQualityMetrics.h src/quality_metrics/RRQualityMetrics.cpp src/roc/roc.h src/roc/roc.cpp)
+
 target_link_libraries(tesi_watermarking ${LIBS})
 

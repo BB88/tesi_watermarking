@@ -1,5 +1,5 @@
 //
-// Created by miky on 02/10/15.
+// Created by bene on 02/10/15.
 //
 
 #include "frequencyWatermarking.h"
@@ -19,7 +19,7 @@
 #include "../utils.h"
 #include "../img_watermarking/fft2d.h"
 #include "../graphcuts/utils.h"
-#include <boost/algorithm/string.hpp>
+//#include <boost/algorithm/string.hpp>
 
 using namespace std;
 using namespace cv;
@@ -66,27 +66,53 @@ vector<cv::Mat> DFTStereoWatermarking::stereoWatermarking(cv::Mat frameL, cv::Ma
     image_watermarking.setPassword(passwstr,passwnum);
     float  **imidft_wat;
     imidft_wat = AllocIm::AllocImFloat(dim, dim);
+
     unsigned char *squared_marked_left = image_watermarking.insertWatermark(squared_left,dim,dim,dim,imidft_wat);
 
-    std::stringstream img1_name;
-    img1_name <<"left_"<< img_num;
-    std::stringstream img2_name;
-    img2_name <<"right_"<< img_num;
+
+    bool left_to_right = true;
+
+    // prendo dmin e dmax e calcolo disp con kz
+    std::string disp_data;
+    std::vector<std::string> disprange;
+    char sep = ' ';
+    std::ifstream in("/home/bene/Scrivania/Tesi/dispRange.txt");
+    if (in.is_open()) {
+        int j=0;
+        while (!in.eof()){
+            if ( j == img_num ){
+                getline(in, disp_data);
+                for(size_t p=0, q=0; p!=disp_data.npos; p=q){
+                    disprange.push_back(disp_data.substr(p+(p!=0), (q=disp_data.find(sep, p+1))-p-(p!=0)));
+                }
+            }
+            getline(in, disp_data);
+            j+=60;
+        }
+        in.close();
+    }
+    int dminl = atoi(disprange[0].c_str());
+    int dmaxl = atoi(disprange[1].c_str());
+
+
 
     std::ostringstream pathL;
+
     //load ground truth disparity
     //  pathL << "./dataset/NTSD-200/disparity_maps/left/tsukuba_disparity_L_" << std::setw(5) << std::setfill('0') << img_num +1 << ".png";
     //load graph cuts disparity
     pathL << "./img/kz_norm_from_video/left_" << std::setw(2) << std::setfill('0') << img_num/60 << ".png";
+
     cv::Mat disp_left = imread(pathL.str().c_str(), CV_LOAD_IMAGE_GRAYSCALE);
 
     std::ostringstream pathR;
+
     //load ground truth disparity
     //pathR << "./dataset/NTSD-200/disparity_maps/right/tsukuba_disparity_R_" << std::setw(5) << std::setfill('0') << img_num +1 << ".png";
     //load graph cuts disparity
     pathR << "./img/kz_norm_from_video/right_" << std::setw(2) << std::setfill('0') << img_num/60 << ".png";
-    cv::Mat disp_right = imread(pathR.str().c_str(), CV_LOAD_IMAGE_GRAYSCALE);
 
+    cv::Mat disp_right = imread(pathR.str().c_str(), CV_LOAD_IMAGE_GRAYSCALE);
     cv::Mat squared_lDisp = cv::Mat::zeros(dim, dim, CV_8UC1);
     for (int i=0; i <480; i++)
         for (int j=0;j<dim;j++){
@@ -267,6 +293,7 @@ int DFTStereoWatermarking::stereoDetection(cv::Mat markedL, cv::Mat markedR, int
             }
         }
 
+
     std::ostringstream pathL;
     //load ground truth disparity
 //      pathL << "./dataset/NTSD-200/disparity_maps/left/tsukuba_disparity_L_" << std::setw(5) << std::setfill('0') << img_num +1 << ".png";
@@ -280,6 +307,7 @@ int DFTStereoWatermarking::stereoDetection(cv::Mat markedL, cv::Mat markedR, int
 //    pathR << "./dataset/NTSD-200/disparity_maps/right/tsukuba_disparity_R_" << std::setw(5) << std::setfill('0') << img_num +1 << ".png";
     //load graph cuts disparity
     pathR << "./img/kz_norm_from_video/right_" << std::setw(2) << std::setfill('0') << img_num/60 << ".png";
+
     cv::Mat disp_right = imread(pathR.str().c_str(), CV_LOAD_IMAGE_GRAYSCALE);
 
 
@@ -288,8 +316,10 @@ int DFTStereoWatermarking::stereoDetection(cv::Mat markedL, cv::Mat markedR, int
         for (int j=0;j<dim;j++){
             squared_rDisp.at<uchar>(i,j) = disp_right.at<uchar>(i,j+offset);
         }
+
     Right_view rv;
     unsigned char * rcn_squared_left = rv.left_rnc_no_occ(squared_right,squared_rDisp,dim,dim);
+
     cv::Mat square_left_mat = cv::Mat::zeros(dim, dim, CV_8UC3);
     int count=0;
     for (int j = 0; j < dim; j++)

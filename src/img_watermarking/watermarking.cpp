@@ -1,5 +1,5 @@
 //
-// Created by miky on 22/07/15.
+// Created by bene on 22/07/15.
 //
 #include <stdio.h>
 #include <string.h>
@@ -18,10 +18,9 @@
 #include <opencv2/core/core.hpp>
 #include <highgui.h>
 
-#include </home/miky/ClionProjects/tesi_watermarking/src/utils.h>
+//#include <.//src/utils.h>
 #include <fstream>
 #include <iostream>
-
 
 using namespace cv;
 
@@ -191,6 +190,7 @@ int Watermarking::WatCod(unsigned char *ImageOut, const char *passw_str, const c
 //    PicRoutfloat(imyout, dim, dim, imidft, img_map_flt, impic);
 
 //    back to chrominance
+
 
     rgb_to_crom(imr, img, imb, dim, dim, -1, imidft, imc2, imc3); // se maschera mettere impic al posto di imidft
 

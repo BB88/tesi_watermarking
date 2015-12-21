@@ -1,5 +1,5 @@
 //
-// Created by miky on 06/10/15.
+// Created by bene on 06/10/15.
 #include <iostream>
 #include <opencv2/core/core.hpp>
 #include <cv.h>
@@ -87,10 +87,10 @@ void RRQualityMetrics::compute_metrics(int step, std::string video,  std::string
     double* MQcolor_array_r = new double[(last_frame-first_frame)/step];
     double* MQdisp_array_l = new double[(last_frame-first_frame)/step];
     double* MQdisp_array_r = new double[(last_frame-first_frame)/step];
-    ofstream fout_color_l("/home/miky/Scrivania/MQColor_left_gauss3.txt");
-    ofstream fout_color_r("/home/miky/Scrivania/MQColor_right_gauss3.txt");
-    ofstream fout_disp_l("/home/miky/Scrivania/MQDisp_left_gauss3.txt");
-    ofstream fout_disp_r("/home/miky/Scrivania/MQDisp_right_gauss3.txt");
+    ofstream fout_color_l("./MQColor_left_gauss3.txt");
+    ofstream fout_color_r("./MQColor_right_gauss3.txt");
+    ofstream fout_disp_l("./MQDisp_left_gauss3.txt");
+    ofstream fout_disp_r("./MQDisp_right_gauss3.txt");
     for (int i = first_frame; i < last_frame; i++) {
         if(i % step == 0){
             capV >> video_stereo;
@@ -133,9 +133,11 @@ void RRQualityMetrics::compute_metrics(int step, std::string video,  std::string
                 capVw >> video_stereo_wat;
         }
     }
+
     fout_color_l.close();
     fout_color_r.close();
     fout_disp_l.close();
     fout_disp_r.close();
     return;
+
 }

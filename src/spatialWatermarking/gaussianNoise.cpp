@@ -1,5 +1,5 @@
 //
-// Created by miky on 02/10/15.
+// Created by bene on 02/10/15.
 //
 
 #include "gaussianNoise.h"
@@ -13,7 +13,7 @@
 #include "../right_view_computation/right_view.h"
 
 
-#include <boost/algorithm/string.hpp>
+//#include <boost/algorithm/string.hpp>
 #include <fstream>
 
 using namespace cv;
@@ -36,10 +36,12 @@ vector<cv::Mat> spatialWatermarking::gaussianNoiseStereoWatermarking(cv::Mat lef
     Mat left_w = left.clone();
     left_w += noise;
     std::ostringstream pathL;
+
     //load ground truth disparity
     // pathL << "./dataset/NTSD-200/disparity_maps/left/tsukuba_disparity_L_" << std::setw(5) << std::setfill('0') << img_num +1 << ".png";
     //load graph cuts disparity
     pathL << "./img/kz_norm_from_video/left_" << std::setw(2) << std::setfill('0') << img_num/60 << ".png";
+
     cv::Mat disp_left = imread(pathL.str().c_str(), CV_LOAD_IMAGE_GRAYSCALE);
     cv::Mat warped_mark = cv::Mat::zeros(left_w.rows, left_w.cols , CV_8UC3);
     int d;
@@ -76,6 +78,7 @@ vector<float> spatialWatermarking::gaussianNoiseStereoDetection(cv::Mat left_w, 
     vector<float> correlations;
     normalize(left_w, left_w,0, 255, CV_MINMAX, CV_8UC3);
     normalize(right_w, right_w,0, 255, CV_MINMAX, CV_8UC3);
+
     Mat left_correl;
     Mat m1, m2;
     left_w.convertTo(m1, CV_32F);
@@ -103,11 +106,13 @@ vector<float> spatialWatermarking::gaussianNoiseStereoDetection(cv::Mat left_w, 
         }
         cout << endl;
     }
+
     std::ostringstream pathL;
     // load ground truth disparity
     //pathL << "./dataset/NTSD-200/disparity_maps/left/tsukuba_disparity_L_" << std::setw(5) << std::setfill('0') << img_num +1 << ".png";
     // load graph cuts disparity
     pathL << "./img/kz_norm_from_video/left_" << std::setw(2) << std::setfill('0') << img_num/60 << ".png";
+
     cv::Mat disp_left = imread(pathL.str().c_str(), CV_LOAD_IMAGE_GRAYSCALE);
     cv::Mat warped_mark = cv::Mat::zeros(left_w.rows, left_w.cols , CV_8UC3);
     int d;
@@ -134,12 +139,14 @@ vector<float> spatialWatermarking::gaussianNoiseStereoDetection(cv::Mat left_w, 
         cout << endl;
     }
     std::ostringstream pathR;
+
     // load ground truth disparity
 //    pathR << "./dataset/NTSD-200/disparity_maps/right/tsukuba_disparity_R_" << std::setw(5) << std::setfill('0') << img_num +1 << ".png";
     // load graph cuts disparity
     pathR << "./img/kz_norm_from_video/right_" << std::setw(2) << std::setfill('0') << img_num/60 << ".png";
     cv::Mat disp_right = imread(pathR.str().c_str(), CV_LOAD_IMAGE_GRAYSCALE);
 //    cv::Mat occ_right = imread("./img/occ_right.png", CV_LOAD_IMAGE_GRAYSCALE);
+
     Right_view rv;
     unsigned char * left_recon = rv.left_rnc_no_occ(right_w.data,disp_right ,640,480);
     cv::Mat left_reconstructed = cv::Mat::zeros(480, 640 , CV_8UC3);
@@ -163,5 +170,7 @@ vector<float> spatialWatermarking::gaussianNoiseStereoDetection(cv::Mat left_w, 
         }
         cout << endl;
     }
+
+
     return correlations;
 }

@@ -63,7 +63,7 @@ namespace qm
     double eqm(Mat & img1, Mat & img2)
     {
         int i, j;
-        double eqm = 0;
+        double eqm = 0.0;
         int height = img1.rows;
         int width = img1.cols;
 
@@ -76,15 +76,100 @@ namespace qm
         return eqm;
     }
 
+    double color_eqm(Mat & img1, Mat & img2)
+    {
+        int i, j;
+        double eqm = 0.0;
+        double s0 = 0.0;
+        double s1 = 0.0;
+        double s2 = 0.0;
+        int height = img1.rows;
+        int width = img1.cols;
+       // cout << (double)img1.at<Vec3b>(i, j)[0] - (double)img2.at<Vec3b>(i, j)[0]<<endl;
+        for (i = 0; i < height; i++)
+            for (j = 0; j < width; j++) {
+                s0 += ((double)img1.at<Vec3b>(i, j)[0] - (double)img2.at<Vec3b>(i, j)[0]) * ((double)img1.at<Vec3b>(i, j)[0] - (double)img2.at<Vec3b>(i, j)[0]);
+                s1 += ((double)img1.at<Vec3b>(i, j)[1] - (double)img2.at<Vec3b>(i, j)[1]) * ((double)img1.at<Vec3b>(i, j)[1] - img2.at<Vec3b>(i, j)[1]);
+                s2 += (img1.at<Vec3b>(i, j)[2] - img2.at<Vec3b>(i, j)[2]) * (img1.at<Vec3b>(i, j)[2] - img2.at<Vec3b>(i, j)[2]);
+
+            /*    cout << s0 <<endl;
+                cout << s1 <<endl;
+                cout << s2 <<endl;*/
+            }
+        eqm = s0 + s1 + s2;
+        eqm /= 3 * height * width;
+
+        return eqm;
+    }
+
+
 
 
     /**
      *	Compute the PSNR between 2 images
      */
-    double psnr(Mat & img_src, Mat & img_compressed, int block_size)
+    double psnr(Mat & img_src, Mat & img_compressed, int blocksize)
     {
         int D = 255;
         return (10 * log10((D*D)/eqm(img_src, img_compressed)));
+    }
+
+
+    double video_psnr(Mat & img_src, Mat & img_compressed)
+    {
+        int D = 255;
+     //   double value = img_src.at<Vec3b>(23,53)[0];
+   //     std::cout<<value<<endl;
+        return (10 * log10((D*D)/color_eqm(img_src,img_compressed)));
+    }
+
+
+
+    /**
+      *	Compute the average PSNR between 2 videos
+      */
+    double avg_psnr(std::string origVideo,std::string compressVideo ){
+        double avg_psnr = 0.0;
+        VideoCapture capOrig(origVideo);
+        if (!capOrig.isOpened()) {  // check if we succeeded
+            cout << "Could not open the output video to read " << endl;
+            return -1;
+        }
+        VideoCapture capCompr(compressVideo);
+        if (!capCompr.isOpened()) {  // check if we succeeded
+            cout << "Could not open the output video to read " << endl;
+            return -1;
+        }
+        int first_frame = 0;
+        int last_frame = 1800;
+        const int STEP = 60;
+
+        cv::Mat Origframe;
+        cv::Mat Comprframe;
+
+        for (int i = first_frame; i < last_frame; i++) {
+
+            if(i%STEP==0){
+                capOrig >> Origframe;
+                capCompr >> Comprframe;
+                if (Origframe.empty()) break;
+                if (Comprframe.empty()) break;
+                double psnr = video_psnr(Origframe, Comprframe);
+//                std::cout<<psnr<<endl;
+                avg_psnr += psnr;
+
+            }
+            else {
+                capOrig >> Origframe;
+                capCompr >> Comprframe;
+                if (Origframe.empty()) break;
+                if (Comprframe.empty()) break;
+                double psnr = video_psnr(Origframe, Comprframe);
+//                std::cout<<psnr<<endl;
+            }
+        }
+        avg_psnr = avg_psnr/ (last_frame/STEP);
+        return  avg_psnr;
     }
 
 

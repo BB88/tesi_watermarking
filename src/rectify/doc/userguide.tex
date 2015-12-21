@@ -1,0 +1,202 @@
+\documentclass[a4paper]{article}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{color}
+
+\title{Quasi-Euclidean Epipolar Rectification: user's guide}
+\author{Pascal Monasse}
+
+\begin{document}
+\maketitle
+\section{Introduction}
+This document is a short user's guide to software program \texttt{rectifyQuasiEuclidean} that puts an image pair in rectified epipolar geometry.
+
+\section{Installation}
+\subsection{Requirements}
+Dependencies of the software are the following:
+\begin{itemize}
+\item \texttt{libpng} and \texttt{zlib} for reading/writing images in PNG format (\url{http://libpng.sourceforge.net/index.html} and \url{http://www.zlib.net/})
+\item \texttt{CMake} for building the software (\url{http://www.cmake.org/})
+\item C++ compiler (GNU \texttt{g++})
+\end{itemize}
+Most linux distributions propose easy to install packages for these (if not already installed by default). If you need to install them, be sure to use the developper's versions (package with extension \texttt{-dev}), so that you get header files and not only the libraries.
+
+The third party libraries \texttt{libpng} and \texttt{zlib} are optional: if they are not found on the system, local versions will be built and used.
+
+\subsection{Build}
+The build process has three steps:
+\begin{enumerate}
+\item Decompress the archive.
+\item Launch \texttt{cmake} to generate \texttt{Makefile}.
+\item Launch \texttt{make} for compilation and link.
+\end{enumerate}
+
+\subsubsection{Decompress the archive}
+To decompress, you can input in a shell the command
+\begin{verbatim}
+    $ tar xzf rectify-quasi-euclidean_<version>.tgz
+\end{verbatim}
+Replace <version> with the version number.
+
+\subsubsection{Launch cmake}
+Create a folder of your choice where to install the software, for example \texttt{build}, and go to that folder:
+\begin{verbatim}
+    $ cd rectify-quasi-euclidean_<version>
+    $ mkdir build
+    $ cd build
+\end{verbatim}
+Launch \texttt{cmake} with argument the base folder containing the source codes (there is a file \texttt{CMakeLists.txt} in that folder):
+\begin{verbatim}
+    $ cmake ../src
+\end{verbatim}
+This checks the availability of the dependencies and outputs \texttt{Makefile} in case of success. To build optimized version of programs, the variable \texttt{CMAKE\_BUILD\_TYPE} must be modified using
+\begin{verbatim}
+    $ cmake -D CMAKE_BUILD_TYPE:string=Release ../src
+\end{verbatim}
+or with utility \texttt{ccmake} (notice the double \texttt{c}).
+
+By default, the third party libraries for image input/output are searched on the build machine and used if present. You can choose to skip selectively this search and use the provided ones with the option:
+\begin{verbatim}
+    $ cmake -DWITH_INCLUDED_LIBPNG:bool=ON ../src
+\end{verbatim}
+Another options is \verb|WITH_INCLUDED_ZLIB|. However, the option \verb|WITH_INCLUDED_ZLIB| is ignored if \verb|WITH_INCLUDED_LIBPNG| is not set.
+
+\subsubsection{Launch make}
+To build, simply type
+\begin{verbatim}
+    $ make
+\end{verbatim}
+You can also use the option '-j2' to launch two parallel compilations (or more if you have additional cores). The executable files are then in folder \texttt{bin} and libraries in \texttt{lib}. For example, you get \texttt{lib/libNumerics.a} and \texttt{bin/rectify}.
+
+By default, static libraries are produced. If you prefer dynamic ones, you can set to ON the variable \texttt{BUILD\_SHARED\_LIBS}, either by adding the option when launching \texttt{cmake}
+\begin{verbatim}
+    $ cmake -D BUILD_SHARED_LIBS:bool=ON ../src
+\end{verbatim}
+or by using the utility \texttt{ccmake} before calling \texttt{make} again.
+
+\section{Usage}
+\subsection{Testing your installation}
+As a test of your build, you can launch the following:
+\begin{verbatim}
+    $ build/bin/rectifyQuasiEuclidean data/CarcassonneSmall/im[12].png out1.png out2.png
+\end{verbatim}
+This launches the pipeline on the images \texttt{im1.png} and \texttt{im2.png} of folder
+\begin{verbatim}
+data/CarcassonneSmall
+\end{verbatim}
+In case of success, you can visually compare the resulting images \verb|out1.png| and \verb|out2.png| to images in folder \texttt{data/CarcassonneSmall}.
+
+\subsection{Program workflow}
+\begin{enumerate}
+\item SIFT: find SIFT points and correspondences between both input images.
+\item AC-RANSAC (aka ORSA): find correspondences compatible with F matrix.
+\item Rectify: compute rectifying homographies.
+\item Homography: apply the homographies and output images.
+\end{enumerate}
+
+\subsection{Example}
+\begin{verbatim}
+$ build/bin/rectifyQuasiEuclidean data/CarcassonneSmall/im[12].png out1.png out2.png
+sift: im1: 550 im2: 508 matches: 261
+Remove 30/261 duplicate matches
+  nfa=-332.077 inliers=204 precision=1.36755 im2 (iter=0,sample=2,23,27,28,87,198,218)
+  nfa=-363.582 inliers=229 precision=2.2345 im2 (iter=3,sample=14,139,76,216,134,62,152)
+  nfa=-423.3 inliers=225 precision=1.02865 im2 (iter=7,sample=154,103,41,186,166,33,114)
+  nfa=-437.086 inliers=219 precision=0.708313 im2 (iter=62,sample=154,99,224,177,210,198,6)
+  nfa=-439.23 inliers=218 precision=0.666444 im2 (iter=64,sample=11,150,91,185,31,20,229)
+  nfa=-446.762 inliers=221 precision=0.688147 im2 (iter=103,sample=12,111,161,19,163,188,223)
+  nfa=-450.868 inliers=220 precision=0.633637 im2 (iter=583,sample=39,5,217,63,23,64,66)
+F= [ -1.72604e-09 -1.31828e-08 -5.07353e-05;  -4.83721e-08 -1.49106e-08 -0.00204647;  8.53721e-05 0.00206466 0.0207222 ]
+LM iterations: 50 f=1082.87
+K_left: [ 1082.87 0 274.279;  0 1082.87 142.5;  0 0 1 ]
+K_right: [ 1082.87 0 237.584;  0 1082.87 142.5;  0 0 1 ]
+Initial rectification error: 10.2437 pix
+Final rectification error: 0.149013 pix
+$
+\end{verbatim}
+Remark: You can get slightly different results in each run because of the stochastic nature of the RANSAC algorithm.
+
+\section{Troubleshooting}
+Please send an email to the maintainer Pascal Monasse (\href{mailto:monasse@imagine.enpc.fr}{monasse@imagine.enpc.fr}) describing your problem.
+
+\section*{List of files}
+\begin{verbatim}
+rectify-quasi-euclidean_<version>:
+BUILD.txt  data  doc  LICENSE.txt  README.txt  src
+
+rectify-quasi-euclidean_<version>/data:
+CarcassonneSmall
+
+rectify-quasi-euclidean_<version>/data/CarcassonneSmall:
+H_im1.png  H_im2.png  im1.png  im2.png
+
+rectify-quasi-euclidean_<version>/doc:
+userguide.pdf  userguide.tex
+
+rectify-quasi-euclidean_<version>/src:
+third_party     libIO       libMatch     libOrsa       main.cpp  sift
+CMakeLists.txt  libLWImage  libNumerics  libTransform  rectify   warp
+
+rectify-quasi-euclidean_<version>/src/third_party:
+jpeg-9a  libpng-1.6.12  tiff-4.0.3  zlib-1.2.8
+
+rectify-quasi-euclidean_<version>/src/third_party/jpeg-9a:
+...
+
+rectify-quasi-euclidean_<version>/src/third_party/libpng-1.6.12:
+...
+
+rectify-quasi-euclidean_<version>/src/third_party/tiff-4.0.3:
+...
+
+rectify-quasi-euclidean_<version>/src/third_party/zlib-1.2.8:
+...
+
+rectify-quasi-euclidean_<version>/src/libIO:
+CMakeLists.txt  cmdLine.h  io_png.c  io_png.h  nan.h
+
+rectify-quasi-euclidean_<version>/src/libLWImage:
+LWImage.cpp  LWImage.h
+
+rectify-quasi-euclidean_<version>/src/libMatch:
+CMakeLists.txt  match.cpp  match.h
+
+rectify-quasi-euclidean_<version>/src/libNumerics:
+ccmath_svd.cpp  homography.cpp  matrix.h      rodrigues.cpp
+CMakeLists.txt  homography.h    numerics.cpp  rodrigues.h
+computeH.cpp    matrix.cpp      numerics.h    vector.cpp
+
+rectify-quasi-euclidean_<version>/src/libOrsa:
+CMakeLists.txt    fundamental_model.cpp  orsa.cpp        orsa_model.hpp
+conditioning.cpp  fundamental_model.hpp  orsa.h
+conditioning.hpp  main.cpp               orsa_model.cpp
+
+rectify-quasi-euclidean_<version>/src/libTransform:
+CMakeLists.txt    map_image.cpp  spline.h
+gauss_convol.cpp  map_image.h    TransformSize.cpp
+gauss_convol.h    spline.cpp     TransformSize.h
+
+rectify-quasi-euclidean_<version>/src/rectify:
+CMakeLists.txt  main.cpp  rectify.cpp  rectify.h
+
+rectify-quasi-euclidean_<version>/src/sift:
+CMakeLists.txt     domain.cpp  im1.png      numerics.cpp  splines.h
+demo_lib_sift.cpp  domain.h    im2.png      numerics.h
+demo_lib_sift.h    filter.cpp  library.cpp  prova.png
+demo_sift.cpp      filter.h    library.h    splines.cpp
+
+rectify-quasi-euclidean_<version>/src/warp:
+CMakeLists.txt  warp.cpp
+\end{verbatim}
+
+\section*{List of authors}
+\begin{itemize}
+\item Toni Buades (\href{mailto:toni.buades@uib.es}{toni.buades@uib.es}): \texttt{sift}
+\item Nicolas Limare (\href{mailto:nicolas.limare@cmla.ens-cachan.fr}{nicolas.limare@cmla.ens-cachan.fr}): \texttt{libIO}
+\item Lionel Moisan (\href{mailto:Lionel.Moisan@parisdescartes.fr}{Lionel.Moisan@parisdescartes.fr}): \texttt{libTransform}, \texttt{libOrsa}
+\item Pascal Monasse (\href{mailto:monasse@imagine.enpc.fr}{monasse@imagine.enpc.fr}): \texttt{homography}, \texttt{libIO}, \texttt{libLWImage}, \texttt{libMatch}, \texttt{libNumerics}, \texttt{libTransform}, \texttt{libOrsa}, \texttt{rectify}, \texttt{sift}, packaging, documentation
+\item Pierre Moulon (\href{mailto:pmoulon@gmail.com}{pmoulon@gmail.com}): \texttt{libOrsa}
+\item Zhongwei Tang (\href{mailto:tangfrch@gmail.com}{tangfrch@gmail.com}): \texttt{libTransform}, \texttt{libOrsa}, \texttt{sift}
+\end{itemize}
+
+\end{document}
