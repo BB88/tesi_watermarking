@@ -7,7 +7,6 @@
 #include <opencv2/core/core.hpp>
 #include <cv.h>
 #include <highgui.h>
-#include "../disparity_computation/stereo_matching.h"
 
 #include "../disparity_optimization/disp_opt.h"
 
@@ -25,7 +24,6 @@ static const int MAX_DENOM=1<<4;
 //                return false;
 //    return true;
 //}#include <cstdint>
-
 
 
 /// Convert to gray level a color image (extract red channel)
@@ -101,25 +99,30 @@ void graph_cuts_utils::fix_parameters(Match& m, Match::Parameters& params,
     m.SetParameters(&params);
 }
 
+/**
+ * kz_main(..)
+ *
+ * compute the disparity map with the graph cut kolmogorov zabih algorithm
+ *
+ * @params left_to_right: if true compute left-to-right disparity, if false compute right-to-left disparity
+ * @params img1_name: left view name
+ * @params img2_name: right view name
+ * @params img1: left view
+ * @params img2: right view
+ * @params dmin: min disparity value
+ * @params dmax: max disparity value
+ * @return norm_disp: normalized disparity map
+ */
 cv::Mat graph_cuts_utils::kz_main(bool left_to_right, std::string img1_name, std::string img2_name, cv::Mat img1, cv::Mat img2, int dmin, int dmax ) {
 
 /* kz_disp PARAMETERS */
 /*
-
 *
 * lambda = 15.8
 * k = 79.12
-* dispMin dispMax = -77 -19
-
 */
-
     cv::cvtColor(img1, img1, CV_BGR2GRAY);
     cv::cvtColor(img2, img2, CV_BGR2GRAY);
-
-//    img1.convertTo(img1,CV_8UC1);
-//    img2.convertTo(img2,CV_8UC1);
-
-
     Match::Parameters params = { // Default parameters
             Match::Parameters::L2, 1, // dataCost, denominator
             8, -1, -1, // edgeThresh, lambda1, lambda2 (smoothness cost)
@@ -130,43 +133,26 @@ cv::Mat graph_cuts_utils::kz_main(bool left_to_right, std::string img1_name, std
     params.dataCost = Match::Parameters::L1;
 // params.dataCost = Match::Parameters::L2;
 
-// GeneralImage im1 = (GeneralImage)imLoad(IMAGE_GRAY,"/home/miky/ClionProjects/tesi_watermarking/img/left.png");
-// GeneralImage im2 = (GeneralImage)imLoad(IMAGE_GRAY, "/home/miky/ClionProjects/tesi_watermarking/img/right.png");
     GeneralImage im1 = (GeneralImage) imLoadFromMat(IMAGE_GRAY, img1);
     GeneralImage im2 = (GeneralImage) imLoadFromMat(IMAGE_GRAY, img2);
-
     bool color = false;
     if (graph_cuts_utils::isGray((RGBImage) im1) && graph_cuts_utils::isGray((RGBImage) im2)) {
 //        color = false;
         graph_cuts_utils::convert_gray(im1);
         graph_cuts_utils::convert_gray(im2);
     }
-
-
     Match m1(im1, im2, color);
     Match m2(im2, im1, color);
-////// // Disparity
-//    int dMinr = 19, dMaxr = 77; //r-l
-//    int dMinl = -77, dMaxl = -19; //l-r
-// int dMin=8, dMax=33; // r-l syn
-
     if (left_to_right)
         m1.SetDispRange(dmin, dmax);
     else m2.SetDispRange(dmin, dmax);
-//    if (left_to_right)
-//        m1.SetDispRange(dMinl, dMaxl);
-//    else m2.SetDispRange(dMinr, dMaxr);
-
     time_t seed = time(NULL);
     srand((unsigned int) seed);
-
     std::stringstream path_disp;
     if (left_to_right)
         path_disp << "./disp_" << img1_name << "_" << "to_" << img2_name << ".png";
     else
         path_disp << "./disp_" << img2_name << "_" << "to_" << img1_name << ".png";
-
-
     if (left_to_right) {
         graph_cuts_utils::fix_parameters(m1, params, K, lambda, lambda1, lambda2);
         m1.KZ2();
@@ -177,13 +163,11 @@ cv::Mat graph_cuts_utils::kz_main(bool left_to_right, std::string img1_name, std
         m2.KZ2();
         m2.SaveScaledXLeft(path_disp.str().c_str(), true);
     }
-    
     cv::Mat computed_disp = imread(path_disp.str().c_str(), CV_LOAD_IMAGE_COLOR);
     cv::cvtColor(computed_disp,computed_disp,CV_BGR2GRAY);
     cv::Mat norm_disp;
     Disp_opt opt;
     opt.disparity_normalization(computed_disp,dmin,dmax,norm_disp);
-    
     return norm_disp;
     
 }

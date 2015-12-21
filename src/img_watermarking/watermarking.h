@@ -182,14 +182,14 @@ public:
      *
      * \note The input image is not modified.
      */
-    unsigned char *insertWatermark(unsigned char *imageIn, int w, int h,int dim,float** imidft_wat,bool warp_flag);
+    unsigned char *insertWatermark(unsigned char *imageIn, int w, int h,int dim,float** imidft_wat);
 
     /**
      * Extract the watermark from the given image.
      *
      * This method wrap the original image watermarking decoding algorithm (WatDec).
      */
-    bool extractWatermark(unsigned char *image, int w, int h,int dim, std::string fileLikelihood);
+    bool extractWatermark(unsigned char *image, int w, int h,int dim);
 
     void rgb_to_crom(unsigned char **imr, unsigned char **img,
                      unsigned char **imb, int nr, int nc, int flag,
@@ -232,8 +232,8 @@ public:
     }
 private:
 
-    int WatCod( unsigned char *ImageOut, int width, int height, const char *passw_str, const char *passw_num,
-                int *watermark, int wsize, float power, float** imidft_wat,int dim);
+    int WatCod( unsigned char *ImageOut, const char *passw_str, const char *passw_num,
+                int *watermark, int wsize, float power, float** imidft_wat, int dim);
     int warpedWatCod(unsigned char *ImageOut, int width, int height, const char *passw_str, const char *passw_num,
                                    int *watermark, int wsize, float power, float** imidft_wat);
     void seed_generator(const char *passw_str, const char *passw_num, LONG8BYTE *s );
@@ -248,10 +248,10 @@ private:
 
     void antizone(double **imdft,int nr, int nc, int diag0, int ndiag, double *buff);
 
-    int WatDec(unsigned char *ImageIn, const char *campolett, const char *camponum, float power,int dim , std::string fileLikelihood);
+    int WatDec(unsigned char *ImageIn, const char *campolett, const char *camponum, float power,int dim);
 
     bool decoale(double **imr, int nre, int nce, int d1, int nd,
-                               LONG8BYTE *seed, double alpha,int *bit, int nbit,  std::string fileLikelihood);
+                               LONG8BYTE *seed, double alpha,int *bit, int nbit);
 
     void mlfunc(double *buff,int nrfile,int niteraz);
     double dgamma(double x);

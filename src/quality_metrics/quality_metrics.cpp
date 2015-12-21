@@ -11,7 +11,6 @@
 using namespace std;
 using namespace cv;
 
-// quality-metric
 namespace qm
 {
 #define C1 (float) (0.01 * 255 * 0.01  * 255)
@@ -173,38 +172,43 @@ namespace qm
         cout << "PSNR : " << psnr_val << endl;
     }
 
-
-
+    /**
+     * MQdepth(..)
+     *
+     * compute the mean value of the RR quality metrics Qdepth
+     *
+     * @params depth_original: original disparity map
+     * @params depth_wat: watermarked disparity map
+     * @params depth_edge: edge of the disparity map
+     * @params depth_w_edge: edge of the watermarked disparity map
+     * @params block_size: size of the blocks to process
+     * @params show_progress
+     * @return mqd; mean of Qdepth metric     *
+     *
+     */
     double MQdepth(Mat & depth_original, Mat & depth_wat, Mat & depth_edge, Mat & depth_w_edge, int block_size, bool show_progress ){
 
             double mqd = 0;
             cv::Mat depth_o,depth_w,depth_e,depth_ew;
-
-//            cout<< "convert: "<<endl;
             depth_original.convertTo(depth_o, CV_64F);
             depth_wat.convertTo(depth_w, CV_64F);
             depth_edge.convertTo(depth_e, CV_64F);
             depth_w_edge.convertTo(depth_ew, CV_64F);
-
-//            cout << "depth_original.rows / block_size " <<depth_original.rows <<" - " << block_size<<endl;
             int nbBlockPerHeight 	= depth_original.rows / block_size;
             int nbBlockPerWidth 	= depth_original.cols / block_size;
-
             for (int k = 0; k < nbBlockPerHeight; k++)
             {
                 for (int l = 0; l < nbBlockPerWidth; l++)
                 {
                     int m = k * block_size;
                     int n = l * block_size;
-
                     double avg_o 	= mean(depth_o(Range(k, k + block_size), Range(l, l + block_size)))[0];
                     double avg_r 	= mean(depth_w(Range(k, k + block_size), Range(l, l + block_size)))[0];
                     double sigma_o 	= sigma(depth_o, m, n, block_size);
                     double sigma_r 	= sigma(depth_w, m, n, block_size);
                     double sigma_ow = sigma(depth_e, m, n, block_size);
                     double sigma_rw = sigma(depth_ew, m, n, block_size);
-                    double sigma_ro	= cov(depth_e, depth_ew, m, n, block_size); //only thing that change wrt the previous formula
-
+                    double sigma_ro	= cov(depth_e, depth_ew, m, n, block_size); //only thing that change wrt the original SSIM formula
                     mqd += ((2*avg_o*avg_r+C1)/((avg_o*avg_o)+(avg_r*avg_r) + C1)) * ((2*sigma_o*sigma_r+C2)/((sigma_o*sigma_o)*(sigma_r*sigma_r)+C2)) * ((sigma_ro+C3)/(sigma_ow*sigma_rw+C3));
 
                 }
@@ -213,26 +217,36 @@ namespace qm
 //                    cout << "\r>>MQdepth [" << (int) ((( (double)k) / nbBlockPerHeight) * 100) << "%]";
             }
             mqd /= nbBlockPerHeight * nbBlockPerWidth;
-
 //            if (show_progress)
 //            {
 ////                cout << "\r>>MQdepth [100%]" << endl;
 //                cout << "MQdepth : " << mqd << endl;
 //            }
 
-//            cout<<" depth return "<<endl;
+//            cout<<" depth return \"<<endl;
             return mqd;
 
     }
 
+    /**
+     * MQcolor(..)
+     *
+     * compute the mean value of the RR quality metrics Qcolor
+     *
+     * @params color_original: original view
+     * @params color_wat: watermarked view
+     * @params depth_edge: edge of the disparity map
+     * @params color_w_edge: edge of the watermarked view
+     * @params color_edge: edge of the original view
+     * @params block_size: size of the blocks to process
+     * @params show_progress
+     * @return mqc; mean of Qcolor metric     *
+     *
+     */
     double MQcolor(Mat &color_original, Mat &color_wat, Mat & depth_edge, Mat &color_w_edge, Mat & color_edge, int block_size, bool show_progress ){
 
         double mqc = 0;
-
-
         cv::Mat color_o,color_w,color_e,depth_e,color_ew;
-
-
         color_original.convertTo(color_o, CV_64F);
         color_wat.convertTo(color_w, CV_64F);
         depth_edge.convertTo(depth_e, CV_64F);
@@ -242,23 +256,19 @@ namespace qm
         int nbBlockPerHeight 	= color_original.rows / block_size;
         int nbBlockPerWidth 	= color_original.cols / block_size;
 
-
         for (int k = 0; k < nbBlockPerHeight; k++)
         {
-
             for (int l = 0; l < nbBlockPerWidth; l++)
             {
                 int m = k * block_size;
                 int n = l * block_size;
-
                 double avg_o 	= mean(color_o(Range(k, k + block_size), Range(l, l + block_size)))[0];
                 double avg_r 	= mean(color_w(Range(k, k + block_size), Range(l, l + block_size)))[0];
                 double sigma_o 	= sigma(color_o, m, n, block_size);
                 double sigma_r 	= sigma(color_w, m, n, block_size);
                 double sigma_de = sigma(depth_e, m, n, block_size);
                 double sigma_rwe = sigma(color_ew, m, n, block_size);
-                double sigma_ro	= cov(depth_e, color_ew, m, n, block_size);
-
+                double sigma_ro	= cov(depth_e, color_ew, m, n, block_size); //only thing that change wrt the original SSIM formula
                 mqc += ((2*avg_o*avg_r+C1)/((pow(avg_o,2) + pow(avg_r,2) + C1))) * ((2*sigma_o*sigma_r+C2)/(pow(sigma_o,2)*pow(sigma_r,2)+C2)) * ((sigma_ro+C3)/(sigma_de*sigma_rwe+C3));
 
             }
@@ -267,13 +277,11 @@ namespace qm
 //                cout << "\r>>MQcolor [" << (int) ((( (double)k) / nbBlockPerHeight) * 100) << "%]";
         }
         mqc /= nbBlockPerHeight * nbBlockPerWidth;
-
 //        if (show_progress)
 //        {
-////            cout << "\r>>MQcolor [100%]" << endl;
+//            cout << "\r>>MQcolor [100%]" << endl;
 //            cout << "MQcolor : " << mqc << endl;
 //        }
-
         return mqc;
 
     }

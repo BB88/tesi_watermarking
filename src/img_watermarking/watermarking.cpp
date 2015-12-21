@@ -6,7 +6,6 @@
 #include <iostream>
 
 // Local headers
-#include "imgwat.h"
 #include "bch.h"
 #include "fft2d.h"
 #include "allocim.h"
@@ -50,12 +49,8 @@ void Watermarking::setParameters(int *w, int watsize, float pwr)
 {
     // list of wsize (watermark)
     memcpy(watermark, w, sizeof(int) * watsize);
-
     wsize = watsize;
-
     power = pwr;
-
-
 }
 
 void Watermarking::setPassword(std::string passwStr, std::string passwNum)
@@ -64,36 +59,37 @@ void Watermarking::setPassword(std::string passwStr, std::string passwNum)
     passwnum = passwNum;
 }
 
-
-unsigned char * Watermarking::insertWatermark(unsigned char *imageIn, int w, int h,int dim,float** imidft_wat,bool warp_flag)
+/**
+ * insertWatermark(..)
+ *
+ * call the watermark embedding function
+ *
+ * @params imageIn: image to watermark
+ * @params w: image width
+ * @params h: image height
+ * @params dim: square cropping dimension
+ * @output imidft_wat: image of te watermark for subsequential warping and right view embedding
+ * @return imageOut: watermarked image
+ */
+unsigned char * Watermarking::insertWatermark(unsigned char *imageIn, int w, int h,int dim,float** imidft_wat)
 {
     bool flagOk;
-
-// SE IMMAGINE GREY
+// IF GREY IMAGE
 //    unsigned char *output_img = new unsigned char[w * h];
 //    memcpy(output_img, image, w * h);
 
-// SE COLOUR
+// IF COLOUR
     unsigned char *imageOut = new unsigned char[w * h*3];
     memcpy(imageOut, imageIn, w * h*3);
-
     const char *passw_str = passwstr.c_str();
     const char *passw_num = passwnum.c_str();
-
-
     int result = -1;
-
-    if(warp_flag == false)
-        result = WatCod(imageOut, w, h, passw_str, passw_num, watermark, wsize, power, imidft_wat,dim);
-    else
-        result = warpedWatCod(imageOut, w, h, passw_str, passw_num, watermark, wsize, power, imidft_wat);
+    result = WatCod(imageOut, passw_str, passw_num, watermark, wsize, power, imidft_wat,dim);
 
     return imageOut;
-
-
 }
 
-int Watermarking::WatCod(unsigned char *ImageOut, int width, int height, const char *passw_str, const char *passw_num,
+int Watermarking::WatCod(unsigned char *ImageOut, const char *passw_str, const char *passw_num,
                          int *watermark, int wsize, float power, float** imidft_wat, int dim)
 {
     int diag0;
@@ -109,31 +105,24 @@ int Watermarking::WatCod(unsigned char *ImageOut, int width, int height, const c
     double  **imdft;
     double  **imdftfase;
     float   **imidft;
-
     float   **img_map_flt;	// immagine maschera
     float   **impic;		// immagine finale marchiata
-
     img_map_flt = AllocImFloat(dim, dim);
     impic = AllocImFloat(dim, dim);
-
     imyout = AllocImFloat(dim, dim);
     imdft = AllocImDouble(dim, dim);
     imdftfase = AllocImDouble(dim, dim);
     imidft = AllocImFloat(dim, dim);
-
     unsigned char **imr;
     unsigned char **img;
     unsigned char **imb;
-
     float **imc2;
     float **imc3;
-
     imc2 = AllocImFloat(dim, dim);
     imc3 = AllocImFloat(dim, dim);
     imr = AllocImByte(dim, dim);
     img = AllocImByte(dim, dim);
     imb = AllocImByte(dim, dim);
-
     int offset = 0;
     for (int i=0; i<dim; i++)
         for (int j=0; j<dim; j++)
@@ -142,25 +131,17 @@ int Watermarking::WatCod(unsigned char *ImageOut, int width, int height, const c
             img[i][j] = ImageOut[offset];offset++;
             imb[i][j] = ImageOut[offset];offset++;
         }
-
     rgb_to_crom(imr, img, imb, dim, dim, 1, imyout, imc2, imc3);
-//    stereo_watermarking::show_floatImage(imyout,dim,dim,"left_lum");
-//    dft computation: magnitude and phase
-
 
     //per la maschera
 //    DecimVarfloat(imyout, dim, dim, WINDOW, img_map_flt);
-
-//    int mmedio = 0;
-//
+//    int mmedio = 0;//
 //    for(int i = 0; i < dim; i++)
 //        for(int j = 0; j < dim; j++)
-//            mmedio += (double)img_map_flt[i][j];
-//
+//            mmedio += (double)img_map_flt[i][j];//
 //    mmedio = mmedio/(double)(dim * dim);
 //    mmedio = 1.0 - mmedio;
 
-//     Si calcola il valore massimo di alfa
     double alfamax = power;//mmedio;
 
     FFT2D::dft2d(imyout, imdft, imdftfase, dim, dim);
@@ -168,13 +149,10 @@ int Watermarking::WatCod(unsigned char *ImageOut, int width, int height, const c
     double *coefficient_vector = NULL;
 //    coefficients extraction
     coefficient_vector = zones_to_watermark(imdft, dim, dim, diag0, ndiag, 0, &coefficient_number);
-
 //    mark generation
     double * mark;
     mark = new double[coefficient_number];
     generate_mark(watermark,wsize,passw_str,passw_num,coefficient_number, mark,false);
-
-
 //    generate dft of the watermark
     double** dft_wat = AllocImDouble(dim, dim);
     for (int i=0;i<dim;i++)
@@ -198,124 +176,25 @@ int Watermarking::WatCod(unsigned char *ImageOut, int width, int height, const c
                 imdft_wat[i][j] = 0.0;
                 imdftfase_wat[i][j] = 0.0;
             }
-
     FFT2D::idft2d(imdft_wat, imdftfase_wat, imidft_wat, dim, dim);
-
 //    add mark to coefficients: 1 if add_mult
     addmark(coefficient_vector, mark, coefficient_number, alfamax,1);
 //    put back the marked coefficients
     antizone(imdft, dim, dim, diag0, ndiag, coefficient_vector);
 //    idft->back to the luminance
     FFT2D::idft2d(imdft, imdftfase, imidft, dim, dim);
-//    stereo_watermarking::show_floatImage(imidft,256,256,"squared_marked_left");
-//    back to chrominance
 
-
+    //per la maschera
 //    for(int i=0;i<dim;i++)
 //        for(int j=0;j<dim;j++)
 //            img_map_flt[i][j] = 255.0f*img_map_flt[i][j];
-
 //    PicRoutfloat(imyout, dim, dim, imidft, img_map_flt, impic);
+
+//    back to chrominance
 
     rgb_to_crom(imr, img, imb, dim, dim, -1, imidft, imc2, imc3); // se maschera mettere impic al posto di imidft
 
 //    back to image
-
-    offset = 0;
-    for (int i=0; i<dim; i++)
-        for (int j=0; j<dim; j++)
-        {
-            ImageOut[offset] = imr[i][j]; offset++;
-            ImageOut[offset] = img[i][j]; offset++;
-            ImageOut[offset] = imb[i][j]; offset++;
-        }
-
-//    stereo_watermarking::show_ucharImage(ImageOut,dim,dim,"marked_left");
-    AllocIm::FreeIm(imc2) ;
-    AllocIm::FreeIm(imc3) ;
-    AllocIm::FreeIm(imr);
-    AllocIm::FreeIm(img);
-    AllocIm::FreeIm(imb);
-
-    AllocIm::FreeIm(imyout);
-    AllocIm::FreeIm(imdft);
-    AllocIm::FreeIm(imdftfase);
-    AllocIm::FreeIm(imidft);
-
-}
-int Watermarking::warpedWatCod(unsigned char *ImageOut, int width, int height, const char *passw_str, const char *passw_num, int *watermark, int wsize, float power, float** imidft_wat)
-{
-    int dim = width;
-    int diag0;
-    int ndiag;
-    if (dim==256){
-        diag0 = 30;  //40
-        ndiag = 40;
-    }else if (dim==512){
-        diag0 = 80;
-        ndiag = 74;
-    }
-    float   **imyout;
-    double  **imdft;
-    double  **imdftfase;
-    float   **imidft;
-
-    imyout = AllocImFloat(dim, dim);
-    imdft = AllocImDouble(dim, dim);
-    imdftfase = AllocImDouble(dim, dim);
-    imidft = AllocImFloat(dim, dim);
-
-    unsigned char **imr;
-    unsigned char **img;
-    unsigned char **imb;
-
-    float **imc2;
-    float **imc3;
-
-    imc2 = AllocImFloat(dim, dim);
-    imc3 = AllocImFloat(dim, dim);
-    imr = AllocImByte(dim, dim);
-    img = AllocImByte(dim, dim);
-    imb = AllocImByte(dim, dim);
-
-    int offset = 0;
-    for (int i=0; i<dim; i++)
-        for (int j=0; j<dim; j++)
-        {
-            imr[i][j] = ImageOut[offset];offset++;
-            img[i][j] = ImageOut[offset];offset++;
-            imb[i][j] = ImageOut[offset];offset++;
-        }
-
-    rgb_to_crom(imr, img, imb, dim, dim, 1, imyout, imc2, imc3);
-    stereo_watermarking::writefloatMatToFile(imyout,256,"/home/miky/Scrivania/right_lum.txt");
-//    dft computation: magnitude and phase
-    FFT2D::dft2d(imyout, imdft, imdftfase, dim, dim);
-    int coefficient_number;
-    double *coefficient_vector = NULL;
-//    coefficients extraction
-    coefficient_vector = zones_to_watermark(imdft, dim, dim, diag0, ndiag, 0, &coefficient_number);
-//    stereo_watermarking::writeToFile(coefficient_vector,coefficient_number,"/home/miky/Scrivania/wm_coff_mark.txt");
-//    compute magnitude and phase of the watermark
-    double  **imdft_wat;
-    double  **imdftfase_wat;
-    imdft_wat = AllocImDouble(dim, dim);
-    imdftfase_wat = AllocImDouble(dim, dim);
-    FFT2D::dft2d(imidft_wat, imdft_wat, imdftfase_wat, dim, dim);
-    double *mark = new double[coefficient_number];
-    mark = zones_to_watermark(imdft, dim, dim, diag0, ndiag, 0, &coefficient_number);
-
-//    add mark to coefficients: 1 if add_mult
-    addmark(coefficient_vector, mark, coefficient_number, power,1);
-//    put back the marked coefficients
-    antizone(imdft, dim, dim, diag0, ndiag, coefficient_vector);
-//    idft->back to the luminance
-    FFT2D::idft2d(imdft, imdftfase, imidft, dim, dim);
-//    stereo_watermarking::writefloatMatToFile(imidft,256,"/home/miky/Scrivania/marked_right_lum.txt");
-    stereo_watermarking::show_floatImage(imidft,dim,dim,"marked_right_dft");
-//    back to chrominance
-    rgb_to_crom(imr, img, imb, dim, dim, -1, imidft, imc2, imc3);
-//    back to image
     offset = 0;
     for (int i=0; i<dim; i++)
         for (int j=0; j<dim; j++)
@@ -329,23 +208,10 @@ int Watermarking::warpedWatCod(unsigned char *ImageOut, int width, int height, c
     AllocIm::FreeIm(imr);
     AllocIm::FreeIm(img);
     AllocIm::FreeIm(imb);
-
     AllocIm::FreeIm(imyout);
     AllocIm::FreeIm(imdft);
     AllocIm::FreeIm(imdftfase);
     AllocIm::FreeIm(imidft);
-
-    AllocIm::FreeIm(imdft_wat);
-    AllocIm::FreeIm(imdftfase_wat);
-}
-
-
-
-double* Watermarking::marks_generator(int *watermark,int wsize, const char *passw_str, const char *passw_num, int coefficient_number){
-
-    double * mark = new double[coefficient_number];
-    Watermarking::generate_mark(watermark,wsize,passw_str,passw_num,coefficient_number, mark,false);
-    return mark;
 }
 
 
@@ -353,25 +219,21 @@ double* Watermarking::marks_generator(int *watermark,int wsize, const char *pass
 void Watermarking::generate_mark(int *watermark,int wsize, const char *passw_str, const char *passw_num, int marklen, double* mark, bool detection)
 {
 /*
- * BCH coding
- */
+ * BCH coding */
 
     int bch_wm[200]; //bch coding of the watermark
-
     if (wsize == 64)
     {
         m_BCH = 7;			// order of the Galois Field GF(2^m)
         t_BCH = 10;			// Error correcting capability
         length_BCH = 127;	// length of the BCH code
     }
-
     if (wsize == 32)
     {
         m_BCH = 6;			// order of the Galois Field GF(2^m)
         t_BCH = 5;			// Error correcting capability
         length_BCH = 59;	// length of the BCH code
     }
-
     if ((wsize != 64)&&(wsize != 32))
     {
         return ;
@@ -385,7 +247,6 @@ void Watermarking::generate_mark(int *watermark,int wsize, const char *passw_str
 //
 //    for (int ii=0; ii < wsize; ii++)
 //        fprintf(flog,"%d",watermark[ii]);
-
     BCH::encode_bch(m_BCH,length_BCH,t_BCH,watermark,bch_wm);
 
 //    // LOG
@@ -394,28 +255,16 @@ void Watermarking::generate_mark(int *watermark,int wsize, const char *passw_str
 //
 //    fprintf(flog, "\n\n");
 
-
     /*
      * seed generation
      */
-
-    LONG8BYTE *seed;		// variabile per generare il marchio
-
-
+    LONG8BYTE *seed;
     seed = new LONG8BYTE [4];
     seed_generator(passw_str,passw_num,seed);
-
-
     seed_initialization(seed);
-
-
-
     for(int i = 0; i < marklen; i++)
         mark[i] = 2.0 * ( pseudo_random_generator() - 0.5);
-
-
     // mark modulation
-
     int n=0;
     int L=marklen/length_BCH;
     for (int k=length_BCH-1; k>=0; k--)
@@ -435,8 +284,6 @@ void Watermarking::generate_mark(int *watermark,int wsize, const char *passw_str
         else
             n+=L;
     }
-
-
     /*for (int i=0;i<200;i++)
         cout<<bch_wm[i]<<" ";
     cout<<"\n";
@@ -487,8 +334,6 @@ void Watermarking::addmark(double *buff, double *mark, int coeff_number, double 
 
 	Questa funzione rimette i coefficienti marchiati al loro posto
 */
-
-
 void Watermarking::antizone(double **imdft,int nr, int nc, int diag0, int ndiag, double *buff)
 {
     int m,i,j,d1,nd,max,c[MAXZONE];
@@ -1151,7 +996,6 @@ double* Watermarking::zones_to_watermark(double **imdft, int height, int width, 
         }
     }
 
-
     // Copio i coeff.DFT delle diverse zone su un unico vettore
 
     buff = new double [elementi];
@@ -1242,40 +1086,39 @@ double* Watermarking::zones_to_watermark(double **imdft, int height, int width, 
             }
         }
     }
-
-
     *coefficient_number = elementi;
     return buff;
 }
 
 
-
-
-//////////watermark estraction//////////////////
-
-
-bool Watermarking::extractWatermark(unsigned char *image, int w, int h, int dim,  std::string fileLikelihood)
+/**
+ * extractWatermark(..)
+ *
+ * call the watermark detection function
+ *
+ * @params image: image to process
+ * @params w: image width
+ * @params h: image height
+ * @params dim: square cropping dimension
+ * @return flagOk: true if the detection ended correctly
+ */
+bool Watermarking::extractWatermark(unsigned char *image, int w, int h, int dim)
 {
     bool flagOk = false;
-
     const char *passw_str = passwstr.c_str();
     const char *passw_num = passwnum.c_str();
     // image after resynchronization
     unsigned char *imrsinc = new unsigned char[w * h * 3];
-
     // resynchronization data for each tile... not used(!!)
     // (see inside WatDec(.) for further details)
     double *datiuscita = new double[32000];
 //    cout<<fixed<<power<<endl;
-    int result = WatDec(image, passw_str, passw_num, power,dim,fileLikelihood);
-
-
+    int result = WatDec(image, passw_str, passw_num, power,dim);
     if (result == -3)
     {
         // LOG
         FILE *flog = fopen("watcod.log","wt");;
         fprintf(flog, " - Invalid number of bits!\nValid watermarks have 32 or 64 bits.");
-
 //        // invalid 'nbit'
 //        QMessageBox::warning(NULL, tr(MSG_TITLE),
 //                             tr("Invalid number of bits!\nValid watermarks have 32 or 64 bits."));
@@ -1286,7 +1129,6 @@ bool Watermarking::extractWatermark(unsigned char *image, int w, int h, int dim,
         // LOG
         FILE *flog = fopen("watcod.log","wt");;
         fprintf(flog, " - Invalid size of the tile. Valid size are 256, 256 or 1024.");
-
 //        // invalid 'size'
 //        QMessageBox::warning(NULL, tr(MSG_TITLE),
 //                             tr("Invalid size of the tile. Valid size are 256, 256 or 1024."));
@@ -1355,10 +1197,8 @@ bool Watermarking::extractWatermark(unsigned char *image, int w, int h, int dim,
 
 
 
-int Watermarking::WatDec(unsigned char *ImageIn, const char *campolett, const char *camponum, float power,int dim,  std::string fileLikelihood )
+int Watermarking::WatDec(unsigned char *ImageIn, const char *campolett, const char *camponum, float power,int dim )
 {
-
-
     int diag0;
     int ndiag;
     if (dim == 256){
@@ -1369,36 +1209,23 @@ int Watermarking::WatDec(unsigned char *ImageIn, const char *campolett, const ch
         diag0 = 80;
         ndiag = 74;
     }
-//    int diag0 = 30;		// Diagonali..
-//    int ndiag = 40;		// numero diagonali marchiate
-
-
     float **imy;			// matrice luminanza
     float **imc2;			// matrice crominanza c2
     float **imc3;			// matrice crominanza c3
-
     unsigned char **imr;	// immagini delle tre componenti RGB
     unsigned char **img;	//
     unsigned char **imb;	//
-
-
-
     double **imdft;			// matrice contenente il modulo della DFT
     double **imdftfase;		// matrice contenente la fase della DFT
     double **im1dft;		// matrice contenente il modulo della DFT
     double **im1dftfase;	// matrici contenente la fase della DFT
     LONG8BYTE *seed;		// variabile per generare il marchio
-
     float **imyout;			// Matrice di luminanza del tile
-
     imyout = AllocImFloat(dim, dim);
-
     double **imdftout;		// Matrice dft del tile ridimensionato
     double **imdftoutfase;
-
     imdftout = AllocImDouble(dim, dim);
     imdftoutfase = AllocImDouble(dim, dim);
-
     imr = AllocImByte(dim, dim);
     img = AllocImByte(dim, dim);
     imb = AllocImByte(dim, dim);
@@ -1414,16 +1241,8 @@ int Watermarking::WatDec(unsigned char *ImageIn, const char *campolett, const ch
             img[i][j] = ImageIn[offset];offset++;
             imb[i][j] = ImageIn[offset];offset++;
         }
-
-
     // Si calcolano le componenti di luminanza e crominanza dell'immagine
     rgb_to_crom(imr, img, imb, dim, dim, 1, imyout, imc2, imc3);
-
-
-//    int coefficient_number;
-//    double * mark;
-//    mark = new double[coefficient_number];
-//    generate_mark(watermark,wsize,campolett,camponum,coefficient_number, mark, true);
 
     if (wsize == 64)
     {
@@ -1431,14 +1250,12 @@ int Watermarking::WatDec(unsigned char *ImageIn, const char *campolett, const ch
         t_BCH = 10;			// Error correcting capability
         length_BCH = 127;	// length of the BCH code
     }
-
     if (wsize == 32)
     {
         m_BCH = 6;			// order of the Galois Field GF(2^m)
         t_BCH = 5;			// Error correcting capability
         length_BCH = 59;	// length of the BCH code
     }
-
     seed = new LONG8BYTE [4];
     seed_generator(campolett,camponum,seed);
 
@@ -1456,7 +1273,6 @@ int Watermarking::WatDec(unsigned char *ImageIn, const char *campolett, const ch
     // Added by CORMAX
     int BitLetti[200];		// Max 200 bit da leggere
     int dec=0;
-
 /*
 //
 //    int nouniforme=0;		// Controllo ver vedere se ho una zona uniforme
@@ -1484,8 +1300,7 @@ int Watermarking::WatDec(unsigned char *ImageIn, const char *campolett, const ch
 
 //     Si calcola il valore massimo di alfa
     double alfamax = power;//mmedio;
-
-    bool dec_res = decoale(imdftout, dim, dim, diag0, ndiag, seed, alfamax ,BitLetti, length_BCH,  fileLikelihood);
+    bool dec_res = decoale(imdftout, dim, dim, diag0, ndiag, seed, alfamax ,BitLetti, length_BCH);
 
   /*  for (int i=0;i<200;i++)
         cout<<BitLetti[i]<<" ";
@@ -1557,7 +1372,7 @@ int Watermarking::WatDec(unsigned char *ImageIn, const char *campolett, const ch
 */
 
 bool Watermarking::decoale(double **imr, int nre, int nce, int d1, int nd,
-                     LONG8BYTE *seed, double alpha,int *bit, int nbit, std::string fileLikelihood)
+                     LONG8BYTE *seed, double alpha,int *bit, int nbit)
 {
     int i,k,n;
     int	tot;
@@ -1697,60 +1512,57 @@ bool Watermarking::decoale(double **imr, int nre, int nce, int d1, int nd,
 
 
 
-//    if ( veros > soglia )
-//        return true;
-//    else if ( veros < soglia )
-//        return false;
-    appbuff -= tot;
-
-    n=0;
-    for (k=0; k<MAXZONE; k++)
-    {
-        for (i=n;i<n+cont[k];i++)
-        {
-            aw[i]=aweib[k];
-            if (aw[i]==0) aw[i]=0.000001;
-            bw[i]=bweib[k];
-
-            first_term += (-bw[i]*log(1.0 + alpha*mark[i]));
-            second_term += -pow((appbuff[i]/(aw[i]*(1.0+alpha*mark[i]))),bw[i])+pow(appbuff[i]/aw[i],bw[i]);
-
-            lambda_first_term += pow(((pow(1.0+alpha*mark[i],bw[i])-1)/(pow((1.0+alpha*mark[i]),bw[i]))),2);
-            lambda_second_term += ((pow(1.0+alpha*mark[i],bw[i]))-1)/(pow((1+alpha*mark[i]),bw[i]));
-            lambda_third_term += bw[i]*log(1.0+alpha*mark[i]);
-        }
-
-        n+=cont[k];
-    }
-
-    //la loro implementazione leva il terzo termine da lambda e il primo da L
-
-    lambda_first_term = 3.3 *sqrt(2.0)* sqrt(lambda_first_term);
-//    cout<< "l 1 : "<<lambda_first_term<<endl<<"l 2: "<<lambda_second_term<<"l 3: "<<lambda_third_term<<endl;
-    Ly =   second_term;
-    lambda = lambda_first_term + lambda_second_term  ;
-
-//    cout<< "veros  :"<< veros<<endl<<"soglia : "<< soglia<<endl;
-//    cout<< "L :"<< Ly<<endl<<"lambda: "<< lambda<<endl<<endl;
-//    cout<< " prima sub: "<<veros-soglia<<endl;
-//    cout<< " seconda sub: "<<Ly-lambda<<endl;
-
-    delete [] mark;
-    delete [] aw;
-    delete [] bw;
-
-    if (appbuff != NULL)
-        delete [] appbuff;
-
-    ofstream out(fileLikelihood.c_str(),std::ios_base::app);
-
-    out<<veros<< "\n";
-    out.close();
-
-    if ( veros>soglia )
+    if ( veros > soglia )
         return true;
-    else if ( veros<soglia )
+    else if ( veros < soglia )
         return false;
+//    appbuff -= tot;
+//
+//    n=0;
+//    for (k=0; k<MAXZONE; k++)
+//    {
+//        for (i=n;i<n+cont[k];i++)
+//        {
+//            aw[i]=aweib[k];
+//            if (aw[i]==0) aw[i]=0.000001;
+//            bw[i]=bweib[k];
+//
+//            first_term += (-bw[i]*log(1.0 + alpha*mark[i]));
+//            second_term += -pow((appbuff[i]/(aw[i]*(1.0+alpha*mark[i]))),bw[i])+pow(appbuff[i]/aw[i],bw[i]);
+//
+//            lambda_first_term += pow(((pow(1.0+alpha*mark[i],bw[i])-1)/(pow((1.0+alpha*mark[i]),bw[i]))),2);
+//            lambda_second_term += ((pow(1.0+alpha*mark[i],bw[i]))-1)/(pow((1+alpha*mark[i]),bw[i]));
+//            lambda_third_term += bw[i]*log(1.0+alpha*mark[i]);
+//        }
+//
+//        n+=cont[k];
+//    }
+//
+//    //la loro implementazione leva il terzo termine da lambda e il primo da L
+//
+//    lambda_first_term = 1.645 *sqrt(2.0)* sqrt(lambda_first_term);
+////    cout<< "l 1 : "<<lambda_first_term<<endl<<"l 2: "<<lambda_second_term<<"l 3: "<<lambda_third_term<<endl;
+//    Ly =   second_term;
+//    lambda = lambda_first_term + lambda_second_term  ;
+//
+////    cout<< "veros  :"<< veros<<endl<<"soglia : "<< soglia<<endl;
+////    cout<< "L :"<< Ly<<endl<<"lambda: "<< lambda<<endl<<endl;
+////    cout<< " prima sub: "<<veros-soglia<<endl;
+////    cout<< " seconda sub: "<<Ly-lambda<<endl;
+//
+//    delete [] mark;
+//    delete [] aw;
+//    delete [] bw;
+//
+//    if (appbuff != NULL)
+//        delete [] appbuff;
+
+
+//    cout<<soglia<<endl;
+//    if ( veros>soglia )
+//        return true;
+//    else if ( veros<soglia )
+//        return false;
 
 
        // Calcolo della soglia del rivelatore
