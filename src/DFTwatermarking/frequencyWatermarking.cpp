@@ -162,8 +162,7 @@ vector<cv::Mat> DFTStereoWatermarking::stereoWatermarking(cv::Mat frameL, cv::Ma
         }
     for (int j = 0; j < dim; j++)
         for (int i = 0; i < dim; i++){
-            if ( rec_left_mat.at<Vec3b>(j, i)[0]==0 && rec_left_mat.at<Vec3b>(j, i)[1]==0 && rec_left_mat.at<Vec3b>(j,
-                                                                                                                                i)[2]==0){
+            if ( rec_left_mat.at<Vec3b>(j, i)[0]==0 && rec_left_mat.at<Vec3b>(j, i)[1]==0 && rec_left_mat.at<Vec3b>(j, i)[2]==0){
                 rec_left_mat.at<Vec3b>(j, i)[0] = square_left_mat.at<Vec3b>(j, i)[0];
                 rec_left_mat.at<Vec3b>(j, i)[1] = square_left_mat.at<Vec3b>(j, i)[1];
                 rec_left_mat.at<Vec3b>(j, i)[2] = square_left_mat.at<Vec3b>(j, i)[2];

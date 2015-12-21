@@ -53,6 +53,7 @@ void showhelpinfo(char *s)
     cout<<"         "<<"-sd call spatial detection function"<<endl;
     cout<<"         "<<"-d call disparity computation function"<<endl;
     cout<<"         "<<"-qm call quality metric computation"<<endl;
+    cout<<"         "<<"-p compute PSNR"<<endl;
 }
 /**
  * stereovideoCoding(..)
@@ -543,7 +544,6 @@ int main(int argc, char* argv[]) {
         exit(1);
     }
 
-
     string videoPath = argv[1];
     const char* tmp = argv[2];
     if (strcmp(tmp,"-h")==0){showhelpinfo(argv[0]);}
@@ -584,6 +584,10 @@ int main(int argc, char* argv[]) {
     if (strcmp(tmp,"-d")==0){
         cout<<"disparity computation---"<<endl;
         disparity_computation(videoPath);
+    }
+    if(strcmp(tmp,"-p") == 0){
+        cout<<"PSNR computation---"<<endl;
+        qm::avg_psnr(videoPath1, videopath2);
     }
 
 

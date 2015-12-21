@@ -132,17 +132,17 @@ namespace qm
         double avg_psnr = 0.0;
         VideoCapture capOrig(origVideo);
         if (!capOrig.isOpened()) {  // check if we succeeded
-            cout << "Could not open the output video to read " << endl;
+            cout << "Could not open the origVideo to read " << endl;
             return -1;
         }
         VideoCapture capCompr(compressVideo);
         if (!capCompr.isOpened()) {  // check if we succeeded
-            cout << "Could not open the output video to read " << endl;
+            cout << "Could not open the compressVideo to read " << endl;
             return -1;
         }
         int first_frame = 0;
         int last_frame = 1800;
-        const int STEP = 60;
+        const int STEP = 60; // compare frame every STEP frame
 
         cv::Mat Origframe;
         cv::Mat Comprframe;
@@ -155,20 +155,20 @@ namespace qm
                 if (Origframe.empty()) break;
                 if (Comprframe.empty()) break;
                 double psnr = video_psnr(Origframe, Comprframe);
-//                std::cout<<psnr<<endl;
                 avg_psnr += psnr;
 
             }
-            else {
+           else {
                 capOrig >> Origframe;
                 capCompr >> Comprframe;
                 if (Origframe.empty()) break;
                 if (Comprframe.empty()) break;
                 double psnr = video_psnr(Origframe, Comprframe);
-//                std::cout<<psnr<<endl;
             }
         }
         avg_psnr = avg_psnr/ (last_frame/STEP);
+//        avg_psnr = avg_psnr/ last_frame;
+        cout<< "average PSNR : "<< avg_psnr<<endl;
         return  avg_psnr;
     }
 
