@@ -41,7 +41,7 @@ using namespace qm;
 using namespace RRQualityMetrics;
 using namespace spatialWatermarking;
 
-const int STEP = 60; //this is the watermarking step, meaning only one frame every STEP will be watermarked and decoded, in this case we are only marking the I frames
+const int STEP = 60; //  watermarking step: one frame every STEP will be watermarked and decoded, in this case we are only marking the I frames
 
 void showhelpinfo(char *s)
 {
@@ -117,7 +117,7 @@ int stereovideoCoding(std::string videoPath ){
     }
     //range of frames to mark
     int first_frame = 0;
-    int last_frame = 1800;
+    int last_frame = 3000000; //attenzione, mettere un numero altissimo, altrimenti il video si interrompe prima, se nn sappiamo di quanti frame è composto
 
     //marking and saving stereo frames
     cv::Mat frameStereo;
@@ -126,25 +126,32 @@ int stereovideoCoding(std::string videoPath ){
     cv::Mat new_frameStereo;
     vector<cv::Mat> markedLR;
     for(int i = first_frame; i < last_frame; i++)
+    // forse è meglio mettere un while, cosi non c'e' bisogno di last_frame che serviva solo per
+//        poter marchiare un tot di frame alla volta  visto che il processo era troppo lento
+
     {
         if(i%STEP==0){
             capStereo >> frameStereo;
             if (frameStereo.empty()) break;
-            frameStereo(Rect(0,0,640,480)).copyTo(frameL);
-            frameStereo(Rect(640,0,640,480)).copyTo(frameR);
-            markedLR = DFTStereoWatermarking::stereoWatermarking(frameL,frameR,wsize,power,passwstr,passwnum,watermark, i);
-            hconcat(markedLR[0],markedLR[1],new_frameStereo);
-            std::ostringstream pathL;
-            pathL << "./img/marked_frames_03_kz/stereo_marked_frame_" << std::setw(3) << std::setfill('0') << i << ".png";
+            /*aggiunta per le dimensioni*/
+            frameStereo(Rect(0,0,frameStereo.cols/2,frameStereo.rows)).copyTo(frameL);
+            frameStereo(Rect(frameStereo.cols/2,0,frameStereo.cols/2,frameStereo.rows)).copyTo(frameR);
+            /*fine aggiunta per le dimensioni*/
+//                       frameStereo(Rect(0,0,640,480)).copyTo(frameL);
+//                   frameStereo(Rect(640,0,640,480)).copyTo(frameR);
+                   markedLR = DFTStereoWatermarking::stereoWatermarking(frameL,frameR,wsize,power,passwstr,passwnum,watermark, i);
+                   hconcat(markedLR[0],markedLR[1],new_frameStereo);
+                   std::ostringstream pathL;
+                   pathL << "./img/marked_frames_03_kz/stereo_marked_frame_" << std::setw(3) << std::setfill('0') << i << ".png";
 
-            imwrite(pathL.str(), new_frameStereo);
-        }
-        else {
-            capStereo >> frameStereo;
-            if (frameStereo.empty()) break;
-            std::ostringstream pathL;
-            pathL << "./img/marked_frames_03_kz/stereo_marked_frame_" << std::setw(3) << std::setfill('0') << i << ".png";
-            imwrite(pathL.str(), frameStereo);
+                   imwrite(pathL.str(), new_frameStereo);
+               }
+               else {
+                   capStereo >> frameStereo;
+                   if (frameStereo.empty()) break;
+                   std::ostringstream pathL;
+                   pathL << "./img/marked_frames_03_kz/stereo_marked_frame_" << std::setw(3) << std::setfill('0') << i << ".png";
+                   imwrite(pathL.str(), frameStereo);
         }
     }
 }
@@ -196,8 +203,12 @@ int stereovideoDecoding(std::string videoPath){
     if(i%STEP==0){
         capStereo >> frameStereo;
         if (frameStereo.empty()) break;
-        frameStereo(Rect(0,0,640,480)).copyTo(frameL);
-        frameStereo(Rect(640,0,640,480)).copyTo(frameR);
+        /*aggiunta per le dimensioni*/
+        frameStereo(Rect(0,0,frameStereo.cols/2,frameStereo.rows)).copyTo(frameL);
+        frameStereo(Rect(frameStereo.cols/2,0,frameStereo.cols/2,frameStereo.rows)).copyTo(frameR);
+        /*fine aggiunta per le dimensioni*/
+//        frameStereo(Rect(0,0,640,480)).copyTo(frameL);
+//        frameStereo(Rect(640,0,640,480)).copyTo(frameR);
         int det = DFTStereoWatermarking::stereoDetection(frameL,frameR,wsize,power,passwstr,passwnum,mark,i);
         switch (det){
             case (0): break;
@@ -287,7 +298,10 @@ void synthetized_spatial_decoding(cv::Mat noise){
         std::ostringstream pathL;
         pathL << "./img/marked_frames_gaussian_3_kz/stereo_marked_frame_" << std::setw(5) << std::setfill('0') << i*60 << ".png";
         frameStereo = imread(pathL.str().c_str(), CV_LOAD_IMAGE_COLOR);
-        frameStereo(Rect(0,0,640,480)).copyTo(frameL);
+        /*aggiunta per le dimensioni*/
+        frameStereo(Rect(0,0,frameStereo.cols/2,frameStereo.rows)).copyTo(frameL);
+        /*fine aggiunta per le dimensioni*/
+//        frameStereo(Rect(0,0,640,480)).copyTo(frameL);
         std::ostringstream pathSynt;
         pathSynt << "./img/gauss3_viewSyn/0.75/synth_view"<<i+1<<".png";
         frameSynt = imread(pathSynt.str().c_str(), CV_LOAD_IMAGE_COLOR);
@@ -330,8 +344,12 @@ int spatialMarking(std::string videoPath,cv::Mat noise){
         if(i%STEP==0){
             capStereo >> frameStereo;
             if (frameStereo.empty()) break;
-            frameStereo(Rect(0,0,640,480)).copyTo(frameL);
-            frameStereo(Rect(640,0,640,480)).copyTo(frameR);
+            /*aggiunta per le dimensioni*/
+            frameStereo(Rect(0,0,frameStereo.cols/2,frameStereo.rows)).copyTo(frameL);
+            frameStereo(Rect(frameStereo.cols/2,0,frameStereo.cols/2,frameStereo.rows)).copyTo(frameR);
+            /*fine aggiunta per le dimensioni*/
+//            frameStereo(Rect(0,0,640,480)).copyTo(frameL);
+//            frameStereo(Rect(640,0,640,480)).copyTo(frameR);
             markedLR = spatialWatermarking::gaussianNoiseStereoWatermarking(frameL,frameR,noise,i);
             hconcat(markedLR[0],markedLR[1],new_frameStereo);
             std::ostringstream pathL;
@@ -379,8 +397,12 @@ int spatialDecoding(std::string videoPath,cv::Mat noise){
         if(i%STEP==0){
             capStereo >> frameStereo;
             if (frameStereo.empty()) break;
-            frameStereo(Rect(0,0,640,480)).copyTo(frameL);
-            frameStereo(Rect(640,0,640,480)).copyTo(frameR);
+            /*aggiunta per le dimensioni*/
+            frameStereo(Rect(0,0,frameStereo.cols/2,frameStereo.rows)).copyTo(frameL);
+            frameStereo(Rect(frameStereo.cols/2,0,frameStereo.cols/2,frameStereo.rows)).copyTo(frameR);
+            /*fine aggiunta per le dimensioni*/
+           /* frameStereo(Rect(0,0,640,480)).copyTo(frameL);
+            frameStereo(Rect(640,0,640,480)).copyTo(frameR);*/
             vector<float> det = spatialWatermarking::gaussianNoiseStereoDetection(frameL,frameR,noise,i);
             //write a .txt file with the correlation values and the corresponding detection, in order to subsequentially compute the ROC function with Matlab
             fout<<det[0]<<"\t1"<<endl<<det[1]<<"\t0"<<endl<<det[2]<<"\t1"<<endl<<det[3]<<"\t1"<<endl;
@@ -428,8 +450,12 @@ int  disparity_computation(std::string videoPath){
     for (int i = first_frame; i<last_frame;i++){
         if (i%STEP==0){
             capStereo >> frameStereo;
-            frameStereo(Rect(0,0,640,480)).copyTo(frameL);
-            frameStereo(Rect(640,0,640,480)).copyTo(frameR);
+            /*aggiunta per le dimensioni*/
+            frameStereo(Rect(0,0,frameStereo.cols/2,frameStereo.rows)).copyTo(frameL);
+            frameStereo(Rect(frameStereo.cols/2,0,frameStereo.cols/2,frameStereo.rows)).copyTo(frameR);
+            /*fine aggiunta per le dimensioni*/
+//            frameStereo(Rect(0,0,640,480)).copyTo(frameL);
+//            frameStereo(Rect(640,0,640,480)).copyTo(frameR);
             std::string disp_data;
             std::vector<std::string> disprange;
             char sep = ' ';
@@ -511,8 +537,12 @@ int uniqueness_spatial_test(std::string videoPath){
     cv::Mat frameL;
     cv::Mat frameR;
     capStereo >> frameStereo;
-    frameStereo(Rect(0,0,640,480)).copyTo(frameL);
-    frameStereo(Rect(640,0,640,480)).copyTo(frameR);
+    /*aggiunta per le dimensioni*/
+    frameStereo(Rect(0,0,frameStereo.cols/2,frameStereo.rows)).copyTo(frameL);
+    frameStereo(Rect(frameStereo.cols/2,0,frameStereo.cols/2,frameStereo.rows)).copyTo(frameR);
+    /*fine aggiunta per le dimensioni*/
+ /*   frameStereo(Rect(0,0,640,480)).copyTo(frameL);
+    frameStereo(Rect(640,0,640,480)).copyTo(frameR);*/
     int det = DFTStereoWatermarking::stereoDetection(frameL,frameR,wsize,power,passwstr,passwnum,mark,0);
     static const char alpha_char[] = "abcdefghijklmnopqrstuvwxyz";
     static const char num_char [] =  "0123456789";
@@ -546,6 +576,7 @@ int main(int argc, char* argv[]) {
 
     string videoPath = argv[1];
     const char* tmp = argv[2];
+
     if (strcmp(tmp,"-h")==0){showhelpinfo(argv[0]);}
     if (strcmp(tmp,"-fe")==0){
         cout<<"frequency watermarking process---"<<endl;

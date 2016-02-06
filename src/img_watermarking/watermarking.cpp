@@ -70,9 +70,12 @@ void Watermarking::setPassword(std::string passwStr, std::string passwNum)
  * @output imidft_wat: image of te watermark for subsequential warping and right view embedding
  * @return imageOut: watermarked image
  */
+
+// togliere tutte quelle dimensioni ridondandi
 unsigned char * Watermarking::insertWatermark(unsigned char *imageIn, int w, int h,int dim,float** imidft_wat)
 {
     bool flagOk;
+    //togliere perche si lavora solo con video a colori, non abbiamo trattato con frame grey
 // IF GREY IMAGE
 //    unsigned char *output_img = new unsigned char[w * h];
 //    memcpy(output_img, image, w * h);
@@ -83,8 +86,7 @@ unsigned char * Watermarking::insertWatermark(unsigned char *imageIn, int w, int
     const char *passw_str = passwstr.c_str();
     const char *passw_num = passwnum.c_str();
     int result = -1;
-    result = WatCod(imageOut, passw_str, passw_num, watermark, wsize, power, imidft_wat,dim);
-
+    result = WatCod(imageOut, passw_str, passw_num, watermark, wsize, power, imidft_wat, dim);
     return imageOut;
 }
 
@@ -99,7 +101,14 @@ int Watermarking::WatCod(unsigned char *ImageOut, const char *passw_str, const c
     }else if (dim==512){
         diag0 = 80;
         ndiag = 74;
+    }    /*aggiunta per le dimensioni*/
+    else if (dim==1024)
+    {
+        diag0 = 160;
+        ndiag = 144;
     }
+    /*aggiunta per le dimensioni*/
+
     float   **imyout;
     double  **imdft;
     double  **imdftfase;
@@ -158,7 +167,7 @@ int Watermarking::WatCod(unsigned char *ImageOut, const char *passw_str, const c
         for (int j=0;j<dim;j++)
             dft_wat[i][j] = 0.0;
     antizone(dft_wat, dim, dim, diag0, ndiag, mark);
-//    generate magnitude and phase
+//    generate magnitude and phase of the watermark
     double  **imdft_wat;
     double  **imdftfase_wat;
     imdft_wat = AllocImDouble(dim, dim);
