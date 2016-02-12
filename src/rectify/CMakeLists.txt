@@ -1,4 +1,6 @@
-CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
+#MAKE_MINIMUM_REQUIRED(VERSION 2.6)
+
+INCLUDE_DIRECTORIES(..)
 
 IF(UNIX)
     SET(BUILD_SHARED_LIBS OFF CACHE BOOL "Dynamic libraries")
@@ -22,16 +24,19 @@ ADD_SUBDIRECTORY(./src/libNumerics)
 ADD_SUBDIRECTORY(./src/libTransform)
 ADD_SUBDIRECTORY(./src/libIO)
 ADD_SUBDIRECTORY(./src/libOrsa)
-ADD_SUBDIRECTORY(./src/rectify)
-ADD_SUBDIRECTORY(./src/sift)
+ADD_SUBDIRECTORY(./src/libRectification)
+ADD_SUBDIRECTORY(./src/siftMatch)
+ADD_SUBDIRECTORY(./src/libLWImage)
 ADD_SUBDIRECTORY(./src/warp)
 
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
-TARGET_LINK_LIBRARIES(rectifyQuasiEuclidean Transform Rectification Orsa SIFT
-                      Match Numerics IO ${IO_LIBRARIES})
+#TARGET_LINK_LIBRARIES(rectifyQuasiEuclidean Transform Rectification Orsa SIFT
+#                      Match Numerics IO ${IO_LIBRARIES})
 
-IF(UNIX)
-    SET_TARGET_PROPERTIES(rectifyQuasiEuclidean PROPERTIES
-                          COMPILE_FLAGS "-std=c++98 -Wall -Wextra -Werror")
-ENDIF(UNIX)
+#ADD_EXECUTABLE(rectifyQuasiEuclidean main.cpp)
+
+#IF(UNIX)
+#    SET_TARGET_PROPERTIES(rectifyQuasiEuclidean PROPERTIES
+#                          COMPILE_FLAGS "-std=c++98 -Wall -Wextra -Werror")
+#ENDIF(UNIX)
 

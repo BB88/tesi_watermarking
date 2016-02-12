@@ -24,7 +24,7 @@
 #define ORSA_MODEL_H
 
 #include <vector>
-#include "/home/bene/ClionProjects/rectify-quasi-euclidean_20140626/src/libNumerics/matrix.h"
+#include "../libNumerics/matrix.h"
 
 namespace orsa {
 

@@ -113,7 +113,7 @@ namespace cv {
 //                                // 6th group
 ////                                // boh niente non fa neanche rect
 ////                                // allineati sinistra <----
-////                                std::make_tuple(40,41), // sminchia TOTALMENTE rectify forse a causa di segmentazione aggressiva?
+////                                std::make_tuple(40,41), // sminchia TOTALMENTE libRectification forse a causa di segmentazione aggressiva?
 ////
 //
 //

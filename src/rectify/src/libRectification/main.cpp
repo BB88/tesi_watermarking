@@ -27,7 +27,7 @@ void printDisparity(const std::vector<imgMatch>& match,
               << (int)floor(min) << " " << (int)ceil(max) << std::endl;
 }
 
-/// Usage: rectify match.txt w h Hl Hr
+/// Usage: libRectification match.txt w h Hl Hr
 /// Take as input a set of good matches @match.txt and the image dimensions,
 /// @w and @h, and output the homographies to apply to left (@Hl) and right
 /// (@Hr) images in the form of \f$3\times 3\f$ matrices, stored in Matlab

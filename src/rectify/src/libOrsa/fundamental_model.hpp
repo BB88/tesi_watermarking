@@ -24,8 +24,8 @@
 #define FUNDAMENTAL_MODEL_H_
 
 #include <vector>
-#include "/home/bene/ClionProjects/rectify-quasi-euclidean_20140626/src/libOrsa/orsa_model.hpp"
-#include "/home/bene/ClionProjects/rectify-quasi-euclidean_20140626/src/libNumerics/matrix.h"
+#include "../libOrsa/orsa_model.hpp"
+#include "../libNumerics/matrix.h"
 
 namespace orsa {
 

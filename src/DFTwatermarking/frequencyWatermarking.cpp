@@ -103,29 +103,30 @@ vector<cv::Mat> DFTStereoWatermarking::stereoWatermarking(cv::Mat frameL, cv::Ma
 //    unsigned char *squared_marked_left = image_watermarking.insertWatermark(squared_left,dim,dim,dim,imidft_wat); //MODIFICA BENE
     unsigned char *squared_marked_left = image_watermarking.insertWatermark(squared_left,watDim,watDim,watDim,imidft_wat);// modificare la funzione in modo che prenda un solo parametro watdim
 
-    bool left_to_right = true;
-
-    // prendo dmin e dmax e calcolo disp con kz
-    std::string disp_data;
-    std::vector<std::string> disprange;
-    char sep = ' ';
-    std::ifstream in("/home/bene/Scrivania/Tesi/dispRange.txt");
-    if (in.is_open()) {
-        int j=0;
-        while (!in.eof()){
-            if ( j == img_num ){
-                getline(in, disp_data);
-                for(size_t p=0, q=0; p!=disp_data.npos; p=q){
-                    disprange.push_back(disp_data.substr(p+(p!=0), (q=disp_data.find(sep, p+1))-p-(p!=0)));
-                }
-            }
-            getline(in, disp_data);
-            j+=60;
-        }
-        in.close();
-    }
-    int dminl = atoi(disprange[0].c_str());
-    int dmaxl = atoi(disprange[1].c_str());
+    // questo è se calcoli la disp li per li con kz ma è gia pronta
+//    bool left_to_right = true;
+//
+//    // prendo dmin e dmax e calcolo disp con kz
+//    std::string disp_data;
+//    std::vector<std::string> disprange;
+//    char sep = ' ';
+//    std::ifstream in("/home/bene/Scrivania/Tesi/dispRange.txt");
+//    if (in.is_open()) {
+//        int j=0;
+//        while (!in.eof()){
+//            if ( j == img_num ){
+//                getline(in, disp_data);
+//                for(size_t p=0, q=0; p!=disp_data.npos; p=q){
+//                    disprange.push_back(disp_data.substr(p+(p!=0), (q=disp_data.find(sep, p+1))-p-(p!=0)));
+//                }
+//            }
+//            getline(in, disp_data);
+//            j+=60;
+//        }
+//        in.close();
+//    }
+//    int dminl = atoi(disprange[0].c_str());
+//    int dmaxl = atoi(disprange[1].c_str());
 
 
 
@@ -134,7 +135,7 @@ vector<cv::Mat> DFTStereoWatermarking::stereoWatermarking(cv::Mat frameL, cv::Ma
     //load ground truth disparity
     //  pathL << "./dataset/NTSD-200/disparity_maps/left/tsukuba_disparity_L_" << std::setw(5) << std::setfill('0') << img_num +1 << ".png";
     //load graph cuts leftToRight disparity
-    pathL << "./img/kz_norm_from_video/left_" << std::setw(2) << std::setfill('0') << img_num/60 << ".png";
+    pathL << "../img/basket_norm_disp_left_to_right/norm_disp_left_to_right_" << img_num/10 << ".png";
 
     cv::Mat disp_left = imread(pathL.str().c_str(), CV_LOAD_IMAGE_GRAYSCALE);
 
@@ -143,7 +144,7 @@ vector<cv::Mat> DFTStereoWatermarking::stereoWatermarking(cv::Mat frameL, cv::Ma
     //load ground truth disparity
     //pathR << "./dataset/NTSD-200/disparity_maps/right/tsukuba_disparity_R_" << std::setw(5) << std::setfill('0') << img_num +1 << ".png";
     //load graph cuts rightToLeft disparity
-    pathR << "./img/kz_norm_from_video/right_" << std::setw(2) << std::setfill('0') << img_num/60 << ".png";
+    pathR << "../img/basket_norm_disp_right_to_left/norm_disp_right_to_left_"  << img_num/10 << ".png";
 
     cv::Mat disp_right = imread(pathR.str().c_str(), CV_LOAD_IMAGE_GRAYSCALE);
 //    cv::Mat squared_lDisp = cv::Mat::zeros(dim, dim, CV_8UC1);     //MODIFICA BENE

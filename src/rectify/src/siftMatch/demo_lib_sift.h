@@ -29,7 +29,8 @@
 #define _CLIBSIFT_H_
 
 #include <vector>
-#include "/home/bene/ClionProjects/rectify-quasi-euclidean_20140626/src/libMatch/imgmatch.h"
+#include "../libMatch/imgmatch.h"
+
 
 ///////////// Description
 /// For each octave:

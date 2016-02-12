@@ -18,9 +18,9 @@
 #ifndef MAP_IMAGE_H
 #define MAP_IMAGE_H
 
-#include "/home/bene/ClionProjects/rectify-quasi-euclidean_20140626/src/libNumerics/homography.h"
-#include "/home/bene/ClionProjects/rectify-quasi-euclidean_20140626/src/libLWImage/LWImage.h"
-#include "/home/bene/ClionProjects/rectify-quasi-euclidean_20140626/src/libIO/nan.h"
+#include "../libNumerics/homography.h"
+#include "../libLWImage/LWImage.h"
+#include "../libIO/nan.h"
 #include <utility>
 
 std::pair<int,int> map_image(LWImage<float> in,

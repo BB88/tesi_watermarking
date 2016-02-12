@@ -49,7 +49,7 @@ bool load(char* nameFile, float*& pix, int& w, int& h)
     return true;
 }
 
-/// Usage: sift imgIn imgIn2 fileOut [imgOut]
+/// Usage: siftMatch imgIn imgIn2 fileOut [imgOut]
 /// Output in text file fileOut the matches evaluated by SIFT method between
 /// the images imgIn and imgIn2 (PNG format). If imgOut is in the argument list,
 /// this is an image file where matches will be shown (PNG format).
@@ -80,13 +80,13 @@ int main(int argc, char **argv)
 
 	keypointslist keyp1, keyp2;
 	compute_sift_keypoints(ipixels1,keyp1,w1,h1,siftparameters);
-    std::cout<< "sift:: 1st image: " << keyp1.size() << " keypoints"<<std::endl;
+    std::cout<< "siftMatch:: 1st image: " << keyp1.size() << " keypoints"<<std::endl;
 	compute_sift_keypoints(ipixels2,keyp2,w2,h2,siftparameters);
-    std::cout<< "sift:: 2nd image: " << keyp2.size() << " keypoints"<<std::endl;
+    std::cout<< "siftMatch:: 2nd image: " << keyp2.size() << " keypoints"<<std::endl;
 
 	matchingslist matchings;
 	compute_sift_matches(keyp1,keyp2,matchings,siftparameters);	
-    std::cout << "sift:: matches: " << matchings.size() <<std::endl;
+    std::cout << "siftMatch:: matches: " << matchings.size() <<std::endl;
 
 	//////////////////////////////////////////////////////////////// Save file with matches
     saveMatch(argv[3], matchings);

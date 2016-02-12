@@ -182,8 +182,8 @@ void compute_sift_keypoints(float *input, keypointslist& keys, int width, int he
 	}
 
     free(image.data);
-/*	printf("sift::  %d keypoints\n", keys.size());
-	printf("sift::  plus non correctly localized: %d \n", 	par.noncorrectlylocalized);*/
+/*	printf("siftMatch::  %d keypoints\n", keys.size());
+	printf("siftMatch::  plus non correctly localized: %d \n", 	par.noncorrectlylocalized);*/
 
 }
 

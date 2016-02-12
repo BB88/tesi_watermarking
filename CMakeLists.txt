@@ -7,6 +7,28 @@ set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
+
+IF(UNIX)
+    SET(BUILD_SHARED_LIBS OFF CACHE BOOL "Dynamic libraries")
+ENDIF(UNIX)
+
+SET(BASE_DIR_SRC ${CMAKE_CURRENT_SOURCE_DIR} CACHE INTERNAL "Base src dir")
+SET(BASE_DIR_BIN ${CMAKE_CURRENT_BINARY_DIR} CACHE INTERNAL "Base bin dir")
+
+# Use the local libraries and do not check the system libaries
+SET(WITH_INCLUDED_ZLIB OFF CACHE BOOL "Use local zlib")
+SET(WITH_INCLUDED_LIBPNG OFF CACHE BOOL "Use local libpng")
+SET(WITH_INCLUDED_LIBJPEG OFF CACHE BOOL "Use local libjpeg")
+SET(WITH_INCLUDED_LIBTIFF OFF CACHE BOOL "Use local libtiff")
+
+SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
+SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib)
+SET(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib)
+
+
+#ADD_SUBDIRECTORY(./src/rectify)
+
+
 set(SOURCE_FILES
     src/main.cpp
     src/dataset/dataset.hpp
@@ -69,7 +91,11 @@ set(SRC_QM
     src/quality_metrics/quality_metrics.h
   )
 
-
+set(SRC_C
+    src/graphcuts/io_tiff.c
+    src/graphcuts/io_tiff.h
+    src/graphcuts/io_png.c
+    src/graphcuts/io_png.h)
 
  FIND_PACKAGE(PNG)
  FIND_PACKAGE(TIFF)
@@ -129,4 +155,5 @@ message(${LIBS})
 add_executable(tesi_watermarking ${SOURCE_FILES} src/dataset/tsukuba_dataset.cpp src/dataset/tsukuba_dataset.h  src/right_view_computation/right_view.cpp src/right_view_computation/right_view.h src/disparity_optimization/disp_opt.cpp src/disparity_optimization/disp_opt.h src/img_watermarking/bch.h src/img_watermarking/bch.cpp src/img_watermarking/fft2d.h src/img_watermarking/fft2d.cpp src/img_watermarking/allocim.h src/img_watermarking/allocim.cpp src/img_watermarking/watermarking.h src/img_watermarking/watermarking.cpp src/graphcuts/utils.h src/graphcuts/utils.cpp src/utils.h src/utils.cpp src/quality_metrics/quality_metrics.h src/quality_metrics/quality_metrics.cpp  src/spatialWatermarking/gaussianNoise.h src/spatialWatermarking/gaussianNoise.cpp src/DFTwatermarking/frequencyWatermarking.h src/DFTwatermarking/frequencyWatermarking.cpp src/quality_metrics/RRQualityMetrics.h src/quality_metrics/RRQualityMetrics.cpp src/roc/roc.h src/roc/roc.cpp)
 
 target_link_libraries(tesi_watermarking ${LIBS})
+
 

@@ -15,7 +15,7 @@ namespace Watermarking_config {
             try
             {
 
-                cfg.readFile("./config/config.cfg");
+                cfg.readFile("../config/config.cfg");
 
             }
             catch(const libconfig::FileIOException &fioex)
