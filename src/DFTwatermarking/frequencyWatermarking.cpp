@@ -43,7 +43,7 @@ using namespace graph_cuts_utils;
  * @return output: watermarked stereo frames
  */
 vector<cv::Mat> DFTStereoWatermarking::stereoWatermarking(cv::Mat frameL, cv::Mat frameR, int wsize, float power, std::string passwstr,
-                                                 std::string passwnum, int* watermark, int img_num){
+                                                 std::string passwnum, int* watermark, int img_num,std::string dispfolder){
 
     /*aggiunta per le dimensioni*/
     int watDim = 0;
@@ -135,7 +135,7 @@ vector<cv::Mat> DFTStereoWatermarking::stereoWatermarking(cv::Mat frameL, cv::Ma
     //load ground truth disparity
     //  pathL << "./dataset/NTSD-200/disparity_maps/left/tsukuba_disparity_L_" << std::setw(5) << std::setfill('0') << img_num +1 << ".png";
     //load graph cuts leftToRight disparity
-    pathL << "../img/basket_norm_disp_left_to_right/norm_disp_left_to_right_" << img_num/10 << ".png";
+    pathL <<dispfolder<< "/norm_disp_left_to_right_" << img_num/10 << ".png";
 
     cv::Mat disp_left = imread(pathL.str().c_str(), CV_LOAD_IMAGE_GRAYSCALE);
 
@@ -144,7 +144,7 @@ vector<cv::Mat> DFTStereoWatermarking::stereoWatermarking(cv::Mat frameL, cv::Ma
     //load ground truth disparity
     //pathR << "./dataset/NTSD-200/disparity_maps/right/tsukuba_disparity_R_" << std::setw(5) << std::setfill('0') << img_num +1 << ".png";
     //load graph cuts rightToLeft disparity
-    pathR << "../img/basket_norm_disp_right_to_left/norm_disp_right_to_left_"  << img_num/10 << ".png";
+    pathR <<dispfolder<< "/norm_disp_right_to_left_"  << img_num/10 << ".png";
 
     cv::Mat disp_right = imread(pathR.str().c_str(), CV_LOAD_IMAGE_GRAYSCALE);
 //    cv::Mat squared_lDisp = cv::Mat::zeros(dim, dim, CV_8UC1);     //MODIFICA BENE

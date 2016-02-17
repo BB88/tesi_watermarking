@@ -45,7 +45,7 @@ const int STEP = 10; //this is the watermarking step, meaning only one frame eve
 
 void showhelpinfo(char *s)
 {
-    cout<<"Usage:   "<<s<<" [-option] [input video/videos]  [output folder] "<<endl;
+    cout<<"Usage:   "<<s<<" [-option] [input video/videos]  [output folder] [range path] "<<endl;
     cout<<"option:  "<<"-h  show help information"<<endl;
     cout<<"         "<<"-fe call frequency watermarking function"<<endl;
     cout<<"         "<<"-fd call frequency detection function"<<endl;
@@ -65,7 +65,7 @@ void showhelpinfo(char *s)
  * @return -1 if couldn't open the video sequence
  *
  */
-int stereovideoCoding(std::string videoPath ,std::string folder){
+int stereovideoCoding(std::string videoPath ,std::string folder,std::string dispfolder){
 
     //load the watermark configuration parameters, specified in the .cfg file
     Watermarking_config::set_parameters_params pars = Watermarking_config::ConfigLoader::get_instance().loadSetParametersConfiguration();
@@ -141,7 +141,7 @@ int stereovideoCoding(std::string videoPath ,std::string folder){
             /*fine aggiunta per le dimensioni*/
 //                       frameStereo(Rect(0,0,640,480)).copyTo(frameL);
 //                   frameStereo(Rect(640,0,640,480)).copyTo(frameR);
-                   markedLR = DFTStereoWatermarking::stereoWatermarking(frameL,frameR,wsize,power,passwstr,passwnum,watermark, i);
+                   markedLR = DFTStereoWatermarking::stereoWatermarking(frameL,frameR,wsize,power,passwstr,passwnum,watermark, i,dispfolder);
                    hconcat(markedLR[0],markedLR[1],new_frameStereo);
                    std::ostringstream pathL;
                    pathL << folder << "/stereo_marked_frame_" << std::setw(3) << std::setfill('0') << i << ".png";
@@ -433,7 +433,7 @@ int spatialDecoding(std::string videoPath,cv::Mat noise){
  *  @return -1 if couldn't open the video sequence
  */
 
-int  disparity_computation(std::string videoPath,std::string folder){
+int  disparity_computation(std::string videoPath,std::string folder,std::string dispRangePath){
 
     VideoCapture capStereo(videoPath);
     if (!capStereo.isOpened()) {  // check if we succeeded
@@ -461,7 +461,7 @@ int  disparity_computation(std::string videoPath,std::string folder){
             std::string disp_data;
             std::vector<std::string> disprange;
             char sep = ' ';
-            std::ifstream in("/home/miky/Scrivania/new_dataset/BasketdispRange2.txt");
+            std::ifstream in(dispRangePath);
             if (in.is_open()) {
                 int j=0;
                 while (!in.eof()){
@@ -620,7 +620,8 @@ int main(int argc, char* argv[]) {
     if (strcmp(tmp,"-fe")==0){
         cout<<"frequency watermarking process---"<<endl;
         folder = argv[3];
-        stereovideoCoding(videoPath, folder);
+        std::string dispfolder = argv[4];
+        stereovideoCoding(videoPath, folder, dispfolder);
     }
     if (strcmp(tmp,"-fd")==0){
         cout<<"frequency detection process---"<<endl;
@@ -656,7 +657,8 @@ int main(int argc, char* argv[]) {
     if (strcmp(tmp,"-d")==0){
         cout<<"disparity computation---"<<endl;
         folder = argv[3];
-        disparity_computation(videoPath,folder);
+        const char* range = argv[4];
+        disparity_computation(videoPath,folder,range);
     }
     if (strcmp(tmp,"-fm")==0){
         cout<<"creating stereo frames---"<<endl;
