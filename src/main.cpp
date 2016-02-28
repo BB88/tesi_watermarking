@@ -193,7 +193,8 @@ int stereovideoDecoding(std::string videoPath){
 
     //range of marked frames
     int first_frame = 0;
-    int last_frame = 1800;
+    int last_frame = 1800; //attenzione, mettere un numero altissimo, altrimenti il video si interrompe prima, se nn sappiamo di quanti frame è composto
+
 
     cv::Mat frameStereo;
     cv::Mat frameL;
@@ -202,7 +203,10 @@ int stereovideoDecoding(std::string videoPath){
     int decoded_left_frame = 0;
     int decoded_right_frame = 0;
     for (int i = first_frame; i < last_frame; i++) {
-    if(i%STEP==0){
+        // forse è meglio mettere un while, cosi non c'e' bisogno di last_frame che serviva solo per
+//        poter marchiare un tot di frame alla volta  visto che il processo era troppo lento
+
+        if(i%STEP==0){
         capStereo >> frameStereo;
         if (frameStereo.empty()) break;
         /*aggiunta per le dimensioni*/

@@ -330,29 +330,44 @@ vector<cv::Mat> DFTStereoWatermarking::stereoWatermarking(cv::Mat frameL, cv::Ma
 int DFTStereoWatermarking::stereoDetection(cv::Mat markedL, cv::Mat markedR, int wsize, float power, std::string passwstr,
                                             std::string passwnum, int* watermark,int img_num){
 
+    /*aggiunta per le dimensioni*/
+    int watDim = 0;
+    int height = markedL.rows; //height (480)
+    int width = markedL.cols; // width (640)
+    if (max(width,height)<256){
+        std::cout<<"Frame too small"<<endl;
+        // gestire l'uscita dalla funzione
+    }
+    if(max(width,height)<512){
+        watDim = 256;
+    } else if (max(width,height)<1024){
+        watDim = 512;
+    } else {
+        watDim = 1024;
+    }
+    int n_cols = min(width, watDim);
+    int n_rows = min(height, watDim);
 
+    /*FIne aggiunta per le dimensioni*/
     Watermarking image_watermarking;
     image_watermarking.setParameters(watermark,wsize,power);
     image_watermarking.setPassword(passwstr,passwnum);
-    int dim = 512;
-    int offset = 127;
-    int nc = 640;
-    int nc_s = dim;
-    int squared_dim = dim * dim *3;
+    int offset = abs(watDim - width) - 1;
+    int squared_dim = watDim * watDim *3;
     unsigned char *left_uchar = markedL.data;
     unsigned char *squared_left =  new unsigned char[squared_dim];
-    for (int i = 0; i < 480; i++ )
-        for (int j = 0; j < nc_s; j++) {
+    for (int i = 0; i < n_rows; i++ )
+        for (int j = 0; j < n_cols; j++) {
             for (int k =0; k<3;k++){
-                squared_left[(i * nc_s + j)*3 + k] = left_uchar[(i *nc + j + offset)*3 + k];
+                squared_left[(i * watDim + j)*3 + k] = left_uchar[(i *width + j + offset)*3 + k];
             }
         }
     unsigned char *right_uchar = markedR.data;
     unsigned char *squared_right =  new unsigned char[squared_dim];
-    for (int i = 0; i < 480; i++ )
-        for (int j = 0; j < nc_s; j++) {
+    for (int i = 0; i < n_rows; i++ )
+        for (int j = 0; j < n_cols; j++) {
             for (int k =0; k<3;k++){
-                squared_right[(i * nc_s + j)*3 + k] = right_uchar[(i *nc + j + offset)*3 + k];
+                squared_right[(i * watDim + j)*3 + k] = right_uchar[(i *width + j + offset)*3 + k];
             }
         }
 
@@ -374,19 +389,19 @@ int DFTStereoWatermarking::stereoDetection(cv::Mat markedL, cv::Mat markedR, int
     cv::Mat disp_right = imread(pathR.str().c_str(), CV_LOAD_IMAGE_GRAYSCALE);
 
 
-    cv::Mat squared_rDisp = cv::Mat::zeros(dim, dim, CV_8UC1);
-    for (int i=0; i <480; i++)
-        for (int j=0;j<dim;j++){
+    cv::Mat squared_rDisp = cv::Mat::zeros(watDim, watDim, CV_8UC1);
+    for (int i=0; i <n_rows; i++)
+        for (int j=0;j< n_cols;j++){
             squared_rDisp.at<uchar>(i,j) = disp_right.at<uchar>(i,j+offset);
         }
 
     Right_view rv;
-    unsigned char * rcn_squared_left = rv.left_rnc_no_occ(squared_right,squared_rDisp,dim,dim);
+    unsigned char * rcn_squared_left = rv.left_rnc_no_occ(squared_right,squared_rDisp,watDim,watDim);
 
-    cv::Mat square_left_mat = cv::Mat::zeros(dim, dim, CV_8UC3);
+    cv::Mat square_left_mat = cv::Mat::zeros(watDim, watDim, CV_8UC3);
     int count=0;
-    for (int j = 0; j < dim; j++)
-        for (int i = 0; i < dim; i++) {
+    for (int j = 0; j < watDim; j++)
+        for (int i = 0; i < watDim; i++) {
             square_left_mat.at<Vec3b>(j, i)[0] = squared_left[count];
             count++;
             square_left_mat.at<Vec3b>(j, i)[1] = squared_left[count];
@@ -394,10 +409,10 @@ int DFTStereoWatermarking::stereoDetection(cv::Mat markedL, cv::Mat markedR, int
             square_left_mat.at<Vec3b>(j, i)[2] = squared_left[count];
             count++;
         }
-    cv::Mat rcn_left_mat = cv::Mat::zeros(dim, dim, CV_8UC3);
+    cv::Mat rcn_left_mat = cv::Mat::zeros(watDim, watDim, CV_8UC3);
     count=0;
-    for (int j = 0; j < dim; j++)
-        for (int i = 0; i < dim; i++) {
+    for (int j = 0; j < watDim; j++)
+        for (int i = 0; i < watDim; i++) {
 
             rcn_left_mat.at<Vec3b>(j, i)[0] = rcn_squared_left[count];
             count++;
@@ -406,8 +421,8 @@ int DFTStereoWatermarking::stereoDetection(cv::Mat markedL, cv::Mat markedR, int
             rcn_left_mat.at<Vec3b>(j, i)[2] = rcn_squared_left[count];
             count++;
     }
-    for (int j = 0; j < dim; j++)
-        for (int i = 0; i < dim; i++){
+    for (int j = 0; j < watDim; j++)
+        for (int i = 0; i < watDim; i++){
             if ( rcn_left_mat.at<Vec3b>(j, i)[0]==0 && rcn_left_mat.at<Vec3b>(j, i)[1]==0 && rcn_left_mat.at<Vec3b>(j,i)[2]==0){
                 rcn_left_mat.at<Vec3b>(j, i)[0] = square_left_mat.at<Vec3b>(j, i)[0];
                 rcn_left_mat.at<Vec3b>(j, i)[1] = square_left_mat.at<Vec3b>(j, i)[1];
@@ -416,8 +431,8 @@ int DFTStereoWatermarking::stereoDetection(cv::Mat markedL, cv::Mat markedR, int
     }
 
 
-    bool left_det = image_watermarking.extractWatermark(squared_left,dim,dim, dim);
-    bool rcnleft_det = image_watermarking.extractWatermark(rcn_left_mat.data,dim,dim,dim);
+    bool left_det = image_watermarking.extractWatermark(squared_left,watDim,watDim, watDim);
+    bool rcnleft_det = image_watermarking.extractWatermark(rcn_left_mat.data,watDim,watDim,watDim);
     if(left_det)
         if (rcnleft_det)
             return 1;
