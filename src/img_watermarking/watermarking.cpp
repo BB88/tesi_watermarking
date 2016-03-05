@@ -1218,6 +1218,11 @@ int Watermarking::WatDec(unsigned char *ImageIn, const char *campolett, const ch
         diag0 = 80;
         ndiag = 74;
     }
+    else if (dim==1024)
+    {
+        diag0 = 160;
+        ndiag = 144;
+    }
     float **imy;			// matrice luminanza
     float **imc2;			// matrice crominanza c2
     float **imc3;			// matrice crominanza c3

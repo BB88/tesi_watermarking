@@ -8,14 +8,14 @@ namespace Watermarking_config {
 
     // ecco il costruttore privato in modo che l'utente non possa istanziare direttamante
 
-    ConfigLoader::ConfigLoader() {
+    ConfigLoader::ConfigLoader(std::string configPath) {
 
 //            libconfig::Config cfg;
             // Read the file. If there is an error, report it and exit.
             try
             {
 
-                cfg.readFile("../config/config.cfg");
+                cfg.readFile(configPath.c_str());
 
             }
             catch(const libconfig::FileIOException &fioex)

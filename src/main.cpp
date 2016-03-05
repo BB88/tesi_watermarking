@@ -65,13 +65,14 @@ void showhelpinfo(char *s)
  * @return -1 if couldn't open the video sequence
  *
  */
-int stereovideoCoding(std::string videoPath ,std::string folder,std::string dispfolder){
+int stereovideoCoding(std::string videoPath ,std::string folder,std::string dispfolder,std::string configPath){
 
+    cout<<configPath<<endl;
     //load the watermark configuration parameters, specified in the .cfg file
-    Watermarking_config::set_parameters_params pars = Watermarking_config::ConfigLoader::get_instance().loadSetParametersConfiguration();
+    Watermarking_config::set_parameters_params pars = Watermarking_config::ConfigLoader::get_instance(configPath).loadSetParametersConfiguration();
     int wsize = pars.wsize;
     float power = pars.power;
-    Watermarking_config::general_params generalPars = Watermarking_config::ConfigLoader::get_instance().loadGeneralParamsConfiguration();
+    Watermarking_config::general_params generalPars = Watermarking_config::ConfigLoader::get_instance(configPath).loadGeneralParamsConfiguration();
     std::string passwstr = generalPars.passwstr;
     std::string passwnum = generalPars.passwnum;
 
@@ -83,8 +84,10 @@ int stereovideoCoding(std::string videoPath ,std::string folder,std::string disp
         watermark[i] = b;
     }
 
-    std::ifstream in("../config/config.cfg");
-    std::ofstream out("../config/config.cfg.tmp");
+    std::ifstream in(configPath);
+    std::ostringstream configPathtmp;
+    configPathtmp << configPath << ".tmp";
+    std::ofstream out(configPathtmp.str());
 
     string data;
     string dataw;
@@ -100,7 +103,7 @@ int stereovideoCoding(std::string videoPath ,std::string folder,std::string disp
                 out << dataw << "\n";
             }
             else out << data << "\n";
-            if (0 != std::rename("../config/config.cfg.tmp", "../config/config.cfg"))
+            if (0 != std::rename(configPathtmp.str().c_str(),configPath.c_str()))
 
             {
                 // Handle failure.
@@ -144,7 +147,7 @@ int stereovideoCoding(std::string videoPath ,std::string folder,std::string disp
                    markedLR = DFTStereoWatermarking::stereoWatermarking(frameL,frameR,wsize,power,passwstr,passwnum,watermark, i,dispfolder);
                    hconcat(markedLR[0],markedLR[1],new_frameStereo);
                    std::ostringstream pathL;
-                   pathL << folder << "/stereo_marked_frame_" << std::setw(3) << std::setfill('0') << i << ".png";
+                   pathL << folder << "/stereo_marked_frame_"  << i << ".png";
 
                    imwrite(pathL.str(), new_frameStereo);
                }
@@ -152,7 +155,7 @@ int stereovideoCoding(std::string videoPath ,std::string folder,std::string disp
                    capStereo >> frameStereo;
                    if (frameStereo.empty()) break;
                    std::ostringstream pathL;
-                   pathL<< folder <<  "/stereo_marked_frame_" << std::setw(3) << std::setfill('0') << i << ".png";
+                   pathL<< folder <<  "/stereo_marked_frame_"  << i << ".png";
                    imwrite(pathL.str(), frameStereo);
         }
     }
@@ -168,10 +171,10 @@ int stereovideoCoding(std::string videoPath ,std::string folder,std::string disp
  *
  */
 
-int stereovideoDecoding(std::string videoPath){
+int stereovideoDecoding(std::string videoPath,std::string dispfolder,std::string configPath, std::string outputFile){
 
     //load the watermark configuration parameters, specified in the .cfg file
-    Watermarking_config::set_parameters_params pars = Watermarking_config::ConfigLoader::get_instance().loadSetParametersConfiguration();
+    Watermarking_config::set_parameters_params pars = Watermarking_config::ConfigLoader::get_instance(configPath).loadSetParametersConfiguration();
     int wsize = pars.wsize;
     float power = pars.power;
     std::string watermark = pars.watermark;
@@ -180,7 +183,7 @@ int stereovideoDecoding(std::string videoPath){
     for(int i=0;i<wsize;i++){
         mark[i] = watermark.at(i)-48;
     }
-    Watermarking_config::general_params generalPars = Watermarking_config::ConfigLoader::get_instance().loadGeneralParamsConfiguration();
+    Watermarking_config::general_params generalPars = Watermarking_config::ConfigLoader::get_instance(configPath).loadGeneralParamsConfiguration();
     std::string passwstr = generalPars.passwstr;
     std::string passwnum = generalPars.passwnum;
 
@@ -215,7 +218,7 @@ int stereovideoDecoding(std::string videoPath){
         /*fine aggiunta per le dimensioni*/
 //        frameStereo(Rect(0,0,640,480)).copyTo(frameL);
 //        frameStereo(Rect(640,0,640,480)).copyTo(frameR);
-        int det = DFTStereoWatermarking::stereoDetection(frameL,frameR,wsize,power,passwstr,passwnum,mark,i);
+        int det = DFTStereoWatermarking::stereoDetection(frameL,frameR,wsize,power,passwstr,passwnum,mark,i,dispfolder);
         switch (det){
             case (0): break;
             case (1): decoded_both_frames++;break;
@@ -228,9 +231,10 @@ int stereovideoDecoding(std::string videoPath){
             if (frameStereo.empty()) break;
          }
     }
-    cout<<"decoded in both frames: "<<decoded_both_frames<<endl;
-    cout<<"decoded in left frame: "<<decoded_left_frame<<endl;
-    cout<<"decoded in right frame: "<<decoded_right_frame<<endl;
+    ofstream out_file(outputFile);
+    out_file<<"decoded in both frames: "<<decoded_both_frames<<endl;
+    out_file<<"decoded in left frame: "<<decoded_left_frame<<endl;
+    out_file<<"decoded in right frame: "<<decoded_right_frame<<endl;
 
 }
 
@@ -241,10 +245,10 @@ int stereovideoDecoding(std::string videoPath){
  * open the synthetized views and look for the watermark in the frequency domain
  */
 
-void synthetized_DFT_decoding(){
+void synthetized_DFT_decoding(std::string configPath,std::string dispfolder){
 
     //load the watermark configuration parameters, specified in the .cfg file
-    Watermarking_config::set_parameters_params pars = Watermarking_config::ConfigLoader::get_instance().loadSetParametersConfiguration();
+    Watermarking_config::set_parameters_params pars = Watermarking_config::ConfigLoader::get_instance(configPath).loadSetParametersConfiguration();
     int wsize = pars.wsize;
     float power = pars.power;
     std::string watermark = pars.watermark;
@@ -253,7 +257,7 @@ void synthetized_DFT_decoding(){
     for(int i=0;i<wsize;i++){
         mark[i] = watermark.at(i)-48;
     }
-    Watermarking_config::general_params generalPars = Watermarking_config::ConfigLoader::get_instance().loadGeneralParamsConfiguration();
+    Watermarking_config::general_params generalPars = Watermarking_config::ConfigLoader::get_instance(configPath).loadGeneralParamsConfiguration();
     std::string passwstr = generalPars.passwstr;
     std::string passwnum = generalPars.passwnum;
 
@@ -271,7 +275,7 @@ void synthetized_DFT_decoding(){
         std::ostringstream pathSynt;
         pathSynt << "./img/VS/synth_view_75/synth_view"<<i+1<<".png";
         frameSynt = imread(pathSynt.str().c_str(), CV_LOAD_IMAGE_COLOR);
-        int det = DFTStereoWatermarking::stereoDetection(frameL,frameSynt,wsize,power,passwstr,passwnum,mark,i);
+        int det = DFTStereoWatermarking::stereoDetection(frameL,frameSynt,wsize,power,passwstr,passwnum,mark,i,dispfolder);
         switch (det){
             case (0): break;
             case (1): decoded_both_frames++;break;
@@ -520,9 +524,9 @@ int  disparity_computation(std::string videoPath,std::string folder,std::string 
  * @param videoPath: path of the marked stereo video sequence
  * @return -1 if couldn't open the video sequence
  */
-int uniqueness_spatial_test(std::string videoPath){
+int uniqueness_spatial_test(std::string videoPath,std::string configPath,std::string dispfolder ){
 
-    Watermarking_config::set_parameters_params pars = Watermarking_config::ConfigLoader::get_instance().loadSetParametersConfiguration();
+    Watermarking_config::set_parameters_params pars = Watermarking_config::ConfigLoader::get_instance(configPath).loadSetParametersConfiguration();
     int wsize = pars.wsize;
     float power = pars.power;
     std::string watermark = pars.watermark;
@@ -530,7 +534,7 @@ int uniqueness_spatial_test(std::string videoPath){
     for(int i=0;i<wsize;i++){
         mark[i] = watermark.at(i)-48; //codifica ASCII dei caratteri
     }
-    Watermarking_config::general_params generalPars = Watermarking_config::ConfigLoader::get_instance().loadGeneralParamsConfiguration();
+    Watermarking_config::general_params generalPars = Watermarking_config::ConfigLoader::get_instance(configPath).loadGeneralParamsConfiguration();
     std::string passwstr = generalPars.passwstr;
     std::string passwnum = generalPars.passwnum;
 
@@ -550,7 +554,7 @@ int uniqueness_spatial_test(std::string videoPath){
     /*fine aggiunta per le dimensioni*/
  /*   frameStereo(Rect(0,0,640,480)).copyTo(frameL);
     frameStereo(Rect(640,0,640,480)).copyTo(frameR);*/
-    int det = DFTStereoWatermarking::stereoDetection(frameL,frameR,wsize,power,passwstr,passwnum,mark,0);
+    int det = DFTStereoWatermarking::stereoDetection(frameL,frameR,wsize,power,passwstr,passwnum,mark,0,dispfolder);
     static const char alpha_char[] = "abcdefghijklmnopqrstuvwxyz";
     static const char num_char [] =  "0123456789";
     for (int i = 0; i < 100; i++) {
@@ -569,7 +573,7 @@ int uniqueness_spatial_test(std::string videoPath){
             int b = rand() % 2;
             watermark[i] = b;
         }
-        int det = DFTStereoWatermarking::stereoDetection(frameL,frameR,wsize,power,string_pswd,num_pswd,watermark,0);
+        int det = DFTStereoWatermarking::stereoDetection(frameL,frameR,wsize,power,string_pswd,num_pswd,watermark,0,dispfolder);
     }
 }
 
@@ -621,15 +625,20 @@ int main(int argc, char* argv[]) {
     const char* folder;
 
     if (strcmp(tmp,"-h")==0){showhelpinfo(argv[0]);}
+
     if (strcmp(tmp,"-fe")==0){
         cout<<"frequency watermarking process---"<<endl;
         folder = argv[3];
         std::string dispfolder = argv[4];
-        stereovideoCoding(videoPath, folder, dispfolder);
+        std::string configPath = argv[5];
+        stereovideoCoding(videoPath, folder, dispfolder,configPath);
     }
     if (strcmp(tmp,"-fd")==0){
         cout<<"frequency detection process---"<<endl;
-        stereovideoDecoding(videoPath);
+        std::string dispfolder = argv[3];
+        std::string configPath = argv[4];
+        std::string outputFile = argv[5];
+        stereovideoDecoding(videoPath,dispfolder,configPath,outputFile);
     }
     if (strcmp(tmp,"-se")==0){
         cout<<"spatial watermarking process---"<<endl;

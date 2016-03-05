@@ -135,6 +135,7 @@ vector<cv::Mat> DFTStereoWatermarking::stereoWatermarking(cv::Mat frameL, cv::Ma
     //load ground truth disparity
     //  pathL << "./dataset/NTSD-200/disparity_maps/left/tsukuba_disparity_L_" << std::setw(5) << std::setfill('0') << img_num +1 << ".png";
     //load graph cuts leftToRight disparity
+
     pathL <<dispfolder<< "/norm_disp_left_to_right_" << img_num/10 << ".png";
 
     cv::Mat disp_left = imread(pathL.str().c_str(), CV_LOAD_IMAGE_GRAYSCALE);
@@ -328,7 +329,7 @@ vector<cv::Mat> DFTStereoWatermarking::stereoWatermarking(cv::Mat frameL, cv::Ma
  * @return 1: detected in both frames; 2: detected only in the left view; 3: detected only in the right view
  * */
 int DFTStereoWatermarking::stereoDetection(cv::Mat markedL, cv::Mat markedR, int wsize, float power, std::string passwstr,
-                                            std::string passwnum, int* watermark,int img_num){
+                                            std::string passwnum, int* watermark,int img_num, std::string dispfolder){
 
     /*aggiunta per le dimensioni*/
     int watDim = 0;
@@ -372,19 +373,19 @@ int DFTStereoWatermarking::stereoDetection(cv::Mat markedL, cv::Mat markedR, int
         }
 
 
+
+
     std::ostringstream pathL;
-    //load ground truth disparity
-//      pathL << "./dataset/NTSD-200/disparity_maps/left/tsukuba_disparity_L_" << std::setw(5) << std::setfill('0') << img_num +1 << ".png";
-    //load graph cuts disparity
-    pathL << "./img/kz_norm_from_video/left_" << std::setw(2) << std::setfill('0') << img_num/60 << ".png";
+    pathL <<dispfolder<< "/norm_disp_left_to_right_" << img_num/10 << ".png";
+
     cv::Mat disp_left = imread(pathL.str().c_str(), CV_LOAD_IMAGE_GRAYSCALE);
 
-
     std::ostringstream pathR;
+
     //load ground truth disparity
-//    pathR << "./dataset/NTSD-200/disparity_maps/right/tsukuba_disparity_R_" << std::setw(5) << std::setfill('0') << img_num +1 << ".png";
-    //load graph cuts disparity
-    pathR << "./img/kz_norm_from_video/right_" << std::setw(2) << std::setfill('0') << img_num/60 << ".png";
+    //pathR << "./dataset/NTSD-200/disparity_maps/right/tsukuba_disparity_R_" << std::setw(5) << std::setfill('0') << img_num +1 << ".png";
+    //load graph cuts rightToLeft disparity
+    pathR <<dispfolder<< "/norm_disp_right_to_left_"  << img_num/10 << ".png";
 
     cv::Mat disp_right = imread(pathR.str().c_str(), CV_LOAD_IMAGE_GRAYSCALE);
 

@@ -25,7 +25,7 @@ namespace Watermarking_config {
 
     private:
 
-        ConfigLoader();
+        ConfigLoader(std::string configPath);
         virtual ~ConfigLoader(){}
 
     private:
@@ -33,11 +33,12 @@ namespace Watermarking_config {
 
     public:
 
-        static ConfigLoader& get_instance() {
+        static ConfigLoader& get_instance(std::string configPath) {
             // l'unica istanza della classe viene creata alla prima chiamata di get_instance()
             // e verrà distrutta solo all'uscita dal programma
-            static ConfigLoader instance;
-            return instance;
+            static ConfigLoader* instance = new ConfigLoader(configPath);
+//            static ConfigLoader instance;
+            return *instance;
         }
 
         set_parameters_params loadSetParametersConfiguration();
@@ -48,7 +49,7 @@ namespace Watermarking_config {
         // =======
         // We can use the better technique of deleting the methods
         // we don't want.
-        ConfigLoader(ConfigLoader const&)               = delete;
+        ConfigLoader(std::string configPath,ConfigLoader const&)               = delete;
         void operator=(ConfigLoader const&)  = delete;
     };
 
