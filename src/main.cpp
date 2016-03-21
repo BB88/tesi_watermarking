@@ -296,7 +296,7 @@ void synthetized_DFT_decoding(std::string configPath,std::string dispfolder){
  * @params noise: image of the Gaussian noise watermark
  *
  */
-void synthetized_spatial_decoding(cv::Mat noise){
+void synthetized_spatial_decoding(cv::Mat noise,std::string dispfolder){
 
     int first_frame = 0;
     int last_frame = 30;
@@ -315,7 +315,7 @@ void synthetized_spatial_decoding(cv::Mat noise){
         std::ostringstream pathSynt;
         pathSynt << "./img/gauss3_viewSyn/0.75/synth_view"<<i+1<<".png";
         frameSynt = imread(pathSynt.str().c_str(), CV_LOAD_IMAGE_COLOR);
-        vector<float> det = spatialWatermarking::gaussianNoiseStereoDetection(frameL,frameSynt,noise,i);
+        vector<float> det = spatialWatermarking::gaussianNoiseStereoDetection(frameL,frameSynt,noise,i,dispfolder);
         fout<<det[0]<<"\t1"<<endl<<det[1]<<"\t0"<<endl<<det[2]<<"\t1"<<endl<<det[3]<<"\t1"<<endl;
         }
     fout.close();
@@ -330,7 +330,7 @@ void synthetized_spatial_decoding(cv::Mat noise){
  * @params noise: image of the Gaussian noise watermark
  * @return -1 if couldn't open the video sequence
  */
-int spatialMarking(std::string videoPath,cv::Mat noise,std::string folder){
+int spatialMarking(std::string videoPath,cv::Mat noise,std::string folder,std::string dispfolder){
 
     // load the video to watermark
     VideoCapture capStereo(videoPath);
@@ -360,17 +360,19 @@ int spatialMarking(std::string videoPath,cv::Mat noise,std::string folder){
             /*fine aggiunta per le dimensioni*/
 //            frameStereo(Rect(0,0,640,480)).copyTo(frameL);
 //            frameStereo(Rect(640,0,640,480)).copyTo(frameR);
-            markedLR = spatialWatermarking::gaussianNoiseStereoWatermarking(frameL,frameR,noise,i);
+            markedLR = spatialWatermarking::gaussianNoiseStereoWatermarking(frameL,frameR,noise,i,dispfolder);
             hconcat(markedLR[0],markedLR[1],new_frameStereo);
             std::ostringstream pathL;
-            pathL << folder << "/stereo_marked_frame_" << std::setw(5) << std::setfill('0') << i << ".png";
+            pathL<< folder <<  "/stereo_marked_frame_"  << i << ".png";
+//            pathL << folder << "/stereo_marked_frame_" << std::setw(5) << std::setfill('0') << i << ".png";
             imwrite(pathL.str(), new_frameStereo);
         }
         else {
             capStereo >> frameStereo;
             if (frameStereo.empty()) break;
             std::ostringstream pathL;
-            pathL << folder <<"/stereo_marked_frame_" << std::setw(5) << std::setfill('0') << i << ".png";
+            pathL<< folder <<  "/stereo_marked_frame_"  << i << ".png";
+//            pathL << folder <<"/stereo_marked_frame_" << std::setw(5) << std::setfill('0') << i << ".png";
 
             imwrite(pathL.str(), frameStereo);
         }
@@ -388,7 +390,7 @@ int spatialMarking(std::string videoPath,cv::Mat noise,std::string folder){
  *
  */
 
-int spatialDecoding(std::string videoPath,cv::Mat noise){
+int spatialDecoding(std::string videoPath,cv::Mat noise,std::string out_file,std::string dispfolder){
 
     VideoCapture capStereo(videoPath);
     if (!capStereo.isOpened()) {  // check if we succeeded
@@ -402,7 +404,9 @@ int spatialDecoding(std::string videoPath,cv::Mat noise){
     cv::Mat frameStereo;
     cv::Mat frameL;
     cv::Mat frameR;
-    ofstream fout("./gauss3_30_detection.txt",std::ios_base::app);
+
+    ofstream fout(out_file.c_str(),std::ios_base::app);
+
     for (int i = first_frame; i < last_frame; i++) {
         if(i%STEP==0){
             capStereo >> frameStereo;
@@ -413,7 +417,7 @@ int spatialDecoding(std::string videoPath,cv::Mat noise){
             /*fine aggiunta per le dimensioni*/
            /* frameStereo(Rect(0,0,640,480)).copyTo(frameL);
             frameStereo(Rect(640,0,640,480)).copyTo(frameR);*/
-            vector<float> det = spatialWatermarking::gaussianNoiseStereoDetection(frameL,frameR,noise,i);
+            vector<float> det = spatialWatermarking::gaussianNoiseStereoDetection(frameL,frameR,noise,i,dispfolder);
             //write a .txt file with the correlation values and the corresponding detection, in order to subsequentially compute the ROC function with Matlab
             fout<<det[0]<<"\t1"<<endl<<det[1]<<"\t0"<<endl<<det[2]<<"\t1"<<endl<<det[3]<<"\t1"<<endl;
         }
@@ -424,11 +428,13 @@ int spatialDecoding(std::string videoPath,cv::Mat noise){
     }
     fout.close();
     //ROC curve
-    ROC roc("./gauss3_30_detection.txt");
+    ROC roc(out_file.c_str());
 //     the format of the output file is
 //     column 0 -> False positive points in curve
 //     column 1 -> True positive points in curve
-    roc.writeToFile("./ROC_30_detection.txt");
+    std::ostringstream ROCfile;
+    ROCfile << dispfolder.c_str() <<"_ROC.txt";
+    roc.writeToFile(ROCfile.str().c_str());
 
 }
 
@@ -619,9 +625,9 @@ int main(int argc, char* argv[]) {
         showhelpinfo(argv[0]);
         exit(1);
     }
-
-    string videoPath = argv[2];
     const char* tmp = argv[1];
+    string videoPath = argv[2];
+
     const char* folder;
 
     if (strcmp(tmp,"-h")==0){showhelpinfo(argv[0]);}
@@ -642,20 +648,23 @@ int main(int argc, char* argv[]) {
     }
     if (strcmp(tmp,"-se")==0){
         cout<<"spatial watermarking process---"<<endl;
+        std::string noise_path = argv[5];
         double m_NoiseStdDev=1;
-        Mat noise = cv::Mat::zeros(480, 640 , CV_8UC3);
+        Mat noise = cv::Mat::zeros(1080,1920,CV_8UC3);
         randn(noise,0,m_NoiseStdDev);
         noise *= 1; //watermark power
+        imwrite(noise_path.c_str(), noise);
         folder = argv[3];
-        spatialMarking(videoPath,noise,folder);
+        std::string dispfolder = argv[4];
+        spatialMarking(videoPath,noise,folder,dispfolder);
     }
     if (strcmp(tmp,"-sd")==0){
         cout<<"spatial detection process---"<<endl;
-        double m_NoiseStdDev=1;
-        Mat noise = cv::Mat::zeros(480, 640 , CV_8UC3);
-        randn(noise,0,m_NoiseStdDev);
-        noise *= 1; //watermark power
-        spatialDecoding(videoPath, noise);
+        std::string noise_path = argv[5];
+        Mat noise =  imread(noise_path.c_str(), CV_LOAD_IMAGE_COLOR);
+        folder = argv[3]; //out_file
+        std::string dispfolder = argv[4];
+        spatialDecoding(videoPath, noise,folder, dispfolder);
     }
     if (strcmp(tmp,"-qm")==0){
         cout<<"quality metrics computation---"<<endl;

@@ -15,7 +15,7 @@ using namespace std;
 
 namespace spatialWatermarking{
 
-    vector<cv::Mat> gaussianNoiseStereoWatermarking(cv::Mat left, cv::Mat right,cv::Mat noise, int img_num);
-    vector<float> gaussianNoiseStereoDetection(cv::Mat left_w, cv::Mat right_w,cv::Mat noise, int img_num);
+    vector<cv::Mat> gaussianNoiseStereoWatermarking(cv::Mat left, cv::Mat right,cv::Mat noise, int img_num,std::string dispfolder);
+    vector<float> gaussianNoiseStereoDetection(cv::Mat left_w, cv::Mat right_w,cv::Mat noise, int img_num,std::string dispfolder);
 
 }

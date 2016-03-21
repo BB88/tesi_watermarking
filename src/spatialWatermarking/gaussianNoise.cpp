@@ -30,8 +30,10 @@ using namespace std;
  * @params img_num: frame number
  * @return output: watermarked stereo frames
  */
-vector<cv::Mat> spatialWatermarking::gaussianNoiseStereoWatermarking(cv::Mat left, cv::Mat right,cv::Mat noise, int img_num){
+vector<cv::Mat> spatialWatermarking::gaussianNoiseStereoWatermarking(cv::Mat left, cv::Mat right,cv::Mat noise, int img_num,std::string dispfolder){
 
+    int height = left.rows; //height (480)
+    int width = left.cols; // width (640)
     vector<cv::Mat> output;
     Mat left_w = left.clone();
     left_w += noise;
@@ -40,13 +42,14 @@ vector<cv::Mat> spatialWatermarking::gaussianNoiseStereoWatermarking(cv::Mat lef
     //load ground truth disparity
     // pathL << "./dataset/NTSD-200/disparity_maps/left/tsukuba_disparity_L_" << std::setw(5) << std::setfill('0') << img_num +1 << ".png";
     //load graph cuts disparity
-    pathL << "./img/kz_norm_from_video/left_" << std::setw(2) << std::setfill('0') << img_num/60 << ".png";
+//    pathL << "./img/kz_norm_from_video/left_" << std::setw(2) << std::setfill('0') << img_num/60 << ".png";
+    pathL <<dispfolder<< "/norm_disp_left_to_right_" << img_num/10 << ".png";
 
     cv::Mat disp_left = imread(pathL.str().c_str(), CV_LOAD_IMAGE_GRAYSCALE);
     cv::Mat warped_mark = cv::Mat::zeros(left_w.rows, left_w.cols , CV_8UC3);
     int d;
-    for (int j = 0; j < 480; j++)
-        for (int i = 0; i< 640; i++){
+    for (int j = 0; j < height; j++)
+        for (int i = 0; i< width; i++){
             d = disp_left.at<uchar>(j,i);
             if ((i-d)>=0){
                 warped_mark.at<Vec3b>(j, i-d) [0] =  noise.at<Vec3b>(j, i) [0];
@@ -73,8 +76,10 @@ vector<cv::Mat> spatialWatermarking::gaussianNoiseStereoWatermarking(cv::Mat lef
  * @params img_num: frame number
  * @return correlations: detection correlation values
  */
-vector<float> spatialWatermarking::gaussianNoiseStereoDetection(cv::Mat left_w, cv::Mat right_w, cv::Mat noise, int img_num){
+vector<float> spatialWatermarking::gaussianNoiseStereoDetection(cv::Mat left_w, cv::Mat right_w, cv::Mat noise, int img_num,std::string dispfolder){
 
+    int height = left_w.rows; //height (480)
+    int width = right_w.cols; // width (640)
     vector<float> correlations;
     normalize(left_w, left_w,0, 255, CV_MINMAX, CV_8UC3);
     normalize(right_w, right_w,0, 255, CV_MINMAX, CV_8UC3);
@@ -107,17 +112,31 @@ vector<float> spatialWatermarking::gaussianNoiseStereoDetection(cv::Mat left_w, 
         cout << endl;
     }
 
+//    std::ostringstream pathL;
+//    // load ground truth disparity
+//    //pathL << "./dataset/NTSD-200/disparity_maps/left/tsukuba_disparity_L_" << std::setw(5) << std::setfill('0') << img_num +1 << ".png";
+//    // load graph cuts disparity
+//    pathL << "./img/kz_norm_from_video/left_" << std::setw(2) << std::setfill('0') << img_num/60 << ".png";
     std::ostringstream pathL;
-    // load ground truth disparity
-    //pathL << "./dataset/NTSD-200/disparity_maps/left/tsukuba_disparity_L_" << std::setw(5) << std::setfill('0') << img_num +1 << ".png";
-    // load graph cuts disparity
-    pathL << "./img/kz_norm_from_video/left_" << std::setw(2) << std::setfill('0') << img_num/60 << ".png";
+    pathL <<dispfolder<< "/norm_disp_left_to_right_" << img_num/10 << ".png";
 
     cv::Mat disp_left = imread(pathL.str().c_str(), CV_LOAD_IMAGE_GRAYSCALE);
+
+    std::ostringstream pathR;
+
+    //load ground truth disparity
+    //pathR << "./dataset/NTSD-200/disparity_maps/right/tsukuba_disparity_R_" << std::setw(5) << std::setfill('0') << img_num +1 << ".png";
+    //load graph cuts rightToLeft disparity
+    pathR <<dispfolder<< "/norm_disp_right_to_left_"  << img_num/10 << ".png";
+
+    cv::Mat disp_right = imread(pathR.str().c_str(), CV_LOAD_IMAGE_GRAYSCALE);
+
+
+//    cv::Mat disp_left = imread(pathL.str().c_str(), CV_LOAD_IMAGE_GRAYSCALE);
     cv::Mat warped_mark = cv::Mat::zeros(left_w.rows, left_w.cols , CV_8UC3);
     int d;
-    for (int j = 0; j < 480; j++)
-        for (int i = 0; i< 640; i++){
+    for (int j = 0; j < height; j++)
+        for (int i = 0; i< width; i++){
             d = disp_left.at<uchar>(j,i);
             if ((i-d)>=0){
                 warped_mark.at<Vec3b>(j, i-d) [0] =  noise.at<Vec3b>(j, i) [0];
@@ -138,21 +157,21 @@ vector<float> spatialWatermarking::gaussianNoiseStereoDetection(cv::Mat left_w, 
         }
         cout << endl;
     }
-    std::ostringstream pathR;
+//    std::ostringstream pathR;
 
     // load ground truth disparity
 //    pathR << "./dataset/NTSD-200/disparity_maps/right/tsukuba_disparity_R_" << std::setw(5) << std::setfill('0') << img_num +1 << ".png";
     // load graph cuts disparity
-    pathR << "./img/kz_norm_from_video/right_" << std::setw(2) << std::setfill('0') << img_num/60 << ".png";
-    cv::Mat disp_right = imread(pathR.str().c_str(), CV_LOAD_IMAGE_GRAYSCALE);
+//    pathR << "./img/kz_norm_from_video/right_" << std::setw(2) << std::setfill('0') << img_num/60 << ".png";
+//    cv::Mat disp_right = imread(pathR.str().c_str(), CV_LOAD_IMAGE_GRAYSCALE);
 //    cv::Mat occ_right = imread("./img/occ_right.png", CV_LOAD_IMAGE_GRAYSCALE);
 
     Right_view rv;
-    unsigned char * left_recon = rv.left_rnc_no_occ(right_w.data,disp_right ,640,480);
-    cv::Mat left_reconstructed = cv::Mat::zeros(480, 640 , CV_8UC3);
+    unsigned char * left_recon = rv.left_rnc_no_occ(right_w.data,disp_right ,width,height);
+    cv::Mat left_reconstructed = cv::Mat::zeros(height, width , CV_8UC3);
     int count = 0;
-    for (int j = 0; j < 480; j++)
-        for (int i = 0; i < 640; i++){
+    for (int j = 0; j < height; j++)
+        for (int i = 0; i < width; i++){
             left_reconstructed.at<Vec3b>(j,i) [0] = left_recon[count]; count++;
             left_reconstructed.at<Vec3b>(j,i) [1] = left_recon[count]; count++;
             left_reconstructed.at<Vec3b>(j,i) [2] = left_recon[count]; count++;
